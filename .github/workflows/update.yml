@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A site/data site/feeds site/p site/t site/sitemap.xml data/health.json data/llm_cache.json data/teams_cache.json
+          git add -A site/ data/
           git commit -m "Actualiza eventos $(date -u +%F)" || echo "sin cambios"
           git pull --rebase origin main || true
           git push
