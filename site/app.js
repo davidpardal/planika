@@ -1,12 +1,26 @@
 /* Planika: filtros, lista, calendario, mapa, favoritos, compartir y "añadir al calendario". */
 (function () {
   'use strict';
-  var DATA = window.PLANES_DATA || { events: [], categories: [], provinces: [], sources: [] };
-  var EVENTS = DATA.events;
+  // Los datos llegan en dos partes: data/core.js (lo justo para filtrar, ordenar, calendario y mapa) y
+  // data/d/<n>.js (descripción, enlaces e imagen, en bloques que se piden solo cuando hay que pintar esas tarjetas).
+  var DATA = window.PLANES_CORE || { events: [], categories: [], provinces: [], sources: [], srcNames: [], chunk: 250, v: '' };
   var CATS = {};
   DATA.categories.forEach(function (c) { CATS[c.key] = c; });
   var PROV = {};
   DATA.provinces.forEach(function (p) { PROV[p.code] = p; });
+  var CHUNK = DATA.chunk || 250;
+  var BY_ID = {};
+  var EVENTS = DATA.events.map(function (r, i) {
+    var p = PROV[r[7]] || {}, c = DATA.categories[r[2]] || {};
+    var e = { i: i, id: r[0], title: r[1], category: c.key || 'otros', subtype: r[3] || '', start: r[4], end: r[5], time: r[6] || '',
+      province_code: r[7], province: p.name || '', ccaa: p.ccaa || '', city: r[8] || '', venue: r[9] || '',
+      lat: r[10] == null ? null : r[10], lon: r[11] == null ? null : r[11], price: r[12] || '', free: !!(r[13] & 1), tk: !!(r[13] & 2),
+      audience: r[14] || '', source: DATA.srcNames[r[15]] || '', sessions: r[16] || null, title_es: r[17] || '',
+      description: '', url: '', tickets_url: '', image: '', address: '', _d: false };
+    BY_ID[e.id] = e;
+    return e;
+  });
+  var NCHUNKS = Math.ceil(EVENTS.length / CHUNK);
   var PAGE = 48;
   var LONG_DAYS = 45; // a partir de aquí un evento se considera "de larga duración" en el calendario
   // Centro aproximado de cada provincia (capital) para el mapa de cobertura
@@ -35,6 +49,45 @@
   function norm(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
   function slug(s) { return norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
   function title(e) { return e.title_es || e.title; }
+  function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
+  // Página propia del plan (site/e/), con el mismo nombre de archivo que genera planes/static.py
+  function evFile(e) { var s = slug(e.title).slice(0, 60).replace(/^-|-$/g, ''); return 'e/' + (s ? s + '-' : '') + e.id + '.html'; }
+
+  // ---------- detalles por bloques
+  var chunkState = {}, allRequested = false, rerenderT = null;
+  function applyChunk(v, n, rows) {
+    if (v !== DATA.v) { staleReload(); return; }
+    var base = n * CHUNK;
+    for (var k = 0; k < rows.length; k++) {
+      var e = EVENTS[base + k], r = rows[k]; if (!e) break;
+      e.description = r[0] || ''; e.url = safeUrl(r[1]); e.tickets_url = safeUrl(r[2]); e.image = safeUrl(r[3]); e.address = r[4] || ''; e._d = true;
+    }
+    chunkState[n] = 'ok';
+    hydrate(n);
+    if (state.q) { clearTimeout(rerenderT); rerenderT = setTimeout(rerender, 150); } // la búsqueda también mira la descripción
+  }
+  // La web se actualiza a diario: si esta pestaña tiene datos de ayer y el bloque es de hoy, se recarga una vez.
+  function staleReload() {
+    try { if (sessionStorage.getItem('planika_reload') === DATA.v) return; sessionStorage.setItem('planika_reload', DATA.v); } catch (e) { return; }
+    location.reload();
+  }
+  function loadChunk(n) {
+    if (chunkState[n] || n < 0 || n >= NCHUNKS) return;
+    chunkState[n] = 'loading';
+    var s = document.createElement('script'); s.async = true; s.src = 'data/d/' + n + '.js?v=' + encodeURIComponent(DATA.v);
+    s.onerror = function () { delete chunkState[n]; s.remove(); };
+    document.head.appendChild(s);
+  }
+  function need(list) { for (var k = 0; k < list.length; k++) if (!list[k]._d) loadChunk(Math.floor(list[k].i / CHUNK)); }
+  function loadAll() { if (allRequested) return; allRequested = true; for (var n = 0; n < NCHUNKS; n++) loadChunk(n); }
+  // Sustituye las tarjetas "ligeras" ya pintadas por las completas cuando llega su bloque
+  function hydrate(n) {
+    document.querySelectorAll('article.card[data-c="' + n + '"]').forEach(function (el) {
+      var e = BY_ID[el.dataset.id]; if (!e) return;
+      var t = document.createElement('template'); t.innerHTML = card(e, { i: +el.dataset.pop, noOngoing: el.dataset.no === '1' });
+      el.replaceWith(t.content.firstChild);
+    });
+  }
   function nextSession(e) {
     var from = state.from && state.from > TODAY ? state.from : TODAY;
     if (!e.sessions) return e.start;
@@ -147,7 +200,7 @@
     if (state.ccaa && e.ccaa !== state.ccaa) return false;
     if (state.prov && e.province_code !== state.prov) return false;
     if (state.free && !e.free) return false;
-    if (state.tickets && !e.tickets_url) return false;
+    if (state.tickets && !e.tk) return false;
     if (state.favs && !favSet.has(e.id)) return false;
     if (anyCat() && !state.cats[e.category]) return false;
     if (state.tod) {
@@ -199,9 +252,9 @@
       var up = e.sessions.filter(function (x) { return x >= TODAY; });
       sess = '<div class="sessions">Fechas: ' + up.slice(0, 6).map(function (x) { return fmtShort.format(fromIso(x)); }).join(', ') + (up.length > 6 ? ' y ' + (up.length - 6) + ' más' : '') + '</div>';
     }
-    return '<article class="card pop' + pop + '" data-id="' + e.id + '">' + img + '<div class="body">' +
+    return '<article class="card pop' + pop + '" data-id="' + e.id + '" data-c="' + Math.floor(e.i / CHUNK) + '" data-pop="' + pop + '"' + (opts.noOngoing ? ' data-no="1"' : '') + '>' + img + '<div class="body">' +
       '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + (d !== null ? '<span class="badge dist">a ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + ' km</span>' : '') + '</div>' +
-      '<h3><a href="' + esc(e.url || e.tickets_url || '#') + '" target="_blank" rel="noopener">' + esc(title(e)) + '</a></h3>' +
+      '<h3><a href="' + esc(e.url || e.tickets_url || evFile(e)) + '" target="_blank" rel="noopener">' + esc(title(e)) + '</a></h3>' +
       (e.title_es ? '<div class="where">' + esc(e.title) + '</div>' : '') +
       '<div class="when">📅 ' + esc(whenText(e)) + '</div>' + sess +
       (where ? '<div class="where">📍 ' + esc(where) + '</div>' : '') +
@@ -217,7 +270,9 @@
     var el = $('list');
     $('count').innerHTML = '<strong>' + list.length.toLocaleString('es-ES') + '</strong> planes' + (list.length !== EVENTS.length ? ' de ' + EVENTS.length.toLocaleString('es-ES') : '') + (state.geo ? ' a menos de ' + state.radius + ' km' : '');
     if (!list.length) { el.innerHTML = '<div class="empty">No hay planes con esos filtros. Prueba a ampliar las fechas o quitar algún filtro.</div>'; $('more').hidden = true; return; }
-    el.innerHTML = list.slice(0, state.shown).map(function (e, i) { return card(e, { i: i }); }).join('');
+    var page = list.slice(0, state.shown);
+    need(page);
+    el.innerHTML = page.map(function (e, i) { return card(e, { i: i }); }).join('');
     $('more').hidden = state.shown >= list.length;
     $('more').textContent = 'Mostrar más (' + Math.min(PAGE, list.length - state.shown) + ' de ' + (list.length - state.shown) + ' restantes)';
   }
@@ -267,6 +322,7 @@
     if (st.length) h += '<h4>Este día (' + st.length + ')</h4><div class="mini">' + st.slice(0, 120).map(function (e, i) { return card(e, { noOngoing: true, i: i }); }).join('') + (st.length > 120 ? '<p class="empty">… y ' + (st.length - 120) + ' más. Afina los filtros o usa la vista de lista.</p>' : '') + '</div>';
     if (on.length) h += '<h4>En curso (' + on.length + ')</h4><div class="mini">' + on.slice(0, 60).map(function (e, i) { return card(e, { noOngoing: true, i: i + 2 }); }).join('') + (on.length > 60 ? '<p class="empty">… y ' + (on.length - 60) + ' más. Usa la vista de lista para verlos todos.</p>' : '') + '</div>';
     if (longOnes > 0) h += '<p class="hint">Además hay ' + longOnes + ' planes de larga duración activos ese día (exposiciones, temporadas…) que no se cuentan en el calendario. <button type="button" class="linklike" data-golist="' + d + '">Verlos en la lista</button></p>';
+    need(st.slice(0, 120)); need(on.slice(0, 60));
     p.innerHTML = h; p.hidden = false;
   }
 
@@ -313,15 +369,16 @@
 
   // ---------- ficha (modal) y compartir
   function openModal(id) {
-    var e = EVENTS.find(function (x) { return x.id === id; });
-    if (!e) return;
+    var e = BY_ID[id];
+    if (!e) { toast('Ese plan ya no está en la agenda'); return; }
+    need([e]);
     $('modalBody').innerHTML = card(e);
     var dlg = $('modal');
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
   }
   function closeModal() { var dlg = $('modal'); if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }
   function shareLink(e) {
-    var url = location.origin + location.pathname + '?e=' + e.id;
+    var url = new URL(evFile(e), location.href.split('?')[0]).href;
     var text = title(e) + ' · ' + whenText(e) + (e.city ? ' · ' + e.city : '');
     if (navigator.share) { navigator.share({ title: 'Planika: ' + title(e), text: text, url: url }).catch(function () {}); return; }
     copy(url, 'Enlace del plan copiado');
@@ -408,10 +465,10 @@
   function closeMenu() { menu.hidden = true; }
 
   // ---------- eventos de UI
-  function byId(id) { return EVENTS.find(function (x) { return x.id === id; }); }
+  function byId(id) { return BY_ID[id]; }
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest('.addcal');
-    if (b) { ev.stopPropagation(); var e = byId(b.dataset.id); if (e) openMenu(b, e); return; }
+    if (b) { ev.stopPropagation(); var e = byId(b.dataset.id); if (e && !e._d) { need([e]); toast('Cargando el plan… vuelve a pulsar en un momento'); return; } if (e) openMenu(b, e); return; }
     if (!ev.target.closest('#menu')) closeMenu();
     var f = ev.target.closest('[data-fav]');
     if (f) { var id = f.dataset.fav; if (favSet.has(id)) favSet.delete(id); else favSet.add(id); saveFavs();
@@ -430,7 +487,8 @@
   $('modalClose').addEventListener('click', closeModal);
   $('modal').addEventListener('click', function (ev) { if (ev.target === $('modal')) closeModal(); });
 
-  function refresh() { state.shown = PAGE; writeURL(); if (state.view === 'list') renderList(); else if (state.view === 'cal') renderCalendar(); else renderMap(); }
+  function rerender() { if (state.view === 'list') renderList(); else if (state.view === 'cal') renderCalendar(); else renderMap(); }
+  function refresh() { state.shown = PAGE; writeURL(); if (state.q) loadAll(); rerender(); }
   function setView(v) {
     state.view = v;
     $('view').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === v); });
@@ -480,6 +538,9 @@
 
   // ---------- arranque
   var openId = readURL();
+  window.PLANIKA_D = applyChunk;
+  (window.PLANIKA_Q || []).forEach(function (a) { applyChunk(a[0], a[1], a[2]); });
+  window.PLANIKA_Q = [];
   populate();
   if (state.from || state.to) { clearQuick(); refresh(); } else setRange('all');
   if (state.view !== 'list') setView(state.view);
