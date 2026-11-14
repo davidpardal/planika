@@ -16,6 +16,8 @@ from .classify import CATEGORIES
 from .util import iso, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
+if SITE_URL.startswith("http://"):  # GitHub Pages siempre sirve por HTTPS, aunque su API devuelva http://
+    SITE_URL = "https://" + SITE_URL[7:]
 CHUNK = 250  # planes por bloque de detalles
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
