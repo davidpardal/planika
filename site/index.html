@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planika · Planes de ocio en España</title>
+<meta name="description" content="Planika: planes de ocio en toda España por provincia y tipo de plan. Conciertos, teatro, exposiciones, deporte, ferias y fiestas con calendario, entradas y un clic para guardarlos en tu agenda.">
+<link rel="canonical" href="https://planikaapp.com/">
+<meta property="og:site_name" content="Planika">
+<meta property="og:title" content="Planika · Planes de ocio en España">
+<meta property="og:description" content="Encuentra planes por provincia y tipo, míralos en el calendario y guárdalos en tu agenda.">
+<meta property="og:url" content="https://planikaapp.com/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://planikaapp.com/og.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#c2410c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Planika">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="8" width="56" height="50" rx="12" fill="#c2410c"/><rect x="4" y="8" width="56" height="16" rx="12" fill="#9a3412"/><rect x="4" y="18" width="56" height="6" fill="#9a3412"/><circle cx="20" cy="39" r="5" fill="#fff"/><circle cx="32" cy="39" r="5" fill="#fff" opacity=".75"/><circle cx="44" cy="39" r="5" fill="#fff" opacity=".5"/><rect x="16" y="2" width="6" height="12" rx="3" fill="#1f1a17"/><rect x="42" y="2" width="6" height="12" rx="3" fill="#1f1a17"/></svg><h1>Planika</h1></div>
+    <p class="tagline">Planes de ocio en toda España</p>
+    <p class="lead">Conciertos, teatro, exposiciones, deporte, ferias y fiestas recogidos de agendas públicas. Filtra por provincia y tipo de plan, mira el calendario y guarda el plan en tu agenda.</p>
+    <p class="meta" id="meta"></p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="filters" aria-label="Filtros">
+    <div class="row">
+      <label class="field grow">
+        <span>Buscar</span>
+        <input type="search" id="q" placeholder="Artista, obra, lugar, ciudad…" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Comunidad</span>
+        <select id="ccaa"><option value="">Todas</option></select>
+      </label>
+      <label class="field">
+        <span>Provincia</span>
+        <select id="prov"><option value="">Todas</option></select>
+      </label>
+    </div>
+    <div class="row">
+      <div class="field">
+        <span>Fechas</span>
+        <div class="segmented" id="quick">
+          <button type="button" data-range="all" class="on">Todo</button>
+          <button type="button" data-range="today">Hoy</button>
+          <button type="button" data-range="weekend">Fin de semana</button>
+          <button type="button" data-range="7">7 días</button>
+          <button type="button" data-range="30">30 días</button>
+        </div>
+      </div>
+      <label class="field"><span>Desde</span><input type="date" id="from"></label>
+      <label class="field"><span>Hasta</span><input type="date" id="to"></label>
+      <label class="check"><input type="checkbox" id="free"> Solo gratis</label>
+      <label class="check"><input type="checkbox" id="tickets"> Con venta de entradas</label>
+    </div>
+    <div class="chips" id="cats" role="group" aria-label="Tipo de plan"></div>
+  </section>
+
+  <section class="bar">
+    <div class="count" id="count"></div>
+    <div class="segmented view" id="view">
+      <button type="button" data-view="list" class="on">☰ Lista</button>
+      <button type="button" data-view="cal">📅 Calendario</button>
+    </div>
+  </section>
+
+  <section id="calendar" class="calendar" hidden>
+    <div class="cal-head">
+      <button type="button" id="prevM" aria-label="Mes anterior">‹</button>
+      <h2 id="monthTitle"></h2>
+      <button type="button" id="nextM" aria-label="Mes siguiente">›</button>
+      <button type="button" id="todayM" class="ghost">Hoy</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <p class="hint">El número grande son los planes que <strong>empiezan</strong> ese día; el pequeño, los que siguen en curso (exposiciones, ciclos…). Pulsa un día para ver su lista.</p>
+    <div id="dayPanel" class="day-panel" hidden></div>
+  </section>
+
+  <section id="list" class="list" aria-live="polite"></section>
+  <div class="more"><button type="button" id="more" hidden>Mostrar más</button></div>
+</main>
+
+<footer class="wrap foot">
+  <p class="brandfoot"><strong>Planika</strong> · <a href="https://planikaapp.com">planikaapp.com</a></p>
+  <h2>Fuentes de datos</h2>
+  <ul id="sources"></ul>
+  <p>Los datos proceden de portales de datos abiertos y APIs públicas; cada evento enlaza a la web del organizador para ampliar información o comprar entradas. Comprueba siempre fechas y precios en la fuente original.</p>
+</footer>
+
+<div id="menu" class="menu" hidden></div>
+<script src="data/events.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
