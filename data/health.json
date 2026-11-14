@@ -87,7 +87,7 @@
   "sportsdb": [
    {
     "date": "2026-11-14",
-    "count": 5,
+    "count": 4,
     "error": ""
    }
   ],
@@ -99,7 +99,7 @@
    }
   ]
  },
- "updated_at": "2026-11-14T16:25",
+ "updated_at": "2026-11-14T17:16",
  "alerts": [
   "Ajuntament de Barcelona: error HTTPError: 403 Client Error: Forbidden for url: https://opendata-ajuntament.barcelona.cat/data/dataset/2767159c-1c98-46b8-a686-2b25",
   "Axenda de Cultura de Galicia: error ConnectTimeout: HTTPSConnectionPool(host='abertos.xunta.gal', port=443): Max retries exceeded with url: /catalogo/cultura-ocio-deporte/-"
