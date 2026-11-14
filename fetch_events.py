@@ -18,10 +18,12 @@ from datetime import datetime, timedelta
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
+from planes import llm, publish  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
-SOURCES = ["madrid", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia", "lorca", "ticketmaster"]
+SOURCES = ["madrid", "barcelona", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia", "galicia",
+           "cartagena", "lorca", "tenerife_deporte", "sportsdb", "ticketmaster"]
 
 
 def load_dotenv(path):
@@ -57,6 +59,9 @@ def main():
     ap.add_argument("--days", type=int, default=180, help="horizonte en días (por defecto 180)")
     ap.add_argument("--sources", default=",".join(SOURCES), help="fuentes separadas por comas")
     ap.add_argument("--out", default=os.path.join(ROOT, "site", "data"), help="carpeta de salida")
+    ap.add_argument("--llm", choices=["off", "otros", "all"], default=os.environ.get("PLANIKA_LLM", "off"),
+                    help="clasificar con Claude los eventos dudosos (otros) o todos; requiere ANTHROPIC_API_KEY")
+    ap.add_argument("--no-pages", action="store_true", help="no generar páginas estáticas ni feeds")
     args = ap.parse_args()
 
     load_dotenv(os.path.join(ROOT, ".env"))
@@ -72,11 +77,13 @@ def main():
             log("fuente desconocida: %s" % name)
             continue
         started = time.time()
+        error = ""
         try:
-            evs = mod.fetch(log) if name != "ticketmaster" else mod.fetch(log, days=args.days)
+            evs = mod.fetch(log) if name not in ("ticketmaster", "sportsdb") else mod.fetch(log, days=args.days)
         except Exception as exc:  # noqa: BLE001 - una fuente caída no debe tumbar el resto
             log("%s: ERROR %s: %s" % (mod.NAME, exc.__class__.__name__, exc))
             evs = []
+            error = "%s: %s" % (exc.__class__.__name__, str(exc)[:120])
         kept = [e for e in evs if e["end"] >= iso(t0) and e["start"] <= iso(t_max)]
         # Sin provincia resoluble (eventos en línea, sin lugar o fuera de España) no encajan en la web
         no_prov = [e for e in kept if not e["province_code"]]
@@ -85,13 +92,16 @@ def main():
             kept = [e for e in kept if e["province_code"]]
         all_events.extend(kept)
         source_meta.append({"key": name, "name": mod.NAME, "home": mod.HOME, "count": len(kept),
-                            "seconds": round(time.time() - started, 1)})
+                            "seconds": round(time.time() - started, 1), "error": error})
         log("  -> %d dentro del horizonte (%.1fs)" % (len(kept), time.time() - started))
 
     before = len(all_events)
     all_events = dedupe(all_events)
+    all_events, merged = publish.group_sessions(all_events)
     all_events.sort(key=lambda e: (e["start"], e["time"] or "99", e["title"]))
-    log("Total: %d eventos (%d duplicados eliminados)" % (len(all_events), before - len(all_events)))
+    log("Total: %d planes (%d duplicados eliminados, %d funciones agrupadas en sesiones)" % (len(all_events), before - len(all_events) - merged, merged))
+    if args.llm != "off":
+        llm.enrich(all_events, log, mode=args.llm)
 
     os.makedirs(args.out, exist_ok=True)
     payload = {
@@ -100,6 +110,7 @@ def main():
         "categories": [{"key": k, "name": n, "icon": i} for k, n, i in CATEGORIES],
         "provinces": [{"code": c, "name": n, "ccaa": a} for c, n, a in PROVINCIAS],
         "sources": source_meta,
+        "alerts": [],
         "events": all_events,
     }
     with open(os.path.join(args.out, "events.json"), "w", encoding="utf-8") as fh:
@@ -110,6 +121,17 @@ def main():
         fh.write(";\n")
     size = os.path.getsize(os.path.join(args.out, "events.js")) / 1024 / 1024
     log("Escrito %s (%.1f MB)" % (os.path.join(args.out, "events.js"), size))
+
+    # Salud de las fuentes (histórico + alertas), feeds RSS y páginas estáticas
+    alerts = publish.update_health(os.path.join(ROOT, "data", "health.json"), source_meta)
+    for a in alerts:
+        log("ALERTA fuente -> " + a)
+        print("::warning title=Fuente con problemas::" + a, flush=True)
+    site_dir = os.path.dirname(os.path.abspath(args.out))
+    if not args.no_pages:
+        feeds = publish.write_feeds(os.path.join(site_dir, "feeds"), all_events)
+        pages = publish.write_pages(site_dir, all_events)
+        log("Generados %d feeds RSS y %d páginas estáticas" % (len(feeds), len(pages)))
 
     # Resumen por provincia y categoría
     by_prov = {}

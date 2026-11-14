@@ -1,0 +1,104 @@
+{
+ "history": {
+  "madrid": [
+   {
+    "date": "2026-11-14",
+    "count": 1243,
+    "error": ""
+   }
+  ],
+  "barcelona": [
+   {
+    "date": "2026-11-14",
+    "count": 4189,
+    "error": ""
+   }
+  ],
+  "euskadi": [
+   {
+    "date": "2026-11-14",
+    "count": 4130,
+    "error": ""
+   }
+  ],
+  "catalunya": [
+   {
+    "date": "2026-11-14",
+    "count": 1268,
+    "error": ""
+   }
+  ],
+  "cyl": [
+   {
+    "date": "2026-11-14",
+    "count": 502,
+    "error": ""
+   }
+  ],
+  "gva": [
+   {
+    "date": "2026-11-14",
+    "count": 111,
+    "error": ""
+   }
+  ],
+  "malaga": [
+   {
+    "date": "2026-11-14",
+    "count": 88,
+    "error": ""
+   }
+  ],
+  "andalucia": [
+   {
+    "date": "2026-11-14",
+    "count": 38,
+    "error": ""
+   }
+  ],
+  "galicia": [
+   {
+    "date": "2026-11-14",
+    "count": 124,
+    "error": ""
+   }
+  ],
+  "cartagena": [
+   {
+    "date": "2026-11-14",
+    "count": 56,
+    "error": ""
+   }
+  ],
+  "lorca": [
+   {
+    "date": "2026-11-14",
+    "count": 0,
+    "error": ""
+   }
+  ],
+  "tenerife_deporte": [
+   {
+    "date": "2026-11-14",
+    "count": 23,
+    "error": ""
+   }
+  ],
+  "sportsdb": [
+   {
+    "date": "2026-11-14",
+    "count": 5,
+    "error": ""
+   }
+  ],
+  "ticketmaster": [
+   {
+    "date": "2026-11-14",
+    "count": 0,
+    "error": ""
+   }
+  ]
+ },
+ "updated_at": "2026-11-14T17:08",
+ "alerts": []
+}

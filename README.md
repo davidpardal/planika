@@ -30,7 +30,43 @@ Opciones útiles:
 ```bash
 python3 fetch_events.py --days 90                 # horizonte más corto
 python3 fetch_events.py --sources madrid,euskadi  # solo algunas fuentes
+python3 fetch_events.py --llm otros               # reclasificar con Claude los planes dudosos (ver abajo)
+python3 -m unittest discover -s tests             # pruebas de fechas, provincias, clasificación y sesiones
 ```
+
+Además de `site/data/events.js`, cada ejecución genera:
+
+- `site/feeds/`: RSS general, por provincia y por tipo de plan (próximos 30 días), para suscribirse desde cualquier lector.
+- `site/p/<provincia>.html` y `site/t/<tipo>.html`: páginas estáticas con URL propia para buscadores, enlazadas desde el pie de la web y el `sitemap.xml`.
+- `data/health.json`: histórico de eventos por fuente y alertas cuando una fuente falla o cae mucho. En GitHub Actions, las alertas abren automáticamente un *issue*.
+
+## Qué ofrece la web
+
+- Filtros por comunidad, provincia, tipo de plan, fechas, gratis, con entradas, horario (mañana, tarde, noche), público (familiar o adultos) y precio máximo.
+- Vistas de **lista**, **calendario** mensual y **mapa** con agrupación de puntos, más un panel de cobertura por provincia.
+- **Cerca de mí**: con la ubicación del móvil, muestra solo los planes a 10, 25, 50 o 100 km y los ordena por distancia.
+- **Favoritos** guardados en el navegador, **compartir** un plan (enlace directo a su ficha) o los filtros actuales, y **suscripción RSS** a esos filtros.
+- Las funciones repetidas de una misma obra se agrupan en una tarjeta con todas sus fechas.
+- Botón de **añadir al calendario** (Google, Apple/iCal, Outlook, Microsoft 365, Yahoo) y enlaces a entradas e información.
+- Instalable como app (PWA) desde el navegador del móvil.
+
+### Clasificación y traducción con Claude (opcional)
+
+El script clasifica por la categoría que declara cada fuente y, si no la hay, por palabras clave. Para afinar los casos dudosos (categoría "Otros") y traducir al castellano los títulos en catalán, euskera o gallego, puede consultar a Claude:
+
+1. Crea una clave en <https://console.anthropic.com/> y ponla en `.env` como `ANTHROPIC_API_KEY=`.
+2. Ejecuta `python3 fetch_events.py --llm otros` (o `--llm all` para reclasificar todo una vez; los resultados se guardan en `data/llm_cache.json` y no se repiten).
+3. En GitHub, añade el secreto `ANTHROPIC_API_KEY` y la variable de repositorio `PLANIKA_LLM=otros` (*Settings → Secrets and variables → Actions → Variables*).
+
+Usa el modelo `claude-opus-5` por defecto; cámbialo con `PLANIKA_LLM_MODEL` (por ejemplo `claude-haiku-4-5` para abaratar). Con unos cientos de planes dudosos al día el coste es de céntimos.
+
+### Analítica (opcional)
+
+En `site/index.html` hay comentadas dos líneas para Plausible y Umami, dos analíticas sin cookies. Crea cuenta en una de ellas, descomenta su línea y pon tu dominio o identificador.
+
+### App en las tiendas
+
+Ver [docs/app-stores.md](docs/app-stores.md): empaquetado con Capacitor (iOS y Android) o TWA (Android), que requiere cuentas de desarrollador de Apple y Google.
 
 ### Ticketmaster (opcional, recomendado)
 
@@ -53,10 +89,15 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Institut Valencià de Cultura (GVA) | Valencia, Castellón, Alicante | JSON |
 | Ayuntamiento de Málaga | Málaga ciudad | CSV anual |
 | Junta de Andalucía (agenda de eventos) | las 8 provincias | JSON |
+| Ajuntament de Barcelona | Barcelona ciudad (agenda cultural completa, con sesiones) | JSON |
+| Axenda de Cultura de Galicia (Xunta) | las 4 provincias gallegas | iCalendar |
+| Ayuntamiento de Cartagena | Cartagena (Murcia) | CSV |
+| Cabildo de Tenerife | eventos deportivos de la isla | JSON |
+| TheSportsDB | próximos partidos de LaLiga, LaLiga 2, ACB, Copa del Rey y Supercopa | API JSON (clave pública de pruebas; `THESPORTSDB_KEY` para una propia) |
 | Ayuntamiento de Lorca | Lorca (Murcia); su CSV lleva meses sin eventos nuevos | CSV |
 | Ticketmaster Discovery API | toda España, con entradas | API JSON (clave) |
 
-Fuentes revisadas y descartadas: Canarias (el CSV público no se actualiza desde 2021), Zaragoza (la API devuelve HTML a peticiones automatizadas), Cartagena (recurso retirado), Castilla-La Mancha (solo publica la web, sin datos descargables).
+Fuentes revisadas y descartadas por estar paradas o no ser accesibles por programa: Canarias (CSV parado en 2021), Gijón (JSON parado en 2025), Terrassa (CSV de 2024), municipios de Córdoba vía Eprinsa (datos de 2022), Zaragoza (la API devuelve HTML a peticiones automatizadas), Alcobendas (bloquea el acceso), Cáceres y Santa Cruz de Tenerife (portales que solo sirven HTML), L'Hospitalet y Región de Murcia Digital (recursos vacíos o caídos), Castilla-La Mancha (sin datos descargables), Vigo (solo publica la agenda del día). Webs comerciales como Fever, entradas.com o Wikiloc no se raspan porque sus condiciones de uso lo prohíben.
 
 Para añadir una fuente nueva crea `planes/src_<nombre>.py` con `NAME`, `HOME` y una función `fetch(log)` que devuelva una lista construida con `planes.util.event(...)`, y añade `<nombre>` a la lista `SOURCES` de `fetch_events.py`.
 

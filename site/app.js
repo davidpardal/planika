@@ -1,53 +1,113 @@
-/* Planes de ocio: filtros, lista, calendario y enlaces "añadir al calendario". */
+/* Planika: filtros, lista, calendario, mapa, favoritos, compartir y "añadir al calendario". */
 (function () {
   'use strict';
   var DATA = window.PLANES_DATA || { events: [], categories: [], provinces: [], sources: [] };
   var EVENTS = DATA.events;
   var CATS = {};
   DATA.categories.forEach(function (c) { CATS[c.key] = c; });
+  var PROV = {};
+  DATA.provinces.forEach(function (p) { PROV[p.code] = p; });
   var PAGE = 48;
   var LONG_DAYS = 45; // a partir de aquí un evento se considera "de larga duración" en el calendario
+  // Centro aproximado de cada provincia (capital) para el mapa de cobertura
+  var CENTROIDS = { '01': [42.85, -2.67], '02': [38.99, -1.86], '03': [38.35, -0.48], '04': [36.84, -2.46], '05': [40.66, -4.70], '06': [38.88, -6.97], '07': [39.57, 2.65], '08': [41.39, 2.17], '09': [42.34, -3.70], '10': [39.47, -6.37], '11': [36.53, -6.29], '12': [39.99, -0.04], '13': [38.99, -3.93], '14': [37.89, -4.78], '15': [43.36, -8.41], '16': [40.07, -2.14], '17': [41.98, 2.82], '18': [37.18, -3.60], '19': [40.63, -3.17], '20': [43.32, -1.98], '21': [37.26, -6.95], '22': [42.14, -0.41], '23': [37.78, -3.79], '24': [42.60, -5.57], '25': [41.62, 0.62], '26': [42.47, -2.45], '27': [43.01, -7.56], '28': [40.42, -3.70], '29': [36.72, -4.42], '30': [37.98, -1.13], '31': [42.82, -1.64], '32': [42.34, -7.86], '33': [43.36, -5.85], '34': [42.01, -4.53], '35': [28.12, -15.43], '36': [42.43, -8.64], '37': [40.97, -5.66], '38': [28.47, -16.25], '39': [43.46, -3.81], '40': [40.95, -4.12], '41': [37.39, -5.98], '42': [41.76, -2.47], '43': [41.12, 1.25], '44': [40.34, -1.11], '45': [39.86, -4.02], '46': [39.47, -0.38], '47': [41.65, -4.72], '48': [43.26, -2.93], '49': [41.50, -5.74], '50': [41.65, -0.89], '51': [35.89, -5.32], '52': [35.29, -2.94] };
 
   var $ = function (id) { return document.getElementById(id); };
-  var state = { q: '', ccaa: '', prov: '', from: '', to: '', free: false, tickets: false, cats: {}, view: 'list', shown: PAGE,
-                month: null, selDay: null };
+  var state = { q: '', ccaa: '', prov: '', from: '', to: '', free: false, tickets: false, cats: {}, tod: '', aud: '', pmax: '',
+                favs: false, geo: null, radius: 25, view: 'list', shown: PAGE, month: null, selDay: null };
+  var favSet = loadFavs();
 
-  // ---------- utilidades de fecha
+  // ---------- utilidades
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function isoDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function fromIso(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function addDays(s, n) { var d = fromIso(s); d.setDate(d.getDate() + n); return isoDate(d); }
   var TODAY = isoDate(new Date());
+  var thisYear = TODAY.slice(0, 4);
   var fmtDay = new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+  var fmtShort = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' });
   var fmtLong = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   var fmtMonth = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' });
-  var thisYear = TODAY.slice(0, 4);
   function fmtD(s) { return fmtDay.format(fromIso(s)) + (s.slice(0, 4) !== thisYear ? ' ' + s.slice(0, 4) : ''); }
   function spanDays(e) { return Math.round((fromIso(e.end) - fromIso(e.start)) / 864e5); }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function norm(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function slug(s) { return norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  function title(e) { return e.title_es || e.title; }
+  function nextSession(e) {
+    var from = state.from && state.from > TODAY ? state.from : TODAY;
+    if (!e.sessions) return e.start;
+    for (var i = 0; i < e.sessions.length; i++) if (e.sessions[i] >= from) return e.sessions[i];
+    return e.sessions[e.sessions.length - 1];
+  }
   function whenText(e) {
+    if (e.sessions) {
+      var n = nextSession(e); var rest = e.sessions.filter(function (d) { return d > n; }).length;
+      return fmtD(n) + (e.time ? ' · ' + e.time : '') + (rest ? ' (+' + rest + ' fechas)' : '');
+    }
     if (e.end !== e.start && e.start < TODAY) return 'Hasta el ' + fmtD(e.end) + (e.time ? ' · ' + e.time : '');
     var s = fmtD(e.start);
     if (e.end && e.end !== e.start) return s + ' – ' + fmtD(e.end);
     return e.time ? s + ' · ' + e.time : s;
   }
-  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function norm(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function priceNum(e) {
+    if (e.free) return 0;
+    var m = String(e.price || '').replace(',', '.').match(/\d+(\.\d+)?/g);
+    if (!m) return null;
+    return Math.min.apply(null, m.map(Number));
+  }
+  function dist(e) {
+    if (!state.geo || e.lat == null || e.lon == null) return null;
+    var R = 6371, dLat = (e.lat - state.geo.lat) * Math.PI / 180, dLon = (e.lon - state.geo.lon) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(state.geo.lat * Math.PI / 180) * Math.cos(e.lat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { t.hidden = true; }, 2600); }
+  function loadFavs() { try { return new Set(JSON.parse(localStorage.getItem('planika_favs') || '[]')); } catch (e) { return new Set(); } }
+  function saveFavs() { try { localStorage.setItem('planika_favs', JSON.stringify(Array.from(favSet))); } catch (e) { /* sin almacenamiento */ } $('favCount').textContent = favSet.size ? favSet.size : ''; }
+
+  // ---------- estado en la URL (enlaces compartibles con filtros)
+  function readURL() {
+    var p = new URLSearchParams(location.search);
+    state.q = p.get('q') || ''; state.ccaa = p.get('ccaa') || ''; state.prov = p.get('prov') || '';
+    state.from = p.get('from') || ''; state.to = p.get('to') || ''; state.free = p.get('free') === '1'; state.tickets = p.get('tickets') === '1';
+    state.tod = p.get('tod') || ''; state.aud = p.get('aud') || ''; state.pmax = p.get('pmax') || ''; state.favs = p.get('favs') === '1';
+    (p.get('cat') || '').split(',').filter(Boolean).forEach(function (c) { state.cats[c] = true; });
+    if (p.get('view')) state.view = p.get('view');
+    return p.get('e');
+  }
+  function writeURL() {
+    var p = new URLSearchParams();
+    if (state.q) p.set('q', state.q); if (state.ccaa) p.set('ccaa', state.ccaa); if (state.prov) p.set('prov', state.prov);
+    if (state.from) p.set('from', state.from); if (state.to) p.set('to', state.to); if (state.free) p.set('free', '1'); if (state.tickets) p.set('tickets', '1');
+    if (state.tod) p.set('tod', state.tod); if (state.aud) p.set('aud', state.aud); if (state.pmax) p.set('pmax', state.pmax); if (state.favs) p.set('favs', '1');
+    var cats = Object.keys(state.cats).filter(function (k) { return state.cats[k]; }); if (cats.length) p.set('cat', cats.join(','));
+    if (state.view !== 'list') p.set('view', state.view);
+    var qs = p.toString();
+    try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '')); } catch (e) { /* file:// */ }
+  }
 
   // ---------- filtros
+  var provCountAll = null;
+  function provCounts() {
+    if (!provCountAll) { provCountAll = {}; EVENTS.forEach(function (e) { if (e.province_code) provCountAll[e.province_code] = (provCountAll[e.province_code] || 0) + 1; }); }
+    return provCountAll;
+  }
   function populate() {
-    var ccaas = {}; var provCount = {};
-    EVENTS.forEach(function (e) { if (e.ccaa) ccaas[e.ccaa] = (ccaas[e.ccaa] || 0) + 1; if (e.province_code) provCount[e.province_code] = (provCount[e.province_code] || 0) + 1; });
+    var ccaas = {};
+    EVENTS.forEach(function (e) { if (e.ccaa) ccaas[e.ccaa] = (ccaas[e.ccaa] || 0) + 1; });
     var selC = $('ccaa');
     Object.keys(ccaas).sort(function (a, b) { return a.localeCompare(b, 'es'); }).forEach(function (c) {
       var o = document.createElement('option'); o.value = c; o.textContent = c + ' (' + ccaas[c] + ')'; selC.appendChild(o);
     });
-    fillProvinces(provCount);
+    selC.value = state.ccaa;
+    fillProvinces();
     var chips = $('cats');
     DATA.categories.forEach(function (c) {
       var n = EVENTS.filter(function (e) { return e.category === c.key; }).length;
       if (!n) return;
-      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.cat = c.key;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (state.cats[c.key] ? ' on' : ''); b.dataset.cat = c.key;
       b.innerHTML = c.icon + ' ' + esc(c.name) + ' <small>' + n + '</small>';
       b.addEventListener('click', function () { state.cats[c.key] = !state.cats[c.key]; b.classList.toggle('on', !!state.cats[c.key]); refresh(); });
       chips.appendChild(b);
@@ -55,73 +115,104 @@
     var ul = $('sources');
     DATA.sources.forEach(function (s) {
       var li = document.createElement('li');
-      li.innerHTML = '<a href="' + esc(s.home) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a> · ' + s.count + ' planes';
+      li.innerHTML = '<a href="' + esc(s.home) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a> · ' + s.count + ' planes' + (s.error ? ' <span class="pill">con error en la última descarga</span>' : '');
       ul.appendChild(li);
     });
     $('meta').textContent = 'Actualizado el ' + (DATA.updated_at || '').replace('T', ' a las ') + ' · ' + EVENTS.length.toLocaleString('es-ES') + ' planes del ' + fmtDay.format(fromIso(DATA.from)) + ' al ' + fmtDay.format(fromIso(DATA.to));
+    var pc = provCounts();
+    $('seoLinks').innerHTML = DATA.provinces.filter(function (p) { return pc[p.code]; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); })
+      .map(function (p) { return '<a href="p/' + slug(p.name) + '.html">' + esc(p.name) + '</a>'; }).join(' · ') + '<br>' +
+      DATA.categories.map(function (c) { return '<a href="t/' + c.key + '.html">' + c.icon + ' ' + esc(c.name) + '</a>'; }).join(' · ');
+    $('q').value = state.q; $('from').value = state.from; $('to').value = state.to; $('free').checked = state.free; $('tickets').checked = state.tickets;
+    $('tod').value = state.tod; $('aud').value = state.aud; $('pmax').value = state.pmax; $('favs').checked = state.favs; $('radius').value = String(state.radius);
+    saveFavs();
   }
-  function fillProvinces(provCount) {
-    var sel = $('prov'); var cur = state.prov;
+  function fillProvinces() {
+    var pc = provCounts(); var sel = $('prov'); var cur = state.prov;
     sel.innerHTML = '<option value="">Todas</option>';
-    DATA.provinces.filter(function (p) { return (!state.ccaa || p.ccaa === state.ccaa) && provCount[p.code]; })
+    DATA.provinces.filter(function (p) { return (!state.ccaa || p.ccaa === state.ccaa) && pc[p.code]; })
       .sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); })
-      .forEach(function (p) { var o = document.createElement('option'); o.value = p.code; o.textContent = p.name + ' (' + provCount[p.code] + ')'; sel.appendChild(o); });
+      .forEach(function (p) { var o = document.createElement('option'); o.value = p.code; o.textContent = p.name + ' (' + pc[p.code] + ')'; sel.appendChild(o); });
     sel.value = cur; if (sel.value !== cur) { state.prov = ''; }
   }
-  var provCountAll = null;
-  function provCounts() {
-    if (!provCountAll) { provCountAll = {}; EVENTS.forEach(function (e) { if (e.province_code) provCountAll[e.province_code] = (provCountAll[e.province_code] || 0) + 1; }); }
-    return provCountAll;
-  }
-
   function anyCat() { for (var k in state.cats) if (state.cats[k]) return true; return false; }
+  function inDates(e) {
+    if (!state.from && !state.to) return true;
+    if (e.sessions) return e.sessions.some(function (d) { return (!state.from || d >= state.from) && (!state.to || d <= state.to); });
+    if (state.from && e.end < state.from) return false;
+    if (state.to && e.start > state.to) return false;
+    return true;
+  }
   function matches(e, ignoreDates) {
     if (state.ccaa && e.ccaa !== state.ccaa) return false;
     if (state.prov && e.province_code !== state.prov) return false;
     if (state.free && !e.free) return false;
     if (state.tickets && !e.tickets_url) return false;
+    if (state.favs && !favSet.has(e.id)) return false;
     if (anyCat() && !state.cats[e.category]) return false;
-    if (!ignoreDates) {
-      if (state.from && e.end < state.from) return false;
-      if (state.to && e.start > state.to) return false;
+    if (state.tod) {
+      if (!e.time) return false;
+      var h = +e.time.slice(0, 2);
+      if (state.tod === 'manana' && h >= 14) return false;
+      if (state.tod === 'tarde' && (h < 14 || h >= 20)) return false;
+      if (state.tod === 'noche' && h < 20) return false;
     }
+    if (state.aud === 'familiar' && e.category !== 'infantil' && !/nin|infan|famil|haur|nens/.test(norm(e.audience || ''))) return false;
+    if (state.aud === 'adultos' && e.category === 'infantil') return false;
+    if (state.pmax !== '') { var pn = priceNum(e); if (pn === null || pn > +state.pmax) return false; }
+    if (state.geo) { var d = dist(e); if (d === null || d > state.radius) return false; }
+    if (!ignoreDates && !inDates(e)) return false;
     if (state.q) {
-      var hay = norm(e.title + ' ' + e.venue + ' ' + e.city + ' ' + e.province + ' ' + e.subtype + ' ' + e.description);
+      var hay = norm(e.title + ' ' + (e.title_es || '') + ' ' + e.venue + ' ' + e.city + ' ' + e.province + ' ' + e.subtype + ' ' + e.description);
       var terms = norm(state.q).split(/\s+/).filter(Boolean);
       for (var i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) < 0) return false;
     }
     return true;
   }
   function filtered(ignoreDates) { return EVENTS.filter(function (e) { return matches(e, ignoreDates); }); }
-  // Orden de la lista: lo que ocurre antes primero; entre lo ya en curso, lo más corto (no exposiciones de meses) antes.
-  function sortKey(e) { var from = state.from && state.from > TODAY ? state.from : TODAY; return (e.start > from ? e.start : from) + '|' + pad(Math.min(99, spanDays(e))) + '|' + (e.time || '99'); }
-  function sorted(list) { return list.map(function (e) { return [sortKey(e), e]; }).sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; }).map(function (x) { return x[1]; }); }
+  function sortKey(e) {
+    var from = state.from && state.from > TODAY ? state.from : TODAY;
+    var s = nextSession(e);
+    return (s > from ? s : from) + '|' + pad(Math.min(99, e.sessions ? 0 : spanDays(e))) + '|' + (e.time || '99');
+  }
+  function sorted(list) {
+    if (state.geo) return list.slice().sort(function (a, b) { return dist(a) - dist(b); });
+    return list.map(function (e) { return [sortKey(e), e]; }).sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; }).map(function (x) { return x[1]; });
+  }
 
   // ---------- tarjetas
   function card(e, opts) {
     opts = opts || {};
     var c = CATS[e.category] || { icon: '✨', name: 'Otros' };
-    var ongoing = e.start < TODAY && e.end >= TODAY;
+    var ongoing = !e.sessions && e.start < TODAY && e.end >= TODAY;
     var img = e.image ? '<img src="' + esc(e.image) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
     var where = [e.venue, e.city, e.province && e.province !== e.city ? e.province : ''].filter(Boolean).join(' · ');
     var price = e.free ? '<span class="badge free">Gratis</span>' : (e.price ? '<span class="badge">' + esc(e.price) + '</span>' : '');
     var tickets = e.tickets_url ? '<a class="btn primary" href="' + esc(e.tickets_url) + '" target="_blank" rel="noopener">🎫 Entradas</a>' : '';
     var info = e.url && e.url !== e.tickets_url ? '<a class="btn" href="' + esc(e.url) + '" target="_blank" rel="noopener">Más info ↗</a>' : '';
+    var d = dist(e);
+    var sess = '';
+    if (e.sessions) {
+      var up = e.sessions.filter(function (x) { return x >= TODAY; });
+      sess = '<div class="sessions">Fechas: ' + up.slice(0, 6).map(function (x) { return fmtShort.format(fromIso(x)); }).join(', ') + (up.length > 6 ? ' y ' + (up.length - 6) + ' más' : '') + '</div>';
+    }
     return '<article class="card" data-id="' + e.id + '">' + img + '<div class="body">' +
-      '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + '</div>' +
-      '<h3><a href="' + esc(e.url || e.tickets_url || '#') + '" target="_blank" rel="noopener">' + esc(e.title) + '</a></h3>' +
-      '<div class="when">📅 ' + esc(whenText(e)) + '</div>' +
+      '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + (d !== null ? '<span class="badge dist">a ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + ' km</span>' : '') + '</div>' +
+      '<h3><a href="' + esc(e.url || e.tickets_url || '#') + '" target="_blank" rel="noopener">' + esc(title(e)) + '</a></h3>' +
+      (e.title_es ? '<div class="where">' + esc(e.title) + '</div>' : '') +
+      '<div class="when">📅 ' + esc(whenText(e)) + '</div>' + sess +
       (where ? '<div class="where">📍 ' + esc(where) + '</div>' : '') +
       (e.description ? '<p class="desc">' + esc(e.description) + '</p>' : '') +
-      '<div class="actions">' + tickets + info + '<button type="button" class="btn addcal" data-id="' + e.id + '">＋ Calendario</button></div>' +
+      '<div class="actions">' + tickets + info + '<button type="button" class="btn addcal" data-id="' + e.id + '">＋ Calendario</button>' +
+      '<button type="button" class="fav' + (favSet.has(e.id) ? ' on' : '') + '" data-fav="' + e.id + '" title="Guardar en favoritos">' + (favSet.has(e.id) ? '★' : '☆') + '</button>' +
+      '<button type="button" class="btn share" data-share="' + e.id + '" title="Compartir este plan">↗ Compartir</button></div>' +
       '<div class="src">Fuente: ' + esc(e.source) + (e.subtype ? ' · ' + esc(e.subtype) : '') + '</div>' +
       '</div></article>';
   }
-
   function renderList() {
     var list = sorted(filtered());
     var el = $('list');
-    $('count').innerHTML = '<strong>' + list.length.toLocaleString('es-ES') + '</strong> planes' + (list.length !== EVENTS.length ? ' de ' + EVENTS.length.toLocaleString('es-ES') : '');
+    $('count').innerHTML = '<strong>' + list.length.toLocaleString('es-ES') + '</strong> planes' + (list.length !== EVENTS.length ? ' de ' + EVENTS.length.toLocaleString('es-ES') : '') + (state.geo ? ' a menos de ' + state.radius + ' km' : '');
     if (!list.length) { el.innerHTML = '<div class="empty">No hay planes con esos filtros. Prueba a ampliar las fechas o quitar algún filtro.</div>'; $('more').hidden = true; return; }
     el.innerHTML = list.slice(0, state.shown).map(function (e) { return card(e); }).join('');
     $('more').hidden = state.shown >= list.length;
@@ -136,6 +227,7 @@
     var starts = {}, ongoing = {};
     var first = isoDate(m), last = isoDate(new Date(m.getFullYear(), m.getMonth() + 1, 0));
     list.forEach(function (e) {
+      if (e.sessions) { e.sessions.forEach(function (d) { if (d >= first && d <= last) starts[d] = (starts[d] || 0) + 1; }); return; }
       if (e.end < first || e.start > last) return;
       if (e.start >= first) starts[e.start] = (starts[e.start] || 0) + 1;
       if (e.end !== e.start && spanDays(e) <= LONG_DAYS) {
@@ -158,32 +250,101 @@
     $('calGrid').innerHTML = html;
     renderDay();
   }
+  function onDay(e, d) { return e.sessions ? e.sessions.indexOf(d) >= 0 : (e.start <= d && e.end >= d); }
   function renderDay() {
     var p = $('dayPanel');
     if (!state.selDay) { p.hidden = true; return; }
     var d = state.selDay;
-    var list = filtered(true).filter(function (e) { return e.start <= d && e.end >= d; });
-    var st = sorted(list.filter(function (e) { return e.start === d; }));
-    var on = list.filter(function (e) { return e.start !== d && spanDays(e) <= LONG_DAYS; }).sort(function (a, b) { return a.end < b.end ? -1 : 1; });
+    var list = filtered(true).filter(function (e) { return onDay(e, d); });
+    var st = sorted(list.filter(function (e) { return e.sessions || e.start === d; }));
+    var on = list.filter(function (e) { return !e.sessions && e.start !== d && spanDays(e) <= LONG_DAYS; }).sort(function (a, b) { return a.end < b.end ? -1 : 1; });
     var longOnes = list.length - st.length - on.length;
     var h = '<h3>' + cap(fmtLong.format(fromIso(d))) + ' · ' + (st.length + on.length) + ' planes</h3>';
     if (!st.length && !on.length) h += '<p class="empty">Nada registrado ese día con los filtros actuales.</p>';
-    if (st.length) h += '<h4>Empiezan este día (' + st.length + ')</h4><div class="mini">' + st.slice(0, 120).map(function (e) { return card(e, { noOngoing: true }); }).join('') + (st.length > 120 ? '<p class="empty">… y ' + (st.length - 120) + ' más. Afina los filtros o usa la vista de lista.</p>' : '') + '</div>';
+    if (st.length) h += '<h4>Este día (' + st.length + ')</h4><div class="mini">' + st.slice(0, 120).map(function (e) { return card(e, { noOngoing: true }); }).join('') + (st.length > 120 ? '<p class="empty">… y ' + (st.length - 120) + ' más. Afina los filtros o usa la vista de lista.</p>' : '') + '</div>';
     if (on.length) h += '<h4>En curso (' + on.length + ')</h4><div class="mini">' + on.slice(0, 60).map(function (e) { return card(e, { noOngoing: true }); }).join('') + (on.length > 60 ? '<p class="empty">… y ' + (on.length - 60) + ' más. Usa la vista de lista para verlos todos.</p>' : '') + '</div>';
     if (longOnes > 0) h += '<p class="hint">Además hay ' + longOnes + ' planes de larga duración activos ese día (exposiciones, temporadas…) que no se cuentan en el calendario. <button type="button" class="linklike" data-golist="' + d + '">Verlos en la lista</button></p>';
     p.innerHTML = h; p.hidden = false;
   }
 
+  // ---------- mapa
+  var map = null, cluster = null, youMarker = null;
+  function ensureMap() {
+    if (map || typeof L === 'undefined') return !!map;
+    map = L.map('map', { scrollWheelZoom: true }).setView([40.2, -3.7], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+    cluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50 });
+    map.addLayer(cluster);
+    return true;
+  }
+  function renderMap() {
+    if (!ensureMap()) { $('map').innerHTML = '<p class="empty">El mapa no ha podido cargarse (sin conexión a la librería de mapas).</p>'; renderCoverage(); return; }
+    var list = filtered();
+    cluster.clearLayers();
+    var markers = [];
+    list.forEach(function (e) {
+      if (e.lat == null || e.lon == null) return;
+      var mk = L.marker([e.lat, e.lon]);
+      mk.bindPopup('<strong>' + esc(title(e)) + '</strong><br>' + esc(whenText(e)) + '<br>' + esc([e.venue, e.city].filter(Boolean).join(' · ')) + '<br><a href="#" data-open="' + e.id + '">Ver ficha</a>');
+      markers.push(mk);
+    });
+    cluster.addLayers(markers);
+    if (state.geo) {
+      if (youMarker) map.removeLayer(youMarker);
+      youMarker = L.circleMarker([state.geo.lat, state.geo.lon], { radius: 8, color: '#2563eb', fillOpacity: .8 }).addTo(map).bindPopup('Tu ubicación');
+      map.setView([state.geo.lat, state.geo.lon], state.radius <= 10 ? 12 : state.radius <= 25 ? 11 : state.radius <= 50 ? 10 : 9);
+    } else if (state.prov && CENTROIDS[state.prov]) {
+      map.setView(CENTROIDS[state.prov], 9);
+    }
+    $('count').innerHTML = '<strong>' + markers.length.toLocaleString('es-ES') + '</strong> planes en el mapa de ' + list.length.toLocaleString('es-ES') + ' (solo los que tienen ubicación)';
+    setTimeout(function () { map.invalidateSize(); }, 50);
+    renderCoverage();
+  }
+  function renderCoverage() {
+    var counts = {}; var max = 1;
+    EVENTS.forEach(function (e) { if (matches(e) && e.province_code) { counts[e.province_code] = (counts[e.province_code] || 0) + 1; } });
+    DATA.provinces.forEach(function (p) { if ((counts[p.code] || 0) > max) max = counts[p.code]; });
+    $('coverage').innerHTML = DATA.provinces.slice().sort(function (a, b) { return (counts[b.code] || 0) - (counts[a.code] || 0) || a.name.localeCompare(b.name, 'es'); })
+      .map(function (p) { var n = counts[p.code] || 0; return '<div class="row' + (n ? '' : ' zero') + '"><span>' + esc(p.name) + '</span><span class="bar"><i style="width:' + Math.round(100 * n / max) + '%"></i></span><span class="n">' + (n ? n.toLocaleString('es-ES') : 'sin datos') + '</span></div>'; }).join('');
+  }
+
+  // ---------- ficha (modal) y compartir
+  function openModal(id) {
+    var e = EVENTS.find(function (x) { return x.id === id; });
+    if (!e) return;
+    $('modalBody').innerHTML = card(e);
+    var dlg = $('modal');
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+  function closeModal() { var dlg = $('modal'); if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }
+  function shareLink(e) {
+    var url = location.origin + location.pathname + '?e=' + e.id;
+    var text = title(e) + ' · ' + whenText(e) + (e.city ? ' · ' + e.city : '');
+    if (navigator.share) { navigator.share({ title: 'Planika: ' + title(e), text: text, url: url }).catch(function () {}); return; }
+    copy(url, 'Enlace del plan copiado');
+  }
+  function copy(text, msg) {
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { toast(msg); }, function () { prompt('Copia el enlace:', text); });
+    else prompt('Copia el enlace:', text);
+  }
+  function feedURL() {
+    var cats = Object.keys(state.cats).filter(function (k) { return state.cats[k]; });
+    if (state.prov) return 'feeds/provincia-' + state.prov + '.xml';
+    if (cats.length === 1) return 'feeds/tipo-' + cats[0] + '.xml';
+    return 'feeds/todos.xml';
+  }
+
   // ---------- añadir al calendario
   function calTimes(e) {
+    var start0 = nextSession(e), end0 = e.sessions ? start0 : e.end;
     var allDay = !e.time;
     var start, end;
-    if (allDay) { start = e.start.replace(/-/g, ''); end = addDays(e.end, 1).replace(/-/g, ''); }
+    if (allDay) { start = start0.replace(/-/g, ''); end = addDays(end0, 1).replace(/-/g, ''); }
     else {
       var t = e.time.replace(':', '') + '00';
-      start = e.start.replace(/-/g, '') + 'T' + t;
-      var hh = +e.time.slice(0, 2) + 2; var endDay = e.start;
-      if (hh >= 24) { hh -= 24; endDay = addDays(e.start, 1); }
+      start = start0.replace(/-/g, '') + 'T' + t;
+      var hh = +e.time.slice(0, 2) + 2; var endDay = start0;
+      if (hh >= 24) { hh -= 24; endDay = addDays(start0, 1); }
       end = endDay.replace(/-/g, '') + 'T' + pad(hh) + e.time.slice(3) + '00';
     }
     return { allDay: allDay, start: start, end: end };
@@ -191,22 +352,21 @@
   function details(e) {
     var parts = [];
     if (e.description) parts.push(e.description);
+    if (e.sessions) parts.push('Otras fechas: ' + e.sessions.join(', '));
     if (e.price) parts.push('Precio: ' + e.price); else if (e.free) parts.push('Entrada gratuita');
     if (e.tickets_url) parts.push('Entradas: ' + e.tickets_url);
     if (e.url && e.url !== e.tickets_url) parts.push('Más información: ' + e.url);
-    parts.push('Fuente: ' + e.source);
+    parts.push('Fuente: ' + e.source + ' · vía Planika');
     return parts.join('\n');
   }
-  function location(e) { return [e.venue, e.address, e.city, e.province].filter(Boolean).join(', '); }
+  function location_(e) { return [e.venue, e.address, e.city, e.province].filter(Boolean).join(', '); }
   function isoLocal(s) { return s.length === 8 ? s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) : s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) + 'T' + s.slice(9, 11) + ':' + s.slice(11, 13) + ':00'; }
   function links(e) {
-    var t = calTimes(e), enc = encodeURIComponent, title = e.title, det = details(e), loc = location(e);
-    var google = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + enc(title) + '&dates=' + t.start + '/' + t.end + '&details=' + enc(det) + '&location=' + enc(loc) + '&ctz=Europe/Madrid';
-    var ol = '&subject=' + enc(title) + '&startdt=' + enc(isoLocal(t.start)) + '&enddt=' + enc(isoLocal(t.end)) + '&body=' + enc(det) + '&location=' + enc(loc) + (t.allDay ? '&allday=true' : '');
-    var outlook = 'https://outlook.live.com/calendar/0/action/compose?rru=addevent' + ol;
-    var office = 'https://outlook.office.com/calendar/0/action/compose?rru=addevent' + ol;
-    var yahoo = 'https://calendar.yahoo.com/?v=60&title=' + enc(title) + '&st=' + t.start + (t.allDay ? '&dur=allday' : '&et=' + t.end) + '&desc=' + enc(det) + '&in_loc=' + enc(loc);
-    return { google: google, outlook: outlook, office: office, yahoo: yahoo };
+    var t = calTimes(e), enc = encodeURIComponent, tt = title(e), det = details(e), loc = location_(e);
+    var google = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + enc(tt) + '&dates=' + t.start + '/' + t.end + '&details=' + enc(det) + '&location=' + enc(loc) + '&ctz=Europe/Madrid';
+    var ol = '&subject=' + enc(tt) + '&startdt=' + enc(isoLocal(t.start)) + '&enddt=' + enc(isoLocal(t.end)) + '&body=' + enc(det) + '&location=' + enc(loc) + (t.allDay ? '&allday=true' : '');
+    return { google: google, outlook: 'https://outlook.live.com/calendar/0/action/compose?rru=addevent' + ol, office: 'https://outlook.office.com/calendar/0/action/compose?rru=addevent' + ol,
+      yahoo: 'https://calendar.yahoo.com/?v=60&title=' + enc(tt) + '&st=' + t.start + (t.allDay ? '&dur=allday' : '&et=' + t.end) + '&desc=' + enc(det) + '&in_loc=' + enc(loc) };
   }
   function icsText(e) {
     var t = calTimes(e);
@@ -216,7 +376,7 @@
       'UID:' + e.id + '@planikaapp.com', 'DTSTAMP:' + stamp,
       t.allDay ? 'DTSTART;VALUE=DATE:' + t.start : 'DTSTART;TZID=Europe/Madrid:' + t.start,
       t.allDay ? 'DTEND;VALUE=DATE:' + t.end : 'DTEND;TZID=Europe/Madrid:' + t.end,
-      'SUMMARY:' + f(e.title), 'DESCRIPTION:' + f(details(e)), 'LOCATION:' + f(location(e))];
+      'SUMMARY:' + f(title(e)), 'DESCRIPTION:' + f(details(e)), 'LOCATION:' + f(location_(e))];
     if (e.url || e.tickets_url) lines.push('URL:' + (e.tickets_url || e.url));
     if (e.lat != null && e.lon != null) lines.push('GEO:' + e.lat + ';' + e.lon);
     lines.push('END:VEVENT', 'END:VCALENDAR');
@@ -225,7 +385,7 @@
   function downloadIcs(e) {
     var blob = new Blob([icsText(e)], { type: 'text/calendar;charset=utf-8' });
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = e.title.replace(/[^\w\dáéíóúñü ]+/gi, '').trim().slice(0, 60).replace(/\s+/g, '_') + '.ics';
+    a.download = title(e).replace(/[^\w\dáéíóúñü ]+/gi, '').trim().slice(0, 60).replace(/\s+/g, '_') + '.ics';
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
   var menu = $('menu');
@@ -243,25 +403,38 @@
     menu.style.left = left + 'px'; menu.style.top = (r.bottom + window.scrollY + 6) + 'px';
   }
   function closeMenu() { menu.hidden = true; }
+
+  // ---------- eventos de UI
+  function byId(id) { return EVENTS.find(function (x) { return x.id === id; }); }
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest('.addcal');
-    if (b) { ev.stopPropagation(); var e = EVENTS.find(function (x) { return x.id === b.dataset.id; }); if (e) openMenu(b, e); return; }
+    if (b) { ev.stopPropagation(); var e = byId(b.dataset.id); if (e) openMenu(b, e); return; }
     if (!ev.target.closest('#menu')) closeMenu();
+    var f = ev.target.closest('[data-fav]');
+    if (f) { var id = f.dataset.fav; if (favSet.has(id)) favSet.delete(id); else favSet.add(id); saveFavs();
+      document.querySelectorAll('[data-fav="' + id + '"]').forEach(function (x) { x.classList.toggle('on', favSet.has(id)); x.textContent = favSet.has(id) ? '★' : '☆'; });
+      if (state.favs) refresh(); return; }
+    var s = ev.target.closest('[data-share]');
+    if (s) { var e2 = byId(s.dataset.share); if (e2) shareLink(e2); return; }
+    var o = ev.target.closest('[data-open]');
+    if (o) { ev.preventDefault(); openModal(o.dataset.open); return; }
     var gl = ev.target.closest('[data-golist]');
-    if (gl) { state.from = gl.dataset.golist; state.to = gl.dataset.golist; $('from').value = state.from; $('to').value = state.to; $('quick').querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); }); setView('list'); window.scrollTo({ top: $('list').offsetTop - 80, behavior: 'smooth' }); return; }
+    if (gl) { state.from = gl.dataset.golist; state.to = gl.dataset.golist; $('from').value = state.from; $('to').value = state.to; $('quick').querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); }); setView('list'); window.scrollTo({ top: $('list').offsetTop - 80, behavior: 'smooth' }); return; }
     var d = ev.target.closest('.day');
     if (d && !d.classList.contains('out')) { state.selDay = state.selDay === d.dataset.day ? null : d.dataset.day; renderCalendar(); }
   });
-  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeMenu(); });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { closeMenu(); } });
+  $('modalClose').addEventListener('click', closeModal);
+  $('modal').addEventListener('click', function (ev) { if (ev.target === $('modal')) closeModal(); });
 
-  // ---------- eventos de UI
-  function refresh() { state.shown = PAGE; state.view === 'list' ? renderList() : renderCalendar(); }
+  function refresh() { state.shown = PAGE; writeURL(); if (state.view === 'list') renderList(); else if (state.view === 'cal') renderCalendar(); else renderMap(); }
   function setView(v) {
     state.view = v;
     $('view').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === v); });
-    $('calendar').hidden = v !== 'cal'; $('list').hidden = v !== 'list'; $('more').hidden = v !== 'list';
+    $('calendar').hidden = v !== 'cal'; $('list').hidden = v !== 'list'; $('more').hidden = v !== 'list'; $('mapView').hidden = v !== 'map';
     refresh();
   }
+  function clearQuick() { $('quick').querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); }); }
   function setRange(key) {
     $('quick').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.range === key); });
     var from = TODAY, to = '';
@@ -270,31 +443,42 @@
     else if (key === 'weekend') {
       var d = fromIso(TODAY); var dow = (d.getDay() + 6) % 7; // 0 = lunes
       var sat = addDays(TODAY, dow <= 5 ? 5 - dow : 0); var sun = addDays(sat, 1);
-      from = dow >= 4 ? TODAY : sat; if (dow === 6) from = TODAY; to = sun;
-      if (dow === 4) from = TODAY; // viernes cuenta como fin de semana
+      from = dow >= 4 ? TODAY : sat; to = sun;
     } else to = addDays(TODAY, +key);
     state.from = from; state.to = to; $('from').value = from; $('to').value = to;
     refresh();
   }
   var qt;
   $('q').addEventListener('input', function () { clearTimeout(qt); qt = setTimeout(function () { state.q = $('q').value.trim(); refresh(); }, 180); });
-  $('ccaa').addEventListener('change', function () { state.ccaa = this.value; fillProvinces(provCounts()); refresh(); });
+  $('ccaa').addEventListener('change', function () { state.ccaa = this.value; fillProvinces(); refresh(); });
   $('prov').addEventListener('change', function () { state.prov = this.value; refresh(); });
-  $('from').addEventListener('change', function () { state.from = this.value; $('quick').querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); }); refresh(); });
-  $('to').addEventListener('change', function () { state.to = this.value; $('quick').querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); }); refresh(); });
-  $('free').addEventListener('change', function () { state.free = this.checked; refresh(); });
-  $('tickets').addEventListener('change', function () { state.tickets = this.checked; refresh(); });
+  $('from').addEventListener('change', function () { state.from = this.value; clearQuick(); refresh(); });
+  $('to').addEventListener('change', function () { state.to = this.value; clearQuick(); refresh(); });
+  ['free', 'tickets', 'favs'].forEach(function (id) { $(id).addEventListener('change', function () { state[id] = this.checked; refresh(); }); });
+  ['tod', 'aud', 'pmax'].forEach(function (id) { $(id).addEventListener('change', function () { state[id] = this.value; refresh(); }); });
+  $('pmax').addEventListener('input', function () { clearTimeout(qt); var v = this.value; qt = setTimeout(function () { state.pmax = v; refresh(); }, 300); });
+  $('radius').addEventListener('change', function () { state.radius = +this.value; if (state.geo) refresh(); });
+  $('geoBtn').addEventListener('click', function () {
+    if (state.geo) { state.geo = null; this.textContent = '📍 Activar'; this.classList.remove('on'); refresh(); return; }
+    if (!navigator.geolocation) { toast('Tu navegador no permite obtener la ubicación'); return; }
+    var btn = this; btn.textContent = '⏳ Buscando…';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      state.geo = { lat: pos.coords.latitude, lon: pos.coords.longitude }; btn.textContent = '📍 Activado'; btn.classList.add('on'); refresh();
+    }, function () { btn.textContent = '📍 Activar'; toast('No se ha podido obtener tu ubicación'); }, { timeout: 10000, maximumAge: 300000 });
+  });
   $('quick').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setRange(b.dataset.range); });
   $('view').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setView(b.dataset.view); });
   $('more').addEventListener('click', function () { state.shown += PAGE; renderList(); });
   $('prevM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); state.selDay = null; renderCalendar(); });
   $('nextM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); state.selDay = null; renderCalendar(); });
   $('todayM').addEventListener('click', function () { state.month = fromIso(TODAY); state.selDay = TODAY; renderCalendar(); });
+  $('rssBtn').addEventListener('click', function () { var u = feedURL(); copy(new URL(u, location.href).href, 'Dirección RSS copiada. Pégala en tu lector de feeds.'); window.open(u, '_blank'); });
+  $('shareFilters').addEventListener('click', function () { copy(location.href, 'Enlace con los filtros actuales copiado'); });
 
-  // El navegador puede restaurar valores de formulario al recargar; se parte siempre de un estado limpio.
-  ['q', 'from', 'to'].forEach(function (id) { $(id).value = ''; });
-  ['ccaa', 'prov'].forEach(function (id) { $(id).value = ''; });
-  ['free', 'tickets'].forEach(function (id) { $(id).checked = false; });
+  // ---------- arranque
+  var openId = readURL();
   populate();
-  setRange('all');
+  if (state.from || state.to) { clearQuick(); refresh(); } else setRange('all');
+  if (state.view !== 'list') setView(state.view);
+  if (openId) openModal(openId);
 })();

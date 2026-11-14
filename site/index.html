@@ -19,7 +19,15 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
+<link rel="alternate" type="application/rss+xml" title="Planika · próximos planes" href="feeds/todos.xml">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css">
 <link rel="stylesheet" href="styles.css">
+<!-- Analítica respetuosa (sin cookies). Cuando tengas cuenta en Plausible o Umami, descomenta UNA de estas líneas y pon tu dominio/ID:
+<script defer data-domain="planikaapp.com" src="https://plausible.io/js/script.js"></script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="TU-ID-DE-UMAMI"></script>
+-->
 </head>
 <body>
 <header class="hero">
@@ -63,14 +71,32 @@
       <label class="check"><input type="checkbox" id="free"> Solo gratis</label>
       <label class="check"><input type="checkbox" id="tickets"> Con venta de entradas</label>
     </div>
+    <div class="row">
+      <label class="field"><span>Horario</span>
+        <select id="tod"><option value="">Cualquiera</option><option value="manana">Mañana (antes de 14:00)</option><option value="tarde">Tarde (14:00 a 20:00)</option><option value="noche">Noche (desde 20:00)</option></select></label>
+      <label class="field"><span>Público</span>
+        <select id="aud"><option value="">Todos</option><option value="familiar">Infantil y familiar</option><option value="adultos">Sin planes infantiles</option></select></label>
+      <label class="field"><span>Precio máx. (€)</span><input type="number" id="pmax" min="0" step="1" placeholder="Sin límite" style="min-width:120px"></label>
+      <div class="field"><span>Cerca de mí</span>
+        <div class="segmented" id="near">
+          <button type="button" id="geoBtn" title="Usar mi ubicación">📍 Activar</button>
+          <select id="radius" aria-label="Radio en km"><option value="10">10 km</option><option value="25" selected>25 km</option><option value="50">50 km</option><option value="100">100 km</option></select>
+        </div></div>
+      <label class="check"><input type="checkbox" id="favs"> ★ Solo favoritos <span id="favCount" class="pill"></span></label>
+    </div>
     <div class="chips" id="cats" role="group" aria-label="Tipo de plan"></div>
   </section>
 
   <section class="bar">
     <div class="count" id="count"></div>
-    <div class="segmented view" id="view">
-      <button type="button" data-view="list" class="on">☰ Lista</button>
-      <button type="button" data-view="cal">📅 Calendario</button>
+    <div class="barbtns">
+      <button type="button" class="btn" id="rssBtn" title="Suscribirse por RSS a estos filtros">RSS</button>
+      <button type="button" class="btn" id="shareFilters" title="Copiar enlace con estos filtros">🔗 Enlace</button>
+      <div class="segmented view" id="view">
+        <button type="button" data-view="list" class="on">☰ Lista</button>
+        <button type="button" data-view="cal">📅 Calendario</button>
+        <button type="button" data-view="map">🗺️ Mapa</button>
+      </div>
     </div>
   </section>
 
@@ -86,18 +112,30 @@
     <div id="dayPanel" class="day-panel" hidden></div>
   </section>
 
+  <section id="mapView" class="mapview" hidden>
+    <div id="map" class="map" role="region" aria-label="Mapa de planes"></div>
+    <p class="hint">Cada punto es un plan con ubicación conocida; los números agrupan planes cercanos. Haz zoom o pulsa un grupo para desplegarlo.</p>
+    <h3 class="subh">Cobertura por provincia</h3>
+    <div id="coverage" class="coverage"></div>
+  </section>
+
   <section id="list" class="list" aria-live="polite"></section>
   <div class="more"><button type="button" id="more" hidden>Mostrar más</button></div>
 </main>
 
 <footer class="wrap foot">
-  <p class="brandfoot"><strong>Planika</strong> · <a href="https://planikaapp.com">planikaapp.com</a></p>
+  <p class="brandfoot"><strong>Planika</strong> · <a href="https://planikaapp.com">planikaapp.com</a> · <a href="feeds/todos.xml">RSS</a> · <a href="https://github.com/davidpardal/planika">Código y fuentes</a></p>
+  <p>Páginas por provincia y tipo de plan: <span id="seoLinks"></span></p>
   <h2>Fuentes de datos</h2>
   <ul id="sources"></ul>
   <p>Los datos proceden de portales de datos abiertos y APIs públicas; cada evento enlaza a la web del organizador para ampliar información o comprar entradas. Comprueba siempre fechas y precios en la fuente original.</p>
 </footer>
 
 <div id="menu" class="menu" hidden></div>
+<dialog id="modal" class="modal"><button type="button" class="close" id="modalClose" aria-label="Cerrar">✕</button><div id="modalBody"></div></dialog>
+<div id="toast" class="toast" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
 <script src="data/events.js"></script>
 <script src="app.js"></script>
 </body>

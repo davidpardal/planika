@@ -27,15 +27,16 @@ def http_get(url, params=None, headers=None, retries=3, timeout=(15, 90)):
     for attempt in range(retries):
         try:
             r = _session.get(url, params=params, headers=headers, timeout=timeout)
-            if r.status_code == 429:
-                time.sleep(2 * (attempt + 1))
+            if r.status_code == 429:  # límite de peticiones: esperar y reintentar
+                last = requests.HTTPError("429 Too Many Requests para %s" % url, response=r)
+                time.sleep(5 * (attempt + 1))
                 continue
             r.raise_for_status()
             return r
         except Exception as exc:  # noqa: BLE001
             last = exc
             time.sleep(1.5 * (attempt + 1))
-    raise last
+    raise last if last is not None else RuntimeError("sin respuesta de %s" % url)
 
 
 def http_json(url, params=None, headers=None, **kw):
@@ -358,3 +359,29 @@ def event(source, source_id, title, start, **kw):
         if p:
             ev["free"] = bool(re.search(r"\b(gratis|gratuit|libre|free|doan|dohain)", p)) or p in ("0", "0 eur", "0 euros")
     return ev
+
+
+# ---------------------------------------------------------------- iCalendar
+
+def parse_ics(text):
+    """Parser mínimo de VEVENT: devuelve una lista de dicts con las propiedades (sin parámetros)."""
+    lines = []
+    for raw in text.replace("\r\n", "\n").split("\n"):
+        if raw.startswith((" ", "\t")) and lines:
+            lines[-1] += raw[1:]
+        else:
+            lines.append(raw)
+    events, cur = [], None
+    for line in lines:
+        if line == "BEGIN:VEVENT":
+            cur = {}
+        elif line == "END:VEVENT":
+            if cur is not None:
+                events.append(cur)
+            cur = None
+        elif cur is not None and ":" in line:
+            key, val = line.split(":", 1)
+            key = key.split(";", 1)[0].upper()
+            val = val.replace("\\n", "\n").replace("\\,", ",").replace("\;", ";")
+            cur.setdefault(key, val)
+    return events
