@@ -7,6 +7,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: planika-update
+  cancel-in-progress: false
+
 permissions:
   contents: write
   issues: write
@@ -34,10 +38,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Se conservan los archivos generados, se sincroniza con la rama remota y se vuelven a aplicar:
+          # así no hay conflictos aunque otra ejecución haya publicado datos mientras tanto.
+          tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/sitemap.xml data/health.json data/teams_cache.json data/llm_cache.json 2>/dev/null)
+          git fetch origin main
+          git reset --hard origin/main
+          tar xf /tmp/generado.tar
           git add -A site/ data/
           git commit -m "Actualiza eventos $(date -u +%F)" || echo "sin cambios"
-          git pull --rebase origin main || true
-          git push
+          git push origin HEAD:main
       - name: Avisar si alguna fuente falla
         env:
           GH_TOKEN: ${{ github.token }}
