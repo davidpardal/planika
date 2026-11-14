@@ -10,8 +10,8 @@
   "barcelona": [
    {
     "date": "2026-11-14",
-    "count": 4189,
-    "error": ""
+    "count": 0,
+    "error": "HTTPError: 403 Client Error: Forbidden for url: https://opendata-ajuntament.barcelona.cat/data/dataset/2767159c-1c98-46b8-a686-2b25"
    }
   ],
   "euskadi": [
@@ -59,8 +59,8 @@
   "galicia": [
    {
     "date": "2026-11-14",
-    "count": 124,
-    "error": ""
+    "count": 0,
+    "error": "ConnectTimeout: HTTPSConnectionPool(host='abertos.xunta.gal', port=443): Max retries exceeded with url: /catalogo/cultura-ocio-deporte/-"
    }
   ],
   "cartagena": [
@@ -99,6 +99,9 @@
    }
   ]
  },
- "updated_at": "2026-11-14T17:08",
- "alerts": []
+ "updated_at": "2026-11-14T16:17",
+ "alerts": [
+  "Ajuntament de Barcelona: error HTTPError: 403 Client Error: Forbidden for url: https://opendata-ajuntament.barcelona.cat/data/dataset/2767159c-1c98-46b8-a686-2b25",
+  "Axenda de Cultura de Galicia: error ConnectTimeout: HTTPSConnectionPool(host='abertos.xunta.gal', port=443): Max retries exceeded with url: /catalogo/cultura-ocio-deporte/-"
+ ]
 }
