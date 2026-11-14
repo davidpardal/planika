@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Descarga las agendas públicas, normaliza los eventos y genera site/data/events.js.
+"""Descarga las agendas públicas, normaliza los eventos y genera los datos de la web (site/data/).
 
 Uso:
     python3 fetch_events.py                 # próximos 180 días, todas las fuentes
     python3 fetch_events.py --days 90       # horizonte de 90 días
     python3 fetch_events.py --sources madrid,euskadi
+    python3 fetch_events.py --rebuild       # sin descargar: regenera la web a partir de site/data/events.json
 """
 import argparse
 import importlib
@@ -18,7 +19,7 @@ from datetime import datetime, timedelta
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
-from planes import llm, publish  # noqa: E402
+from planes import llm, publish, static  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
@@ -54,6 +55,20 @@ def dedupe(events):
     return [v[1] for v in best.values()]
 
 
+def write_site(args, site_dir, payload):
+    """Todo lo que se deriva de events.json: datos troceados para la web, feeds RSS y páginas estáticas."""
+    events = static.default_order(static.unique_ids(payload["events"]))
+    core_size, chunks = static.write_data(args.out, dict(payload, events=events))
+    old = os.path.join(args.out, "events.js")  # formato anterior (un único archivo de varios MB)
+    if os.path.exists(old):
+        os.remove(old)
+    log("Escrito %s (%.0f KB) y %d bloques de detalles en data/d/" % (os.path.join(args.out, "core.js"), core_size / 1024, chunks))
+    if not args.no_pages:
+        feeds = publish.write_feeds(os.path.join(site_dir, "feeds"), events)
+        pages = publish.write_pages(site_dir, events)
+        log("Generados %d feeds RSS y %d páginas estáticas" % (len(feeds), len(pages)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", type=int, default=180, help="horizonte en días (por defecto 180)")
@@ -62,7 +77,16 @@ def main():
     ap.add_argument("--llm", choices=["off", "otros", "all"], default=os.environ.get("PLANIKA_LLM", "off"),
                     help="clasificar con Claude los eventos dudosos (otros) o todos; requiere ANTHROPIC_API_KEY")
     ap.add_argument("--no-pages", action="store_true", help="no generar páginas estáticas ni feeds")
+    ap.add_argument("--rebuild", action="store_true",
+                    help="no descargar nada: regenerar datos troceados, feeds y páginas desde events.json")
     args = ap.parse_args()
+    site_dir = os.path.dirname(os.path.abspath(args.out))
+
+    if args.rebuild:
+        with open(os.path.join(args.out, "events.json"), encoding="utf-8") as fh:
+            payload = json.load(fh)
+        write_site(args, site_dir, payload)
+        return
 
     load_dotenv(os.path.join(ROOT, ".env"))
     t0 = today()
@@ -98,6 +122,7 @@ def main():
     before = len(all_events)
     all_events = dedupe(all_events)
     all_events, merged = publish.group_sessions(all_events)
+    all_events = static.unique_ids(all_events)
     all_events.sort(key=lambda e: (e["start"], e["time"] or "99", e["title"]))
     log("Total: %d planes (%d duplicados eliminados, %d funciones agrupadas en sesiones)" % (len(all_events), before - len(all_events) - merged, merged))
     if args.llm != "off":
@@ -115,23 +140,13 @@ def main():
     }
     with open(os.path.join(args.out, "events.json"), "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
-    with open(os.path.join(args.out, "events.js"), "w", encoding="utf-8") as fh:
-        fh.write("window.PLANES_DATA = ")
-        json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
-        fh.write(";\n")
-    size = os.path.getsize(os.path.join(args.out, "events.js")) / 1024 / 1024
-    log("Escrito %s (%.1f MB)" % (os.path.join(args.out, "events.js"), size))
 
-    # Salud de las fuentes (histórico + alertas), feeds RSS y páginas estáticas
+    # Salud de las fuentes (histórico + alertas)
     alerts = publish.update_health(os.path.join(ROOT, "data", "health.json"), source_meta)
     for a in alerts:
         log("ALERTA fuente -> " + a)
         print("::warning title=Fuente con problemas::" + a, flush=True)
-    site_dir = os.path.dirname(os.path.abspath(args.out))
-    if not args.no_pages:
-        feeds = publish.write_feeds(os.path.join(site_dir, "feeds"), all_events)
-        pages = publish.write_pages(site_dir, all_events)
-        log("Generados %d feeds RSS y %d páginas estáticas" % (len(feeds), len(pages)))
+    write_site(args, site_dir, payload)
 
     # Resumen por provincia y categoría
     by_prov = {}

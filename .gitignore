@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .artifact/
+# Se generan en cada ejecución de fetch_events.py (también en el workflow, antes de publicar)
+site/data/core.js
+site/data/d/
+site/e/

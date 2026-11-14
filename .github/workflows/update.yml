@@ -28,8 +28,12 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Pruebas
         run: python3 -m unittest discover -s tests -v
+      # Dirección real de la web (dominio propio si está configurado; si no, la de github.io) para canónicas y sitemap
+      - id: pages
+        uses: actions/configure-pages@v5
       - name: Descargar agendas
         env:
+          PLANIKA_SITE_URL: ${{ steps.pages.outputs.base_url }}
           TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PLANIKA_LLM: ${{ vars.PLANIKA_LLM || 'off' }}
@@ -40,7 +44,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Se conservan los archivos generados, se sincroniza con la rama remota y se vuelven a aplicar:
           # así no hay conflictos aunque otra ejecución haya publicado datos mientras tanto.
-          tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/sitemap.xml data/health.json data/teams_cache.json data/llm_cache.json 2>/dev/null)
+          tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/sitemap.xml site/robots.txt data/health.json data/teams_cache.json data/llm_cache.json 2>/dev/null)
           git fetch origin main
           git reset --hard origin/main
           tar xf /tmp/generado.tar

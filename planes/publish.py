@@ -6,10 +6,11 @@ import os
 import re
 from datetime import datetime, timedelta
 
+from . import static
 from .classify import CATEGORIES
 from .util import PROVINCIAS, iso, norm, today
 
-SITE_URL = "https://planikaapp.com"
+SITE_URL = static.SITE_URL  # configurable con la variable de entorno PLANIKA_SITE_URL
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
 
@@ -161,9 +162,9 @@ def _card(e):
     if e.get("sessions"):
         when = "%s (+%d fechas)" % (e["sessions"][0], len(e["sessions"]) - 1)
     where = " · ".join(x for x in (e.get("venue"), e.get("city"), e.get("province")) if x)
-    link = e.get("tickets_url") or e.get("url") or "#"
+    link = "../e/" + static.event_file(e)  # la ficha propia del plan: enlazado interno para buscadores
     return ("<article class=\"card\"><div class=\"body\"><div class=\"badges\"><span class=\"badge\">%s %s</span>%s</div>"
-            "<h3><a href=\"%s\" target=\"_blank\" rel=\"noopener\">%s</a></h3><div class=\"when\">📅 %s%s</div>"
+            "<h3><a href=\"%s\">%s</a></h3><div class=\"when\">📅 %s%s</div>"
             "<div class=\"where\">📍 %s</div>%s<div class=\"src\">Fuente: %s</div></div></article>") % (
         CAT_ICON.get(e["category"], "✨"), html.escape(CAT_NAME.get(e["category"], "Otros")),
         "<span class=\"badge free\">Gratis</span>" if e.get("free") else "",
@@ -215,10 +216,16 @@ def write_pages(site_dir, events):
         with open(os.path.join(type_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(body)
         pages.append("t/" + fn)
+    prov_slugs = {code: slug(name) for code, name, _ in PROVINCIAS}
+    event_pages = static.write_event_pages(site_dir, events, prov_slugs)
     with open(os.path.join(site_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">")
         fh.write("<url><loc>%s/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>" % SITE_URL)
         for p in pages:
             fh.write("<url><loc>%s/%s</loc><changefreq>daily</changefreq></url>" % (SITE_URL, p))
+        for p in event_pages:
+            fh.write("<url><loc>%s/%s</loc></url>" % (SITE_URL, p))
         fh.write("</urlset>\n")
-    return pages
+    with open(os.path.join(site_dir, "robots.txt"), "w", encoding="utf-8") as fh:
+        fh.write("User-agent: *\nAllow: /\nSitemap: %s/sitemap.xml\n" % SITE_URL)
+    return pages + event_pages
