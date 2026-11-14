@@ -181,8 +181,11 @@
   }
 
   // ---------- tarjetas
+  // Color pop de la tarjeta (amarillo, rosa, turquesa, lila): rota por posición en la lista.
+  function popOf(id) { var h = 0, s = String(id); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h % 4; }
   function card(e, opts) {
     opts = opts || {};
+    var pop = opts.i != null ? opts.i % 4 : popOf(e.id);
     var c = CATS[e.category] || { icon: '✨', name: 'Otros' };
     var ongoing = !e.sessions && e.start < TODAY && e.end >= TODAY;
     var img = e.image ? '<img src="' + esc(e.image) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
@@ -196,7 +199,7 @@
       var up = e.sessions.filter(function (x) { return x >= TODAY; });
       sess = '<div class="sessions">Fechas: ' + up.slice(0, 6).map(function (x) { return fmtShort.format(fromIso(x)); }).join(', ') + (up.length > 6 ? ' y ' + (up.length - 6) + ' más' : '') + '</div>';
     }
-    return '<article class="card" data-id="' + e.id + '">' + img + '<div class="body">' +
+    return '<article class="card pop' + pop + '" data-id="' + e.id + '">' + img + '<div class="body">' +
       '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + (d !== null ? '<span class="badge dist">a ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + ' km</span>' : '') + '</div>' +
       '<h3><a href="' + esc(e.url || e.tickets_url || '#') + '" target="_blank" rel="noopener">' + esc(title(e)) + '</a></h3>' +
       (e.title_es ? '<div class="where">' + esc(e.title) + '</div>' : '') +
@@ -214,7 +217,7 @@
     var el = $('list');
     $('count').innerHTML = '<strong>' + list.length.toLocaleString('es-ES') + '</strong> planes' + (list.length !== EVENTS.length ? ' de ' + EVENTS.length.toLocaleString('es-ES') : '') + (state.geo ? ' a menos de ' + state.radius + ' km' : '');
     if (!list.length) { el.innerHTML = '<div class="empty">No hay planes con esos filtros. Prueba a ampliar las fechas o quitar algún filtro.</div>'; $('more').hidden = true; return; }
-    el.innerHTML = list.slice(0, state.shown).map(function (e) { return card(e); }).join('');
+    el.innerHTML = list.slice(0, state.shown).map(function (e, i) { return card(e, { i: i }); }).join('');
     $('more').hidden = state.shown >= list.length;
     $('more').textContent = 'Mostrar más (' + Math.min(PAGE, list.length - state.shown) + ' de ' + (list.length - state.shown) + ' restantes)';
   }
@@ -242,7 +245,7 @@
     for (var i = 0; i < 42; i++) {
       var ds = isoDate(cur); var out = cur.getMonth() !== m.getMonth();
       var s = starts[ds] || 0, o = ongoing[ds] || 0;
-      html += '<button type="button" class="day' + (out ? ' out' : '') + (ds === TODAY ? ' today' : '') + (ds === state.selDay ? ' sel' : '') + '" data-day="' + ds + '"' + (out ? ' tabindex="-1"' : '') + '>' +
+      html += '<button type="button" class="day' + (out ? ' out' : '') + (s || o ? ' has' : '') + (ds === TODAY ? ' today' : '') + (ds === state.selDay ? ' sel' : '') + '" data-day="' + ds + '"' + (out ? ' tabindex="-1"' : '') + '>' +
         '<span class="n">' + cur.getDate() + '</span>' + (s ? '<span class="starts">' + s + '</span>' : '') + (o ? '<span class="ongoing">+' + o + ' en curso</span>' : '') + '</button>';
       cur.setDate(cur.getDate() + 1);
       if (i === 34 && cur.getMonth() !== m.getMonth()) break;
@@ -261,8 +264,8 @@
     var longOnes = list.length - st.length - on.length;
     var h = '<h3>' + cap(fmtLong.format(fromIso(d))) + ' · ' + (st.length + on.length) + ' planes</h3>';
     if (!st.length && !on.length) h += '<p class="empty">Nada registrado ese día con los filtros actuales.</p>';
-    if (st.length) h += '<h4>Este día (' + st.length + ')</h4><div class="mini">' + st.slice(0, 120).map(function (e) { return card(e, { noOngoing: true }); }).join('') + (st.length > 120 ? '<p class="empty">… y ' + (st.length - 120) + ' más. Afina los filtros o usa la vista de lista.</p>' : '') + '</div>';
-    if (on.length) h += '<h4>En curso (' + on.length + ')</h4><div class="mini">' + on.slice(0, 60).map(function (e) { return card(e, { noOngoing: true }); }).join('') + (on.length > 60 ? '<p class="empty">… y ' + (on.length - 60) + ' más. Usa la vista de lista para verlos todos.</p>' : '') + '</div>';
+    if (st.length) h += '<h4>Este día (' + st.length + ')</h4><div class="mini">' + st.slice(0, 120).map(function (e, i) { return card(e, { noOngoing: true, i: i }); }).join('') + (st.length > 120 ? '<p class="empty">… y ' + (st.length - 120) + ' más. Afina los filtros o usa la vista de lista.</p>' : '') + '</div>';
+    if (on.length) h += '<h4>En curso (' + on.length + ')</h4><div class="mini">' + on.slice(0, 60).map(function (e, i) { return card(e, { noOngoing: true, i: i + 2 }); }).join('') + (on.length > 60 ? '<p class="empty">… y ' + (on.length - 60) + ' más. Usa la vista de lista para verlos todos.</p>' : '') + '</div>';
     if (longOnes > 0) h += '<p class="hint">Además hay ' + longOnes + ' planes de larga duración activos ese día (exposiciones, temporadas…) que no se cuentan en el calendario. <button type="button" class="linklike" data-golist="' + d + '">Verlos en la lista</button></p>';
     p.innerHTML = h; p.hidden = false;
   }
