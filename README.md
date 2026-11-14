@@ -70,7 +70,7 @@ La clasificación usa primero la categoría que declara cada fuente y, si no la 
 
 1. Crea un repositorio en GitHub y sube esta carpeta (`git init && git add . && git commit -m "Planika" && git push`).
 2. En *Settings → Pages* elige **GitHub Actions** como origen.
-3. En *Settings → Pages → Custom domain* escribe `planikaapp.com` y marca **Enforce HTTPS** cuando el certificado esté listo (unos minutos). El archivo `site/CNAME` ya contiene el dominio para que no se pierda en cada despliegue.
+3. En *Settings → Pages → Custom domain* escribe `planikaapp.com` y marca **Enforce HTTPS** cuando el certificado esté listo (unos minutos). Mientras el DNS no esté configurado, deja el campo vacío: con el dominio puesto, GitHub redirige la dirección provisional `https://davidpardal.github.io/planika/` al dominio y la web deja de verse.
 4. En el panel DNS del registrador del dominio crea estos registros:
 
    | Tipo | Nombre | Valor |
