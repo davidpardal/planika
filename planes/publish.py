@@ -78,6 +78,9 @@ def update_health(path, source_meta):
         hist[s["key"]] = h
         if s["key"] in ("ticketmaster", "lorca"):
             continue  # opcional o fuente parada conocida
+        if s.get("stale_from"):
+            alerts.append("%s: hoy no ha respondido; se muestran los planes de la descarga del %s" % (s["name"], s["stale_from"]))
+            continue
         if prev:
             ref = sorted(prev)[len(prev) // 2]
             if s["count"] == 0 and ref > 0:

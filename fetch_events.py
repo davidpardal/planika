@@ -43,6 +43,24 @@ def log(msg):
     print("[%s] %s" % (datetime.now().strftime("%H:%M:%S"), msg), flush=True)
 
 
+def load_previous(path):
+    """Eventos de la ejecución anterior agrupados por fuente, para cubrir fallos puntuales."""
+    out = {"by_source": {}, "date": "", "age_days": 999}
+    try:
+        with open(path, encoding="utf-8") as fh:
+            prev = json.load(fh)
+    except (OSError, ValueError):
+        return out
+    for e in prev.get("events", []):
+        out["by_source"].setdefault(e.get("source", ""), []).append(e)
+    out["date"] = (prev.get("updated_at") or "")[:10]
+    try:
+        out["age_days"] = (today() - datetime.strptime(out["date"], "%Y-%m-%d").date()).days
+    except ValueError:
+        pass
+    return out
+
+
 def dedupe(events):
     """Une duplicados (mismo título, fecha y provincia) conservando el más completo."""
     best = {}
@@ -89,6 +107,7 @@ def main():
         return
 
     load_dotenv(os.path.join(ROOT, ".env"))
+    previous = load_previous(os.path.join(args.out, "events.json"))
     t0 = today()
     t_max = t0 + timedelta(days=args.days)
     all_events = []
@@ -109,6 +128,14 @@ def main():
             evs = []
             error = "%s: %s" % (exc.__class__.__name__, str(exc)[:120])
         kept = [e for e in evs if e["end"] >= iso(t0) and e["start"] <= iso(t_max)]
+        stale = ""
+        if not kept and previous["by_source"].get(mod.NAME):
+            # La fuente ha fallado hoy: se conservan los planes de la última descarga buena (máximo 7 días)
+            age = previous["age_days"]
+            if age <= 7:
+                kept = [e for e in previous["by_source"][mod.NAME] if e["end"] >= iso(t0)]
+                stale = previous["date"]
+                log("  -> fuente sin datos hoy; se reutilizan %d planes de la descarga del %s" % (len(kept), stale))
         # Sin provincia resoluble (eventos en línea, sin lugar o fuera de España) no encajan en la web
         no_prov = [e for e in kept if not e["province_code"]]
         if no_prov:
@@ -116,7 +143,7 @@ def main():
             kept = [e for e in kept if e["province_code"]]
         all_events.extend(kept)
         source_meta.append({"key": name, "name": mod.NAME, "home": mod.HOME, "count": len(kept),
-                            "seconds": round(time.time() - started, 1), "error": error})
+                            "seconds": round(time.time() - started, 1), "error": error, "stale_from": stale})
         log("  -> %d dentro del horizonte (%.1fs)" % (len(kept), time.time() - started))
 
     before = len(all_events)

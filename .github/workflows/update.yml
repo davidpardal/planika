@@ -65,6 +65,10 @@ jobs:
             else
               echo "Ya hay una alerta abierta; no se duplica."
             fi
+          else
+            for n in $(gh issue list --state open --search "in:title \"Alerta de fuentes\"" --json number --jq '.[].number'); do
+              gh issue close "$n" --comment "Todas las fuentes han respondido con normalidad en la ejecución de $(date -u +%F)."
+            done
           fi
       - uses: actions/upload-pages-artifact@v3
         with:
