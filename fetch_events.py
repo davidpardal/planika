@@ -23,10 +23,9 @@ from planes import llm, publish, static  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
-# "curated" no descarga nada: mezcla data/curated.json (visitas permanentes).
-# Va el último para no pisar un plan fechado de la misma fuente pública.
-SOURCES = ["madrid", "barcelona", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia", "galicia",
-           "cartagena", "lorca", "tenerife_deporte", "sportsdb", "ticketmaster", "curated"]
+SOURCES = ["madrid", "esmadrid", "barcelona", "diba", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia",
+           "galicia", "zaragoza", "cartagena", "lorca", "murcia", "municipios", "tenerife_deporte", "sportsdb",
+           "ticketmaster", "curated"]
 
 
 def load_dotenv(path):
@@ -144,13 +143,16 @@ def main():
             error = "%s: %s" % (exc.__class__.__name__, str(exc)[:120])
         kept = [e for e in evs if e["end"] >= iso(t0) and e["start"] <= iso(t_max)]
         stale = ""
-        if not kept and previous["by_source"].get(mod.NAME):
-            # La fuente ha fallado hoy: se conservan los planes de la última descarga buena (máximo 7 días)
-            age = previous["age_days"]
-            if age <= 7:
-                kept = [e for e in previous["by_source"][mod.NAME] if e["end"] >= iso(t0)]
+        # Una fuente puede agrupar varias webs (SOURCE_NAMES): cada una se cubre por separado si falla
+        for src_name in getattr(mod, "SOURCE_NAMES", None) or [mod.NAME]:
+            if any(e["source"] == src_name for e in kept) or not previous["by_source"].get(src_name):
+                continue
+            # Ha fallado hoy: se conservan los planes de la última descarga buena (máximo 7 días)
+            if previous["age_days"] <= 7:
+                reused = [e for e in previous["by_source"][src_name] if e["end"] >= iso(t0)]
+                kept.extend(reused)
                 stale = previous["date"]
-                log("  -> fuente sin datos hoy; se reutilizan %d planes de la descarga del %s" % (len(kept), stale))
+                log("  -> %s sin datos hoy; se reutilizan %d planes de la descarga del %s" % (src_name, len(reused), stale))
         # Sin provincia resoluble (eventos en línea, sin lugar o fuera de España) no encajan en la web
         no_prov = [e for e in kept if not e["province_code"]]
         if no_prov:
