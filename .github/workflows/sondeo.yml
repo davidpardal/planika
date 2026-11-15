@@ -14,4 +14,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q requests
-      - run: python3 tools/sondeo/probe.py tools/sondeo/urls.txt
+      - run: python3 tools/sondeo/dump.py
