@@ -28,8 +28,8 @@ _RULES = [
     ("escena", r"\b(teatro|teatre|antzerki|danza|dansa|dantza|ballet|opera|zarzuela|musical|circo|circ|magia|monolog|comedia|humor|performance|clown|improvisacion|bertso|titella|escenic|escenica|arts esceniques|espectacle|espectaculo|flamenco)"),
     ("musica", r"\b(concierto|concert|kontzertu|musica|music|musika|jazz|rock|pop|folk|coral|coro|orquesta|orquestra|sinfonic|filarmon|recital|dj|festival de musica|banda|blues|soul|funk|hip hop|rap|reggae|electronic|indie|metal|cantautor|gospel|tributo)"),
     ("expos", r"\b(exposicion|exposicio|erakusketa|museo|museu|museum|galeria|fotografia|pintura|escultura|arte|arts visuals|arte urbano|instalacion|muestra)"),
-    ("gastro", r"\b(gastronom|feria|fira|azoka|mercado|mercat|mercadillo|degustacion|cata|vino|vi|cerveza|tapas|pintxo|food|cocina|cuina|sukaldaritza|congreso|salon)"),
-    ("fiestas", r"\b(fiesta|festa|jai|jaiak|fiestas|festes|romeria|carnaval|carnestoltes|navidad|nadal|gabon|reyes|cabalgata|cavalcada|procesion|processo|semana santa|verbena|patron|tradicional|popular|falla|hoguera|feria de abril|pasacalle|cercavila|castell|gigantes|gegants|correfoc|sant joan|san juan|halloween|mercado medieval|commemor|festival|festivales)"),
+    ("gastro", r"\b(gastronom|feria|fira|azoka|mercado|mercat|mercadillo|degustacion|catas?\b|vino|vins\b|tast|celler|enoturis|cerveza|tapas|pintxo|food|cocina|cuina|sukaldaritza|congreso|salon)"),
+    ("fiestas", r"\b(fiesta|festa|jai|jaiak|fiestas|festes|romeria|carnaval|carnestoltes|navidad|nadal|gabon|reyes|cabalgata|cavalcada|procesion|processo|semana santa|verbena|patron|tradicional|popular|falla|hoguera|feria de abril|pasacalle|cercavila|castells?\b|casteller|gigantes|gegants|correfoc|sant joan|san juan|halloween|mercado medieval|commemor|festival|festivales)"),
     ("naturaleza", r"\b(ruta|rutes|senderis|excursion|itinerari|visita guiada|visita|visites|paseo|passeig|naturaleza|natura|parque|parc|jardin|jardi|montana|muntanya|mendi|playa|platja|observacion|astronom|ornitolog|bici|kayak)"),
     ("charlas", r"\b(conferencia|hitzaldi|charla|xerrada|coloquio|mesa redonda|debate|taller|tailer|curso|cursos|formacion|presentacion|libro|llibre|liburu|lectura|literatura|poesia|club de lectura|jornada|seminario|encuentro|trobada|divulga|ciencia|historia|idioma|digital|biblioteca)"),
 ]
@@ -89,7 +89,7 @@ def classify(raw_types, title="", description="", audience=""):
         key = norm(t).replace("agenda categories/", "").replace("agenda ambits/", "").strip()
         if key in _SOURCE_TYPES:
             return _SOURCE_TYPES[key]
-    text = norm(" ".join([str(t) for t in types if t] + [title]))
+    text = norm(" ".join([str(t) for t in types if t] + [str(title or "")]))
     for key, rx in _COMPILED:
         if rx.search(text):
             return key

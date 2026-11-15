@@ -95,12 +95,19 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Cabildo de Tenerife | eventos deportivos de la isla | JSON |
 | TheSportsDB | próximos partidos de LaLiga, LaLiga 2, ACB, Copa del Rey y Supercopa | API JSON (clave pública de pruebas; `THESPORTSDB_KEY` para una propia) |
 | Ayuntamiento de Lorca | Lorca (Murcia); su CSV lleva meses sin eventos nuevos | CSV |
+| Ayuntamiento de Zaragoza | Zaragoza ciudad (agenda de actividades completa) | API JSON paginada |
+| esMADRID (Madrid Destino) | Madrid ciudad: conciertos, teatro, exposiciones y grandes eventos | XML |
+| Diputació de Barcelona | provincia de Barcelona: turismo, parques naturales y teatros municipales | API JSON |
+| Ayuntamiento de Murcia | Murcia y pedanías, próximos eventos | RSS |
+| Agendas municipales (`planes/src_municipios.py`) | Mérida, Teruel, Ejea de los Caballeros, Siero, Puertollano, Diputación de Albacete, Elche, Orihuela, Villena y Torrent | API JSON de «The Events Calendar» (WordPress) |
 | Ticketmaster Discovery API | toda España, con entradas | API JSON (clave) |
 | Visitas permanentes (`data/curated.json`) | todas las provincias con poca agenda: museos, monumentos, espacios naturales y salas, sin fecha única | JSON mantenido a mano |
 
 Las visitas permanentes no salen de una agenda. Están en `data/curated.json` y `fetch_events.py` las mezcla en cada ejecución (también con `--rebuild`), así que sobreviven a la regeneración diaria. En la web aparecen como «Visita permanente»: entran en los filtros de provincia y en el mapa, quedan detrás de los planes con fecha y no marcan todos los días del calendario.
 
-Fuentes revisadas y descartadas por estar paradas o no ser accesibles por programa: Canarias (CSV parado en 2021), Gijón (JSON parado en 2025), Terrassa (CSV de 2024), municipios de Córdoba vía Eprinsa (datos de 2022), Zaragoza (la API devuelve HTML a peticiones automatizadas), Alcobendas (bloquea el acceso), Cáceres y Santa Cruz de Tenerife (portales que solo sirven HTML), L'Hospitalet y Región de Murcia Digital (recursos vacíos o caídos), Castilla-La Mancha (sin datos descargables), Vigo (solo publica la agenda del día). Webs comerciales como Fever, entradas.com o Wikiloc no se raspan porque sus condiciones de uso lo prohíben.
+Fuentes revisadas y descartadas por estar paradas o no ser accesibles por programa: Canarias (CSV parado en 2021), Gijón (JSON parado en 2025), Terrassa (CSV de 2024), municipios de Córdoba vía Eprinsa (datos de 2022), Alcobendas (bloquea el acceso), Cáceres y Santa Cruz de Tenerife (portales que solo sirven HTML), L'Hospitalet y Región de Murcia Digital (recursos vacíos o caídos), Castilla-La Mancha (sin datos descargables), Vigo (solo publica la agenda del día). Webs comerciales como Fever, entradas.com o Wikiloc no se raspan porque sus condiciones de uso lo prohíben.
+
+Muchos ayuntamientos publican su agenda con WordPress y el plugin «The Events Calendar», que expone una API pública. Si `https://<web>/wp-json/tribe/events/v1/events` devuelve `{"events": [...]}`, añadir ese municipio es una línea en `SITES` de `planes/src_municipios.py`. Revisadas sin esa API (noviembre de 2026): unas 330 webs de ayuntamientos y diputaciones, entre ellas las capitales de Castilla-La Mancha, Extremadura, Asturias, Cantabria, La Rioja, Baleares y Canarias.
 
 Para añadir una fuente nueva crea `planes/src_<nombre>.py` con `NAME`, `HOME` y una función `fetch(log)` que devuelva una lista construida con `planes.util.event(...)`, y añade `<nombre>` a la lista `SOURCES` de `fetch_events.py`.
 

@@ -62,6 +62,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(classify.classify([], "Mercado medieval de Ávila"), "gastro")
         self.assertEqual(classify.classify([], "Athletic Club - Real Sociedad", ""), "otros")
 
+    def test_prefixes_do_not_leak(self):
+        # "vi", "cata" y "castell" como prefijo clasificaban mal «Vigil», «catedral» o «castellano»
+        self.assertEqual(classify.classify([], "José Manuel Vigil presenta su libro de memorias"), "charlas")
+        self.assertEqual(classify.classify([], "Club de Lectura en Castellano"), "charlas")
+        self.assertEqual(classify.classify([], "Concierto en la catedral"), "musica")
+        self.assertEqual(classify.classify([], "Cata de vinos de la tierra"), "gastro")
+        self.assertEqual(classify.classify([], "Diada castellera amb els castells de la colla"), "fiestas")
+
     def test_audience_wins(self):
         self.assertEqual(classify.classify(["Concierto"], "x", audience="Niños, Familias"), "infantil")
 
