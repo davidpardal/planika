@@ -56,17 +56,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY' > alerts.txt
-          import json; h = json.load(open("data/health.json")); print("\n".join("- " + a for a in h.get("alerts", [])))
+          import json, sys; h = json.load(open("data/health.json")); a = h.get("alerts", [])
+          sys.stdout.write("\n".join("- " + x for x in a) + ("\n" if a else ""))
           PY
           if [ -s alerts.txt ]; then
             title="Alerta de fuentes $(date -u +%F)"
-            if ! gh issue list --state open --search "in:title \"Alerta de fuentes\"" --json number --jq 'length' | grep -qv '^0$'; then
+            if [ -z "$(gh issue list --state open --json number,title --jq '.[] | select(.title|startswith("Alerta de fuentes")) | .number')" ]; then
               gh issue create --title "$title" --body "$(printf 'Fuentes con menos eventos de lo normal o con error:\n\n%s\n\nRevisa data/health.json y el log del workflow.' "$(cat alerts.txt)")"
             else
               echo "Ya hay una alerta abierta; no se duplica."
             fi
           else
-            for n in $(gh issue list --state open --search "in:title \"Alerta de fuentes\"" --json number --jq '.[].number'); do
+            for n in $(gh issue list --state open --json number,title --jq '.[] | select(.title|startswith("Alerta de fuentes")) | .number'); do
               gh issue close "$n" --comment "Todas las fuentes han respondido con normalidad en la ejecución de $(date -u +%F)."
             done
           fi
