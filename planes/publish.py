@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from . import static
 from .classify import CATEGORIES
-from .util import PROVINCIAS, iso, norm, today
+from .util import PROVINCIAS, is_permanent, iso, norm, today
 
 SITE_URL = static.SITE_URL  # configurable con la variable de entorno PLANIKA_SITE_URL
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
@@ -98,9 +98,15 @@ def update_health(path, source_meta):
 # ---------------------------------------------------------------- RSS
 
 
+def _when_short(e):
+    if is_permanent(e):
+        return "Visita permanente"
+    return e["start"] if e["start"] == e["end"] else "%s – %s" % (e["start"], e["end"])
+
+
 def _rss(title, link, desc, items):
     def item(e):
-        when = e["start"] if e["start"] == e["end"] else "%s – %s" % (e["start"], e["end"])
+        when = _when_short(e)
         where = " · ".join(x for x in (e.get("venue"), e.get("city"), e.get("province")) if x)
         body = "%s%s. %s%s" % (when, " " + e["time"] if e.get("time") else "", where, (". " + e["description"]) if e.get("description") else "")
         return ("<item><title>%s</title><link>%s</link><guid isPermaLink=\"false\">%s</guid><category>%s</category>"
@@ -116,14 +122,21 @@ def _rss(title, link, desc, items):
 def write_feeds(out_dir, events, days=30):
     os.makedirs(out_dir, exist_ok=True)
     limit = iso(today() + timedelta(days=days))
-    soon = [e for e in events if e["start"] <= limit]
-    soon.sort(key=lambda e: (max(e["start"], iso(today())), e["time"]))
+    # El feed nacional es la agenda de los próximos días: las visitas permanentes
+    # (sin fecha) no deben ocupar esos 150 huecos. Sí entran en el feed de su
+    # provincia, detrás de lo fechado, para que una provincia sin agenda no quede vacía.
+    soon = [e for e in events if e["start"] <= limit and not is_permanent(e)]
+    soon.sort(key=lambda e: (max(e["start"], iso(today())), e.get("time") or ""))
+    permanents = [e for e in events if is_permanent(e)]
+    permanents.sort(key=lambda e: e["title"])
     written = []
     with open(os.path.join(out_dir, "todos.xml"), "w", encoding="utf-8") as fh:
         fh.write(_rss("Planika · próximos planes en España", SITE_URL, "Planes de los próximos %d días" % days, soon[:150]))
     written.append("todos.xml")
     for code, name, _ in PROVINCIAS:
-        items = [e for e in soon if e["province_code"] == code][:120]
+        dated = [e for e in soon if e["province_code"] == code]
+        extra = [e for e in permanents if e["province_code"] == code]
+        items = (dated + extra)[:120]
         if not items:
             continue
         fn = "provincia-%s.xml" % code
@@ -161,16 +174,18 @@ _PAGE = """<!doctype html>
 
 
 def _card(e):
-    when = e["start"] if e["start"] == e["end"] else "%s – %s" % (e["start"], e["end"])
-    if e.get("sessions"):
+    when = _when_short(e)
+    if e.get("sessions") and not is_permanent(e):
         when = "%s (+%d fechas)" % (e["sessions"][0], len(e["sessions"]) - 1)
     where = " · ".join(x for x in (e.get("venue"), e.get("city"), e.get("province")) if x)
     link = "../e/" + static.event_file(e)  # la ficha propia del plan: enlazado interno para buscadores
+    badges = ("<span class=\"badge free\">Gratis</span>" if e.get("free") else "") + (
+        "<span class=\"badge\">Permanente</span>" if is_permanent(e) else "")
     return ("<article class=\"card\"><div class=\"body\"><div class=\"badges\"><span class=\"badge\">%s %s</span>%s</div>"
             "<h3><a href=\"%s\">%s</a></h3><div class=\"when\">📅 %s%s</div>"
             "<div class=\"where\">📍 %s</div>%s<div class=\"src\">Fuente: %s</div></div></article>") % (
         CAT_ICON.get(e["category"], "✨"), html.escape(CAT_NAME.get(e["category"], "Otros")),
-        "<span class=\"badge free\">Gratis</span>" if e.get("free") else "",
+        badges,
         html.escape(link), html.escape(e.get("title_es") or e["title"]), when, " · " + e["time"] if e.get("time") else "",
         html.escape(where), ("<p class=\"desc\">%s</p>" % html.escape(e["description"])) if e.get("description") else "",
         html.escape(e["source"]))
@@ -179,7 +194,8 @@ def _card(e):
 def write_pages(site_dir, events):
     t0 = iso(today())
     def upcoming(items):
-        return sorted(items, key=lambda e: (max(e["start"], t0), e.get("time") or "99"))
+        # Primero la agenda con fecha; después las visitas permanentes.
+        return sorted(items, key=lambda e: (1 if is_permanent(e) else 0, max(e["start"], t0), e.get("time") or "99", e.get("title") or ""))
     pages = []
     prov_dir = os.path.join(site_dir, "p")
     type_dir = os.path.join(site_dir, "t")

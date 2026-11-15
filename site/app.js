@@ -94,7 +94,9 @@
     for (var i = 0; i < e.sessions.length; i++) if (e.sessions[i] >= from) return e.sessions[i];
     return e.sessions[e.sessions.length - 1];
   }
+  function isPermanent(e) { return e.subtype === 'Permanente'; }
   function whenText(e) {
+    if (isPermanent(e)) return 'Visita permanente';
     if (e.sessions) {
       var n = nextSession(e); var rest = e.sessions.filter(function (d) { return d > n; }).length;
       return fmtD(n) + (e.time ? ' · ' + e.time : '') + (rest ? ' (+' + rest + ' fechas)' : '');
@@ -190,6 +192,8 @@
   }
   function anyCat() { for (var k in state.cats) if (state.cats[k]) return true; return false; }
   function inDates(e) {
+    // Sin un día concreto: se pueden visitar dentro de cualquier filtro de fechas.
+    if (isPermanent(e)) return true;
     if (!state.from && !state.to) return true;
     if (e.sessions) return e.sessions.some(function (d) { return (!state.from || d >= state.from) && (!state.to || d <= state.to); });
     if (state.from && e.end < state.from) return false;
@@ -224,6 +228,7 @@
   }
   function filtered(ignoreDates) { return EVENTS.filter(function (e) { return matches(e, ignoreDates); }); }
   function sortKey(e) {
+    if (isPermanent(e)) return '9999-12-31|99|' + e.title;
     var from = state.from && state.from > TODAY ? state.from : TODAY;
     var s = nextSession(e);
     return (s > from ? s : from) + '|' + pad(Math.min(99, e.sessions ? 0 : spanDays(e))) + '|' + (e.time || '99');
@@ -240,7 +245,8 @@
     opts = opts || {};
     var pop = opts.i != null ? opts.i % 4 : popOf(e.id);
     var c = CATS[e.category] || { icon: '✨', name: 'Otros' };
-    var ongoing = !e.sessions && e.start < TODAY && e.end >= TODAY;
+    var ongoing = !e.sessions && !isPermanent(e) && e.start < TODAY && e.end >= TODAY;
+    var permBadge = isPermanent(e) ? '<span class="badge">Permanente</span>' : '';
     var img = e.image ? '<img src="' + esc(e.image) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
     var where = [e.venue, e.city, e.province && e.province !== e.city ? e.province : ''].filter(Boolean).join(' · ');
     var price = e.free ? '<span class="badge free">Gratis</span>' : (e.price ? '<span class="badge">' + esc(e.price) + '</span>' : '');
@@ -253,7 +259,7 @@
       sess = '<div class="sessions">Fechas: ' + up.slice(0, 6).map(function (x) { return fmtShort.format(fromIso(x)); }).join(', ') + (up.length > 6 ? ' y ' + (up.length - 6) + ' más' : '') + '</div>';
     }
     return '<article class="card pop' + pop + '" data-id="' + e.id + '" data-c="' + Math.floor(e.i / CHUNK) + '" data-pop="' + pop + '"' + (opts.noOngoing ? ' data-no="1"' : '') + '>' + img + '<div class="body">' +
-      '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + (d !== null ? '<span class="badge dist">a ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + ' km</span>' : '') + '</div>' +
+      '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + permBadge + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + (d !== null ? '<span class="badge dist">a ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + ' km</span>' : '') + '</div>' +
       '<h3><a href="' + esc(e.url || e.tickets_url || evFile(e)) + '" target="_blank" rel="noopener">' + esc(title(e)) + '</a></h3>' +
       (e.title_es ? '<div class="where">' + esc(e.title) + '</div>' : '') +
       '<div class="when">📅 ' + esc(whenText(e)) + '</div>' + sess +
@@ -262,7 +268,7 @@
       '<div class="actions">' + tickets + info + '<button type="button" class="btn addcal" data-id="' + e.id + '">＋ Calendario</button>' +
       '<button type="button" class="fav' + (favSet.has(e.id) ? ' on' : '') + '" data-fav="' + e.id + '" title="Guardar en favoritos">' + (favSet.has(e.id) ? '★' : '☆') + '</button>' +
       '<button type="button" class="btn share" data-share="' + e.id + '" title="Compartir este plan">↗ Compartir</button></div>' +
-      '<div class="src">Fuente: ' + esc(e.source) + (e.subtype ? ' · ' + esc(e.subtype) : '') + '</div>' +
+      '<div class="src">Fuente: ' + esc(e.source) + (e.subtype && !isPermanent(e) ? ' · ' + esc(e.subtype) : '') + '</div>' +
       '</div></article>';
   }
   function renderList() {
@@ -285,6 +291,7 @@
     var starts = {}, ongoing = {};
     var first = isoDate(m), last = isoDate(new Date(m.getFullYear(), m.getMonth() + 1, 0));
     list.forEach(function (e) {
+      if (isPermanent(e)) return;
       if (e.sessions) { e.sessions.forEach(function (d) { if (d >= first && d <= last) starts[d] = (starts[d] || 0) + 1; }); return; }
       if (e.end < first || e.start > last) return;
       if (e.start >= first) starts[e.start] = (starts[e.start] || 0) + 1;
@@ -308,7 +315,10 @@
     $('calGrid').innerHTML = html;
     renderDay();
   }
-  function onDay(e, d) { return e.sessions ? e.sessions.indexOf(d) >= 0 : (e.start <= d && e.end >= d); }
+  function onDay(e, d) {
+    if (isPermanent(e)) return false;
+    return e.sessions ? e.sessions.indexOf(d) >= 0 : (e.start <= d && e.end >= d);
+  }
   function renderDay() {
     var p = $('dayPanel');
     if (!state.selDay) { p.hidden = true; return; }
@@ -396,6 +406,9 @@
 
   // ---------- añadir al calendario
   function calTimes(e) {
+    if (isPermanent(e)) {
+      return { allDay: true, start: TODAY.replace(/-/g, ''), end: addDays(TODAY, 1).replace(/-/g, '') };
+    }
     var start0 = nextSession(e), end0 = e.sessions ? start0 : e.end;
     var allDay = !e.time;
     var start, end;
@@ -411,6 +424,7 @@
   }
   function details(e) {
     var parts = [];
+    if (isPermanent(e)) parts.push('Visita permanente, sin una fecha única. Este aviso es un recordatorio de un día.');
     if (e.description) parts.push(e.description);
     if (e.sessions) parts.push('Otras fechas: ' + e.sessions.join(', '));
     if (e.price) parts.push('Precio: ' + e.price); else if (e.free) parts.push('Entrada gratuita');
