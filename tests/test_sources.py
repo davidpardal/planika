@@ -37,7 +37,8 @@ class TestZaragoza(unittest.TestCase):
         course = dict(self.ROW, id=3, type="Cursos y talleres", startDate="2026-10-01T00:00:00", endDate="2027-06-15T00:00:00")
         workshop = dict(self.ROW, id=4, type="Cursos y talleres")
         typo = dict(self.ROW, id=6, type="Cursos y talleres", startDate="202-10-07T00:00:00")
-        evs = src_zaragoza.parse([free, course, workshop, "basura", {"id": 5}, typo])
+        club = dict(self.ROW, id=7, type="Otros", startDate="2026-09-01T00:00:00", endDate="2027-06-30T00:00:00")
+        evs = src_zaragoza.parse([free, course, workshop, "basura", {"id": 5}, typo, club])
         self.assertEqual(len(evs), 2)
         self.assertEqual((evs[0]["price"], evs[0]["free"], evs[0]["category"]), ("Gratis", True, "escena"))
 

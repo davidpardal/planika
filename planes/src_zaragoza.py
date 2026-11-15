@@ -11,8 +11,6 @@ URL = "https://www.zaragoza.es/sede/servicio/actividades/evento/list.json"
 HOME = "https://www.zaragoza.es/sede/portal/cultura/agenda/"
 PAGE = 100
 MAX_PAGES = 60
-FIELDS = ("id,title,description,startDate,endDate,subEvent,category,price,image,type,alt,geometry,"
-          "population,minAge,maxAge")
 
 
 def _price(prices):
@@ -49,6 +47,12 @@ def parse(rows):
                     continue
             except ValueError:  # la fuente trae alguna fecha mal tecleada ("202-10-07")
                 continue
+        if start and end and "expos" not in kind.lower():
+            try:  # actividades «en vigor» todo el año (clubes, servicios): no son un plan concreto
+                if (datetime.strptime(end, "%Y-%m-%d") - datetime.strptime(start, "%Y-%m-%d")).days > 120:
+                    continue
+            except ValueError:
+                continue
         subs = [s for s in (r.get("subEvent") or []) if isinstance(s, dict)]
         loc = (subs[0].get("location") if subs else None) or {}
         hours = (subs[0].get("openingHours") if subs else None) or []
@@ -82,7 +86,8 @@ def parse(rows):
 def fetch(log):
     rows, total = [], None
     for page in range(MAX_PAGES):
-        data = http_json(URL, params={"rows": PAGE, "start": page * PAGE, "srsname": "wgs84", "fl": FIELDS},
+        # Sin "fl": al filtrar campos la API omite los datos anidados (lugar y horario de subEvent)
+        data = http_json(URL, params={"rows": PAGE, "start": page * PAGE, "srsname": "wgs84"},
                          timeout=(20, 120))
         batch = data.get("result") or []
         rows.extend(batch)
