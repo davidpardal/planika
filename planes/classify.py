@@ -89,7 +89,7 @@ def classify(raw_types, title="", description="", audience=""):
         key = norm(t).replace("agenda categories/", "").replace("agenda ambits/", "").strip()
         if key in _SOURCE_TYPES:
             return _SOURCE_TYPES[key]
-    text = norm(" ".join([str(t) for t in types if t] + [title]))
+    text = norm(" ".join([str(t) for t in types if t] + [str(title or "")]))
     for key, rx in _COMPILED:
         if rx.search(text):
             return key
