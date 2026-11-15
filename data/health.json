@@ -174,8 +174,43 @@
     "count": 173,
     "error": ""
    }
+  ],
+  "esmadrid": [
+   {
+    "date": "2026-11-15",
+    "count": 713,
+    "error": ""
+   }
+  ],
+  "diba": [
+   {
+    "date": "2026-11-15",
+    "count": 349,
+    "error": ""
+   }
+  ],
+  "zaragoza": [
+   {
+    "date": "2026-11-15",
+    "count": 575,
+    "error": ""
+   }
+  ],
+  "murcia": [
+   {
+    "date": "2026-11-15",
+    "count": 50,
+    "error": ""
+   }
+  ],
+  "municipios": [
+   {
+    "date": "2026-11-15",
+    "count": 151,
+    "error": ""
+   }
   ]
  },
- "updated_at": "2026-11-15T08:42",
+ "updated_at": "2026-11-15T11:09",
  "alerts": []
 }
