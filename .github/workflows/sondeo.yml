@@ -7,13 +7,11 @@ permissions:
 jobs:
   sondeo:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install -q requests
-      - run: |
-          python3 fetch_events.py --sources zaragoza,esmadrid,diba,murcia,municipios --out /tmp/out --no-pages
-          python3 tools/sondeo/resumen.py /tmp/out/events.json
+      - run: python3 tools/sondeo/probe.py tools/sondeo/urls.txt
