@@ -5,12 +5,22 @@
     "date": "2026-11-14",
     "count": 1244,
     "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 1157,
+    "error": ""
    }
   ],
   "barcelona": [
    {
     "date": "2026-11-14",
     "count": 4189,
+    "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 4114,
     "error": ""
    }
   ],
@@ -19,12 +29,22 @@
     "date": "2026-11-14",
     "count": 4130,
     "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 3961,
+    "error": ""
    }
   ],
   "catalunya": [
    {
     "date": "2026-11-14",
     "count": 1268,
+    "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 1205,
     "error": ""
    }
   ],
@@ -33,12 +53,22 @@
     "date": "2026-11-14",
     "count": 502,
     "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 472,
+    "error": ""
    }
   ],
   "gva": [
    {
     "date": "2026-11-14",
     "count": 111,
+    "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 107,
     "error": ""
    }
   ],
@@ -47,12 +77,22 @@
     "date": "2026-11-14",
     "count": 88,
     "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 84,
+    "error": ""
    }
   ],
   "andalucia": [
    {
     "date": "2026-11-14",
     "count": 38,
+    "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 33,
     "error": ""
    }
   ],
@@ -61,11 +101,21 @@
     "date": "2026-11-14",
     "count": 0,
     "error": "ConnectTimeout: HTTPSConnectionPool(host='abertos.xunta.gal', port=443): Max retries exceeded with url: /catalogo/cultura-ocio-deporte/-"
+   },
+   {
+    "date": "2026-11-15",
+    "count": 119,
+    "error": ""
    }
   ],
   "cartagena": [
    {
     "date": "2026-11-14",
+    "count": 50,
+    "error": ""
+   },
+   {
+    "date": "2026-11-15",
     "count": 50,
     "error": ""
    }
@@ -75,11 +125,21 @@
     "date": "2026-11-14",
     "count": 0,
     "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 0,
+    "error": ""
    }
   ],
   "tenerife_deporte": [
    {
     "date": "2026-11-14",
+    "count": 23,
+    "error": ""
+   },
+   {
+    "date": "2026-11-15",
     "count": 23,
     "error": ""
    }
@@ -89,6 +149,11 @@
     "date": "2026-11-14",
     "count": 5,
     "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 5,
+    "error": ""
    }
   ],
   "ticketmaster": [
@@ -96,11 +161,14 @@
     "date": "2026-11-14",
     "count": 0,
     "error": ""
+   },
+   {
+    "date": "2026-11-15",
+    "count": 0,
+    "error": ""
    }
   ]
  },
- "updated_at": "2026-11-14T23:05",
- "alerts": [
-  "Axenda de Cultura de Galicia: error ConnectTimeout: HTTPSConnectionPool(host='abertos.xunta.gal', port=443): Max retries exceeded with url: /catalogo/cultura-ocio-deporte/-"
- ]
+ "updated_at": "2026-11-15T05:19",
+ "alerts": []
 }
