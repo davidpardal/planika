@@ -96,6 +96,9 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | TheSportsDB | próximos partidos de LaLiga, LaLiga 2, ACB, Copa del Rey y Supercopa | API JSON (clave pública de pruebas; `THESPORTSDB_KEY` para una propia) |
 | Ayuntamiento de Lorca | Lorca (Murcia); su CSV lleva meses sin eventos nuevos | CSV |
 | Ticketmaster Discovery API | toda España, con entradas | API JSON (clave) |
+| Visitas permanentes (`data/curated.json`) | todas las provincias con poca agenda: museos, monumentos, espacios naturales y salas, sin fecha única | JSON mantenido a mano |
+
+Las visitas permanentes no salen de una agenda. Están en `data/curated.json` y `fetch_events.py` las mezcla en cada ejecución (también con `--rebuild`), así que sobreviven a la regeneración diaria. En la web aparecen como «Visita permanente»: entran en los filtros de provincia y en el mapa, quedan detrás de los planes con fecha y no marcan todos los días del calendario.
 
 Fuentes revisadas y descartadas por estar paradas o no ser accesibles por programa: Canarias (CSV parado en 2021), Gijón (JSON parado en 2025), Terrassa (CSV de 2024), municipios de Córdoba vía Eprinsa (datos de 2022), Zaragoza (la API devuelve HTML a peticiones automatizadas), Alcobendas (bloquea el acceso), Cáceres y Santa Cruz de Tenerife (portales que solo sirven HTML), L'Hospitalet y Región de Murcia Digital (recursos vacíos o caídos), Castilla-La Mancha (sin datos descargables), Vigo (solo publica la agenda del día). Webs comerciales como Fever, entradas.com o Wikiloc no se raspan porque sus condiciones de uso lo prohíben.
 

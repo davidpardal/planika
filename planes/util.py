@@ -303,6 +303,15 @@ def resolve_province(province=None, city=None, code=None):
 # ---------------------------------------------------------------- Eventos
 
 
+# Las visitas sin fecha única (museos, monumentos, salas) llevan este subtype.
+# La web las muestra como "Visita permanente" y no las trata como un evento de un día.
+PERMANENT_SUBTYPE = "Permanente"
+
+
+def is_permanent(ev):
+    return bool(ev) and ev.get("subtype") == PERMANENT_SUBTYPE
+
+
 def make_id(source, *parts):
     raw = source + "|" + "|".join(str(p or "") for p in parts)
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:14]

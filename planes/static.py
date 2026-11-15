@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - Python < 3.9
     ZoneInfo = None
 
 from .classify import CATEGORIES
-from .util import iso, today
+from .util import is_permanent, iso, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
 CHUNK = 250  # planes por bloque de detalles
@@ -75,7 +75,9 @@ def default_order(events, t0=None):
     t0 = t0 or iso(today())
 
     def key(e):
-        return (max(next_session(e, t0), t0), 0 if e.get("sessions") else min(99, _span(e)), e.get("time") or "99")
+        # Las visitas permanentes van al final: no tapan los planes con fecha.
+        perm = 1 if is_permanent(e) else 0
+        return (perm, max(next_session(e, t0), t0), 0 if e.get("sessions") else min(99, _span(e)), e.get("time") or "99")
     return sorted(events, key=key)
 
 
@@ -237,6 +239,8 @@ def _pop(eid):
 
 
 def _when(e, t0):
+    if is_permanent(e):
+        return "Visita permanente"
     t = (" · " + e["time"]) if e.get("time") else ""
     if e.get("sessions"):
         return fmt_day(next_session(e, t0)) + t
@@ -251,6 +255,9 @@ def _gcal(e, t0):
     from urllib.parse import quote
     start = next_session(e, t0)
     end = start if e.get("sessions") else e["end"]
+    if is_permanent(e):
+        # Un recordatorio de un día, no un bloque de un año en el calendario.
+        start = end = t0
     if re.match(r"^\d\d:\d\d$", e.get("time") or ""):
         hh = int(e["time"][:2]) + 2
         s = start.replace("-", "") + "T" + e["time"].replace(":", "") + "00"
@@ -297,6 +304,8 @@ def event_page(e, related=(), t0=None, prov_slug=""):
             ", ".join(fmt_day(d) for d in up[:12]), (" y %d más" % (len(up) - 12)) if len(up) > 12 else "")
     price = '<span class="badge free">Gratis</span>' if e.get("free") else (
         '<span class="badge">%s</span>' % esc(e["price"]) if e.get("price") else "")
+    if is_permanent(e):
+        price += '<span class="badge">Permanente</span>'
     rel = ""
     if related:
         rel = "<ul>%s</ul>" % "".join('<li><a href="%s">%s</a> · %s%s</li>' % (

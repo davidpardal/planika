@@ -6,7 +6,7 @@ Uso:
     python3 fetch_events.py                 # próximos 180 días, todas las fuentes
     python3 fetch_events.py --days 90       # horizonte de 90 días
     python3 fetch_events.py --sources madrid,euskadi
-    python3 fetch_events.py --rebuild       # sin descargar: regenera la web a partir de site/data/events.json
+    python3 fetch_events.py --rebuild       # sin descargar: regenera la web desde events.json y mezcla data/curated.json
 """
 import argparse
 import importlib
@@ -23,8 +23,10 @@ from planes import llm, publish, static  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
+# "curated" no descarga nada: mezcla data/curated.json (visitas permanentes).
+# Va el último para no pisar un plan fechado de la misma fuente pública.
 SOURCES = ["madrid", "barcelona", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia", "galicia",
-           "cartagena", "lorca", "tenerife_deporte", "sportsdb", "ticketmaster"]
+           "cartagena", "lorca", "tenerife_deporte", "sportsdb", "ticketmaster", "curated"]
 
 
 def load_dotenv(path):
@@ -103,7 +105,20 @@ def main():
     if args.rebuild:
         with open(os.path.join(args.out, "events.json"), encoding="utf-8") as fh:
             payload = json.load(fh)
+        # Regenerar también mezcla las visitas permanentes, para poder refrescar
+        # la web sin volver a descargar las agendas (y sin dejarlas caducar).
+        from planes.src_curated import HOME as CURATED_HOME, NAME as CURATED_NAME, replace_events
+        payload["events"] = replace_events(payload.get("events") or [], log)
+        sources = [s for s in payload.get("sources") or [] if s.get("key") != "curated"]
+        n_curated = sum(1 for e in payload["events"] if e.get("source") == CURATED_NAME)
+        sources.append({"key": "curated", "name": CURATED_NAME, "home": CURATED_HOME, "count": n_curated,
+                        "seconds": 0, "error": "", "stale_from": ""})
+        payload["sources"] = sources
+        payload["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
+        with open(os.path.join(args.out, "events.json"), "w", encoding="utf-8") as fh:
+            json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
         write_site(args, site_dir, payload)
+        log("Rebuild: %d planes, %d visitas permanentes" % (len(payload["events"]), n_curated))
         return
 
     load_dotenv(os.path.join(ROOT, ".env"))
