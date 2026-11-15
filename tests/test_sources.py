@@ -36,7 +36,8 @@ class TestZaragoza(unittest.TestCase):
         free = dict(self.ROW, id=2, price=[{"fareGroup": "Gratuita", "hasCurrencyValue": 0}], population=[])
         course = dict(self.ROW, id=3, type="Cursos y talleres", startDate="2026-10-01T00:00:00", endDate="2027-06-15T00:00:00")
         workshop = dict(self.ROW, id=4, type="Cursos y talleres")
-        evs = src_zaragoza.parse([free, course, workshop, "basura", {"id": 5}])
+        typo = dict(self.ROW, id=6, type="Cursos y talleres", startDate="202-10-07T00:00:00")
+        evs = src_zaragoza.parse([free, course, workshop, "basura", {"id": 5}, typo])
         self.assertEqual(len(evs), 2)
         self.assertEqual((evs[0]["price"], evs[0]["free"], evs[0]["category"]), ("Gratis", True, "escena"))
 
@@ -84,7 +85,7 @@ class TestEsMadrid(unittest.TestCase):
 <multimedia><media type="image"><description/><url>https://estaticos.esmadrid.com/cadillacs.jpg</url></media></multimedia>
 <extradata><item name="idTipo">6</item><item name="Tipo">Eventos</item><categorias><categoria><item name="idCategoria">6449</item>
 <item name="Categoria">Música</item><subcategorias><subcategoria><item name="SubCategoria">Latina</item></subcategoria></subcategorias></categoria></categorias>
-<item name="Servicios de pago"><![CDATA[<p>Desde 55 €</p>]]></item><item name="Horario"><![CDATA[<p>Apertura: 19:00 h</p><p>Inicio: 20:30 h</p>]]></item>
+<item name="Servicios de pago"><![CDATA[<p>Desde 55 €</p><p>No se permite la entrada a menores</p>]]></item><item name="Horario"><![CDATA[<p>Apertura: 19:00 h</p><p>Inicio: 20:30 h</p>]]></item>
 <fechas><rango><inicio>29/11/2026</inicio><dias>7</dias><fin>29/11/2026</fin></rango></fechas></extradata></service>
 <service id="2"><basicData><title><![CDATA[Juegos de jard&iacute;n]]></title><body/><web/><nombrert>Real Jardín Botánico</nombrert></basicData><geoData/>
 <extradata><categorias><categoria><item name="Categoria">Exposiciones</item></categoria></categorias><item name="Horario"><![CDATA[<p>10:00 - 19:30 h</p>]]></item>
@@ -115,6 +116,9 @@ class TestDiba(unittest.TestCase):
         a = src_diba.parse([el], None, "Turisme")[0]
         self.assertEqual((a["start"], a["end"], a["time"], a["city"], a["province"]), ("2026-12-18", "2026-12-20", "", "Viladecans", "Barcelona"))
         self.assertEqual((a["lat"], a["lon"]), (41.45152, 2.0193))
+        tour = dict(el, acte_id="t2", titol="AudaTours Audioguía", data_inici="2024-05-11 00:00:00", data_fi="2027-12-20 00:00:00")
+        messy = dict(el, acte_id="t3", grup_adreca=dict(el["grup_adreca"], municipi_nom="08221 TERRASSA"))
+        self.assertEqual([x["city"] for x in src_diba.parse([tour, messy])], ["Terrassa"])
         b = src_diba.parse([park, {"rel_municipis": []}], "naturaleza", "Parcs naturals")[0]
         self.assertEqual((b["category"], b["city"], b["time"], b["image"], b["lat"]), ("naturaleza", "Badalona", "10:30", "https://parcs.diba.cat/a.jpg", 41.45007))
 

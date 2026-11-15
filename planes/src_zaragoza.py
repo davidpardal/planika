@@ -44,15 +44,21 @@ def parse(rows):
         kind = str(r.get("type") or "")
         if start and end and "curso" in kind.lower():
             # Cursos de larga duración con inscripción: no son un plan para un día
-            if (datetime.strptime(end, "%Y-%m-%d") - datetime.strptime(start, "%Y-%m-%d")).days > 14:
+            try:
+                if (datetime.strptime(end, "%Y-%m-%d") - datetime.strptime(start, "%Y-%m-%d")).days > 14:
+                    continue
+            except ValueError:  # la fuente trae alguna fecha mal tecleada ("202-10-07")
                 continue
         subs = [s for s in (r.get("subEvent") or []) if isinstance(s, dict)]
         loc = (subs[0].get("location") if subs else None) or {}
         hours = (subs[0].get("openingHours") if subs else None) or []
         tm = str(hours[0].get("startTime") or "")[:5] if hours and isinstance(hours[0], dict) else ""
         coords = ((loc.get("geometry") or {}).get("coordinates") or (r.get("geometry") or {}).get("coordinates") or [None, None])
-        lon, lat = (coords + [None, None])[:2]
-        if lat is not None and not (39 < float(lat) < 44):  # coordenadas UTM en vez de WGS84
+        lon, lat = (list(coords) + [None, None])[:2]
+        try:
+            if lat is not None and not (39 < float(lat) < 44):  # coordenadas UTM en vez de WGS84
+                lat = lon = None
+        except (TypeError, ValueError):
             lat = lon = None
         cats = [c.get("title") for c in (r.get("category") or []) if isinstance(c, dict)]
         price, free = _price(r.get("price"))

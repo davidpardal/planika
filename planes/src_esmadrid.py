@@ -49,7 +49,7 @@ def parse(xml_bytes):
             category=cat, province_code="28", city="Madrid", venue=_txt(basic, "nombrert"),
             address=("Calle " + _txt(geo, "address")) if _txt(geo, "address")[:3].lower() in ("de ", "del") else _txt(geo, "address"),
             lat=_txt(geo, "latitude") or None, lon=_txt(geo, "longitude") or None,
-            price=strip_html(items.get("Servicios de pago"), 80), url=_txt(basic, "web") or HOME,
+            price=strip_html(re.split(r"</p>|<br\s*/?>", items.get("Servicios de pago") or "")[0], 80), url=_txt(basic, "web") or HOME,
             image=_txt(s, "multimedia/media/url"),
         )
         if ev:

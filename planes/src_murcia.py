@@ -26,7 +26,7 @@ def parse(text):
         # El primer párrafo es el lugar: "Recinto, calle, pedanía, España"
         m = re.match(r"\s*<p>(.*?)</p>(.*)", raw, re.S)
         place, body = (strip_html(m.group(1)), m.group(2)) if m else ("", raw)
-        parts = [p.strip() for p in place.split(",") if p.strip() and p.strip() != "España"]
+        parts = [re.sub(r"^\d{5}\s+", "", p.strip()) for p in place.split(",") if p.strip() and p.strip() != "España"]
         ev = event(
             NAME, link or title, title, dt.strftime("%Y-%m-%d"), time=dt.strftime("%H:%M"), description=body,
             category=classify([], title, strip_html(body, 300)), province_code="30",
