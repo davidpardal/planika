@@ -8,19 +8,24 @@ from .classify import classify
 from .util import event, http_text, parse_date, parse_ics, strip_html
 
 NAME = "Axenda de Cultura de Galicia"
-URL = ("https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0045/axenda-cultura-galicia/"
-       "102/acceso-aos-datos.calendario")
+# El portal cultura.gal sirve los mismos feeds que abertos.xunta.gal y responde desde más redes (GitHub incluida)
+URL = "https://www.cultura.gal/gl/ical"
+URL_ALT = ("https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0045/axenda-cultura-galicia/"
+           "102/acceso-aos-datos.calendario")
 HOME = "https://www.cultura.gal/gl/axenda"
-RSS = ("https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0045/axenda-cultura-galicia/"
-       "101/acceso-aos-datos.rss")
+RSS = "https://www.cultura.gal/gl/rssaxenda"
 BROWSER = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 
 
 def fetch(log):
-    try:
-        text = http_text(URL, encoding="utf-8", headers=BROWSER, timeout=(30, 120), retries=4)
-    except Exception as exc:  # noqa: BLE001
-        log("%s: calendario no disponible (%s); se intenta el RSS" % (NAME, exc.__class__.__name__))
+    text = None
+    for url in (URL, URL_ALT):
+        try:
+            text = http_text(url, encoding="utf-8", headers=BROWSER, timeout=(30, 120), retries=2)
+            break
+        except Exception as exc:  # noqa: BLE001
+            log("%s: calendario no disponible en %s (%s)" % (NAME, url.split("/")[2], exc.__class__.__name__))
+    if text is None:
         return _fetch_rss(log)
     out = []
     for v in parse_ics(text):
