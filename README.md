@@ -155,3 +155,14 @@ site/                  la web (index.html, app.js, styles.css, data/events.js, C
 ```
 
 Los datos pertenecen a sus respectivos publicadores bajo sus licencias de datos abiertos; comprueba siempre fechas y precios en la fuente original.
+
+## Cloudflare Pages (opcional)
+
+El flujo de trabajo puede publicar también en Cloudflare Pages (gratis; la web tiene ~6.900 archivos y el límite es 20.000). Está apagado por defecto:
+
+1. En Cloudflare: *Workers & Pages → Create → Pages → Direct Upload*, proyecto llamado `planika`.
+2. Crea un token de API con el permiso *Account → Cloudflare Pages → Edit* y copia el *Account ID*.
+3. En GitHub (*Settings → Secrets and variables → Actions*): secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`, y la variable `CLOUDFLARE_ENABLED` con valor `true`.
+4. Para usar el dominio: en el proyecto, *Custom domains → planikaapp.com*, y en OVH apunta el DNS a Cloudflare según te indique. Después quita el dominio de GitHub Pages.
+
+`site/_headers` define la caché y cabeceras de seguridad (GitHub Pages lo ignora).

@@ -74,6 +74,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
+      - uses: actions/upload-artifact@v4
+        if: ${{ vars.CLOUDFLARE_ENABLED == 'true' }}
+        with:
+          name: site
+          path: site
+          retention-days: 1
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -83,3 +89,19 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+  # Opcional: publica también en Cloudflare Pages. Se activa con la variable del repositorio
+  # CLOUDFLARE_ENABLED=true y los secretos CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID.
+  deploy-cloudflare:
+    needs: build
+    if: ${{ vars.CLOUDFLARE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=planika --branch=main --commit-dirty=true
