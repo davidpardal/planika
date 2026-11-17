@@ -158,8 +158,13 @@ def write_feeds(out_dir, events, days=30):
 
 _PAGE = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>%(title)s · Planika</title><meta name="description" content="%(desc)s">
-<link rel="canonical" href="%(canonical)s"><link rel="stylesheet" href="../styles.css"><link rel="icon" href="../icon.svg" type="image/svg+xml">
+<title>%(seo_title)s · Planika</title><meta name="description" content="%(desc)s">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="%(canonical)s">
+<meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
+<meta property="og:title" content="%(seo_title)s"><meta property="og:description" content="%(desc)s"><meta property="og:url" content="%(canonical)s">
+<meta property="og:image" content="%(site)s/hero.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#ffd23f">
+<link rel="stylesheet" href="../styles.css"><link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="alternate" type="application/rss+xml" title="RSS %(title)s" href="%(rss)s">
 <script type="application/ld+json">%(jsonld)s</script>
 %(analytics)s
@@ -225,7 +230,7 @@ def write_pages(site_dir, events):
         fn = slug(name) + ".html"
         desc = "Agenda de planes de ocio en %s (%s): %d planes próximos entre conciertos, teatro, exposiciones, deporte, ferias y fiestas." % (name, ccaa, len(items))
         body = _PAGE % dict(
-            title="Planes en %s" % name, desc=html.escape(desc), canonical="%s/p/%s" % (SITE_URL, fn),
+            title="Planes en %s" % name, seo_title="Planes y eventos en %s: conciertos, teatro, exposiciones y más" % name, site=SITE_URL, desc=html.escape(desc), canonical="%s/p/%s" % (SITE_URL, fn),
             rss="../feeds/provincia-%s.xml" % code, params="prov=%s" % code, count=len(items),
             jsonld=_itemlist_ld(items), analytics=static.BEACON,
             cards="".join(_card(e) for e in items[:60]),
@@ -239,7 +244,7 @@ def write_pages(site_dir, events):
         fn = key + ".html"
         desc = "%s en toda España: %d planes próximos por provincia, con fechas, entradas y calendario." % (name, len(items))
         body = _PAGE % dict(
-            title="%s %s" % (icon, name), desc=html.escape(desc), canonical="%s/t/%s" % (SITE_URL, fn),
+            title="%s %s" % (icon, name), seo_title="%s en España: agenda de planes por provincia" % name, site=SITE_URL, desc=html.escape(desc), canonical="%s/t/%s" % (SITE_URL, fn),
             rss="../feeds/tipo-%s.xml" % key, params="cat=%s" % key, count=len(items),
             jsonld=_itemlist_ld(items), analytics=static.BEACON,
             cards="".join(_card(e) for e in items[:60]),
@@ -252,11 +257,12 @@ def write_pages(site_dir, events):
     event_pages = static.write_event_pages(site_dir, events, prov_slugs)
     with open(os.path.join(site_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">")
-        fh.write("<url><loc>%s/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>" % SITE_URL)
+        lm = "<lastmod>%s</lastmod>" % iso(today())
+        fh.write("<url><loc>%s/</loc>%s</url>" % (SITE_URL, lm))
         for p in pages:
-            fh.write("<url><loc>%s/%s</loc><changefreq>daily</changefreq></url>" % (SITE_URL, p))
+            fh.write("<url><loc>%s/%s</loc>%s</url>" % (SITE_URL, p, lm))
         for p in event_pages:
-            fh.write("<url><loc>%s/%s</loc></url>" % (SITE_URL, p))
+            fh.write("<url><loc>%s/%s</loc>%s</url>" % (SITE_URL, p, lm))
         fh.write("</urlset>\n")
     with open(os.path.join(site_dir, "robots.txt"), "w", encoding="utf-8") as fh:
         fh.write("User-agent: *\nAllow: /\nSitemap: %s/sitemap.xml\n" % SITE_URL)

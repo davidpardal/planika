@@ -209,10 +209,11 @@ _EVENT_PAGE = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>%(title)s · %(place)s · Planika</title><meta name="description" content="%(desc)s">
 <link rel="canonical" href="%(canonical)s">
-<meta property="og:site_name" content="Planika"><meta property="og:type" content="website">
+<meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
+<meta name="robots" content="index,follow,max-image-preview:large">
 <meta property="og:title" content="%(title)s"><meta property="og:description" content="%(desc)s">
 <meta property="og:url" content="%(canonical)s"><meta property="og:image" content="%(og_image)s">
-<meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#ffd23f">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="%(title)s"><meta name="twitter:description" content="%(desc)s"><meta name="twitter:image" content="%(og_image)s"><meta name="theme-color" content="#ffd23f">
 <link rel="stylesheet" href="../styles.css"><link rel="icon" href="../icon.svg" type="image/svg+xml">
 <script type="application/ld+json">%(jsonld)s</script>
 %(analytics)s
