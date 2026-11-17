@@ -4,7 +4,7 @@
 No salen de una agenda con fecha. Están escritos a mano en data/curated.json
 (nombre, municipio, provincia, tipo, descripción, URL oficial y, si se conoce,
 coordenadas). Cada ejecución del generador los vuelve a mezclar, así que no
-desaparecen cuando se regenera site/data/events.json.
+desaparecen cuando se regenera data/events.json.
 
 No tienen un día concreto: la ficha usa el subtype "Permanente", empieza hoy y
 acaba dentro del tope que ya aplica el normalizador (400 días). Al día siguiente
