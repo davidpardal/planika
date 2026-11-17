@@ -93,7 +93,7 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Axenda de Cultura de Galicia (Xunta) | las 4 provincias gallegas | iCalendar |
 | Ayuntamiento de Cartagena | Cartagena (Murcia) | CSV |
 | Cabildo de Tenerife | eventos deportivos de la isla | JSON |
-| TheSportsDB | próximos partidos de LaLiga, LaLiga 2, ACB, Copa del Rey y Supercopa | API JSON (clave pública de pruebas; `THESPORTSDB_KEY` para una propia) |
+| TheSportsDB | partidos de LaLiga 2, ACB, ASOBAL, Liga Femenina de baloncesto, Copa del Rey y Supercopa (ACB, ASOBAL y Liga F: consulta día a día los próximos 14 días; horas convertidas de UTC a Madrid) | API JSON (clave pública de pruebas; `THESPORTSDB_KEY` para una propia) |
 | Ayuntamiento de Lorca | Lorca (Murcia); su CSV lleva meses sin eventos nuevos | CSV |
 | Ayuntamiento de Zaragoza | Zaragoza ciudad (agenda de actividades completa) | API JSON paginada |
 | esMADRID (Madrid Destino) | Madrid ciudad: conciertos, teatro, exposiciones y grandes eventos | XML |

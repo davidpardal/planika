@@ -3,6 +3,8 @@
 import json
 import os
 import time
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from .util import DATA_DIR, event, http_json, iso, today
 
@@ -13,7 +15,41 @@ BASE = "https://www.thesportsdb.com/api/v1/json/%s/" % KEY
 LEAGUES = {
     "4400": ("LaLiga Hypermotion", "Fútbol"), "4408": ("Liga Endesa ACB", "Baloncesto"),
     "4483": ("Copa del Rey", "Fútbol"), "4511": ("Supercopa de España", "Fútbol"),
+    "4534": ("Liga ASOBAL", "Balonmano"), "5486": ("Liga Femenina de Baloncesto", "Baloncesto"),
 }
+# La clave gratuita solo devuelve 1 partido con "próximos de la liga", pero "eventsday" da hasta 5 por día:
+# en estas ligas se pregunta día a día durante DAILY_DAYS días.
+DAILY = {"4408", "4534", "5486"}
+DAILY_DAYS = 14
+MADRID = ZoneInfo("Europe/Madrid")
+
+
+def to_madrid(date, tm):
+    """TheSportsDB da la hora en UTC. Devuelve (fecha, hora) en hora de Madrid; sin hora, (fecha, '')."""
+    if not date or not tm or tm.startswith("00:00"):
+        return date, ""
+    try:
+        dt = datetime.strptime("%s %s" % (date, tm[:5]), "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(MADRID)
+    except ValueError:
+        return date, ""
+    return dt.strftime("%Y-%m-%d"), dt.strftime("%H:%M")
+
+
+def _daily(lid, lname, log):
+    out = []
+    for n in range(DAILY_DAYS):
+        day = iso(today() + timedelta(days=n))
+        for attempt in (0, 1):
+            try:
+                out.extend(http_json(BASE + "eventsday.php", params={"d": day, "l": lid}, retries=1).get("events") or [])
+                break
+            except Exception as exc:  # noqa: BLE001  (429: se espera y se reintenta una vez)
+                if attempt:
+                    log("%s: %s %s (%s); se corta la consulta diaria" % (NAME, lname, day, exc.__class__.__name__))
+                    return out
+                time.sleep(20)
+        time.sleep(2.5)
+    return out
 _CACHE = os.path.join(DATA_DIR, "teams_cache.json")
 
 
@@ -47,15 +83,16 @@ def fetch(log, days=180):
     out = {}
     for lid, (lname, sport) in LEAGUES.items():
         events = []
-        for endpoint, params in (("eventsnextleague.php", {"id": lid}),):
+        if lid in DAILY:
+            events = _daily(lid, lname, log)
+        else:
             try:
-                d = http_json(BASE + endpoint, params=params, retries=3)
-                events.extend(d.get("events") or [])
+                events.extend(http_json(BASE + "eventsnextleague.php", params={"id": lid}, retries=3).get("events") or [])
             except Exception as exc:  # noqa: BLE001
-                log("%s: %s %s (%s)" % (NAME, endpoint, lname, exc.__class__.__name__))
+                log("%s: eventsnextleague %s (%s)" % (NAME, lname, exc.__class__.__name__))
             time.sleep(2.2)
         for e in events:
-            date = e.get("dateEvent") or ""
+            date, hhmm = to_madrid(e.get("dateEvent") or "", e.get("strTime") or "")
             if not date or date < iso(today()) or e.get("strPostponed") == "yes":
                 continue
             if e.get("intHomeScore") not in (None, ""):
@@ -63,7 +100,7 @@ def fetch(log, days=180):
             city = _team_city(e.get("idHomeTeam"), cache)
             title = "%s - %s" % (e.get("strHomeTeam"), e.get("strAwayTeam"))
             ev = event(
-                NAME, e.get("idEvent"), title, date, time=(e.get("strTime") or "")[:5] if (e.get("strTime") or "") != "00:00:00" else "",
+                NAME, e.get("idEvent"), title, date, time=hhmm,
                 description="%s, jornada %s. %s en %s." % (lname, e.get("intRound") or "-", sport, e.get("strVenue") or city),
                 subtype=lname, category="deporte", city=city, venue=e.get("strVenue"),
                 url=HOME + "event/" + str(e.get("idEvent")), image=e.get("strThumb") or e.get("strPoster"),
