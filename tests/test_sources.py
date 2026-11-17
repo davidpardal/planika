@@ -206,3 +206,36 @@ class TestSportsDbTime(unittest.TestCase):
         self.assertEqual(src_sportsdb.to_madrid("2026-11-21", "23:30:00"), ("2026-11-22", "00:30"))  # cambia de día
         self.assertEqual(src_sportsdb.to_madrid("2026-11-21", "00:00:00"), ("2026-11-21", ""))  # sin hora
         self.assertEqual(src_sportsdb.to_madrid("2026-11-21", ""), ("2026-11-21", ""))
+
+
+class TestSportsDbCache(unittest.TestCase):
+    def setUp(self):
+        self.calls = []
+        self._http, self._sleep = src_sportsdb.http_json, src_sportsdb.time.sleep
+        src_sportsdb.time.sleep = lambda *_: None
+
+    def tearDown(self):
+        src_sportsdb.http_json, src_sportsdb.time.sleep = self._http, self._sleep
+
+    def test_budget_and_cache(self):
+        def fake(url, params=None, **kw):
+            self.calls.append(params["d"])
+            return {"events": [{"idEvent": params["d"], "dateEvent": params["d"]}]}
+        src_sportsdb.http_json = fake
+        store, budget = {}, [3, False]
+        out = src_sportsdb._daily("4408", "ACB", store, budget, lambda *_: None)
+        self.assertEqual((len(self.calls), budget[0]), (3, 0))      # gasta solo el presupuesto
+        self.assertEqual(len(out), 3)                                # y devuelve lo descargado
+        self.calls.clear()
+        again = src_sportsdb._daily("4408", "ACB", store, [3, False], lambda *_: None)
+        self.assertTrue(set(self.calls).isdisjoint({e["idEvent"] for e in out}))  # lo ya guardado no se vuelve a pedir
+        self.assertGreaterEqual(len(again), 3)
+
+    def test_429_stops(self):
+        def boom(*a, **k):
+            raise RuntimeError("429")
+        src_sportsdb.http_json = boom
+        budget = [8, False]
+        src_sportsdb._daily("4408", "ACB", {}, budget, lambda *_: None)
+        self.assertTrue(budget[1])
+        self.assertEqual(budget[0], 7)  # una sola petición fallida y no se insiste
