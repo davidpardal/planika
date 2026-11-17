@@ -21,65 +21,65 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
- Dirección real de la web (dominio propio.*- uses: actions/checkout@v4
- Dirección real de la web (dominio propio.*- uses: actions/setup-python@v5
- Dirección real de la web (dominio propio.*  with:
- Dirección real de la web (dominio propio.*    python-version: "3.12"
- Dirección real de la web (dominio propio.*- run: pip install -r requirements.txt
- Dirección real de la web (dominio propio.*- name: Pruebas
- Dirección real de la web (dominio propio.*  run: python3 -m unittest discover -s tests -v
- Dirección real de la web (dominio propio.*# Dirección real de la web (dominio propio si está configurado; si no, la de github.io) para canónicas y sitemap
- Dirección real de la web (dominio propio.*- id: pages
- Dirección real de la web (dominio propio.*  uses: actions/configure-pages@v5
- Dirección real de la web (dominio propio.*- name: Descargar agendas
- Dirección real de la web (dominio propio.*  env:
- Dirección real de la web (dominio propio.*    PLANIKA_SITE_URL: https://planikaapp.com
- Dirección real de la web (dominio propio.*    TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
- Dirección real de la web (dominio propio.*    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
- Dirección real de la web (dominio propio.*    PLANIKA_LLM: ${{ vars.PLANIKA_LLM || 'off' }}
- Dirección real de la web (dominio propio.*  run: python3 fetch_events.py --days 180
- Dirección real de la web (dominio propio.*- name: Guardar datos actualizados en el repositorio
- Dirección real de la web (dominio propio.*  run: |
- Dirección real de la web (dominio propio.*    git config user.name "github-actions[bot]"
- Dirección real de la web (dominio propio.*    git config user.email "github-actions[bot]@users.noreply.github.com"
- Dirección real de la web (dominio propio.*    # Se conservan los archivos generados, se sincroniza con la rama remota y se vuelven a aplicar:
- Dirección real de la web (dominio propio.*    # así no hay conflictos aunque otra ejecución haya publicado datos mientras tanto.
- Dirección real de la web (dominio propio.*    tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/sitemap.xml site/robots.txt data/health.json data/teams_cache.json data/llm_cache.json 2>/dev/null)
- Dirección real de la web (dominio propio.*    git fetch origin main
- Dirección real de la web (dominio propio.*    git reset --hard origin/main
- Dirección real de la web (dominio propio.*    tar xf /tmp/generado.tar
- Dirección real de la web (dominio propio.*    git add -A site/ data/
- Dirección real de la web (dominio propio.*    git commit -m "Actualiza eventos $(date -u +%F)" || echo "sin cambios"
- Dirección real de la web (dominio propio.*    git push origin HEAD:main
- Dirección real de la web (dominio propio.*- name: Avisar si alguna fuente falla
- Dirección real de la web (dominio propio.*  env:
- Dirección real de la web (dominio propio.*    GH_TOKEN: ${{ github.token }}
- Dirección real de la web (dominio propio.*  run: |
- Dirección real de la web (dominio propio.*    python3 - <<'PY' > alerts.txt
- Dirección real de la web (dominio propio.*    import json, sys; h = json.load(open("data/health.json")); a = h.get("alerts", [])
- Dirección real de la web (dominio propio.*    sys.stdout.write("\n".join("- " + x for x in a) + ("\n" if a else ""))
- Dirección real de la web (dominio propio.*    PY
- Dirección real de la web (dominio propio.*    if [ -s alerts.txt ]; then
- Dirección real de la web (dominio propio.*      title="Alerta de fuentes $(date -u +%F)"
- Dirección real de la web (dominio propio.*      if [ -z "$(gh issue list --state open --json number,title --jq '.[] | select(.title|startswith("Alerta de fuentes")) | .number')" ]; then
- Dirección real de la web (dominio propio.*        gh issue create --title "$title" --body "$(printf 'Fuentes con menos eventos de lo normal o con error:\n\n%s\n\nRevisa data/health.json y el log del workflow.' "$(cat alerts.txt)")"
- Dirección real de la web (dominio propio.*      else
- Dirección real de la web (dominio propio.*        echo "Ya hay una alerta abierta; no se duplica."
- Dirección real de la web (dominio propio.*      fi
- Dirección real de la web (dominio propio.*    else
- Dirección real de la web (dominio propio.*      for n in $(gh issue list --state open --json number,title --jq '.[] | select(.title|startswith("Alerta de fuentes")) | .number'); do
- Dirección real de la web (dominio propio.*        gh issue close "$n" --comment "Todas las fuentes han respondido con normalidad en la ejecución de $(date -u +%F)."
- Dirección real de la web (dominio propio.*      done
- Dirección real de la web (dominio propio.*    fi
- Dirección real de la web (dominio propio.*- uses: actions/upload-pages-artifact@v3
- Dirección real de la web (dominio propio.*  with:
- Dirección real de la web (dominio propio.*    path: site
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Pruebas
+        run: python3 -m unittest discover -s tests -v
+      # La web vive en el dominio propio: canónicas y sitemap usan siempre esa dirección
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Descargar agendas
+        env:
+          PLANIKA_SITE_URL: https://planikaapp.com
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PLANIKA_LLM: ${{ vars.PLANIKA_LLM || 'off' }}
+        run: python3 fetch_events.py --days 180
+      - name: Guardar datos actualizados en el repositorio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Se conservan los archivos generados, se sincroniza con la rama remota y se vuelven a aplicar:
+          # así no hay conflictos aunque otra ejecución haya publicado datos mientras tanto.
+          tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/sitemap.xml site/robots.txt data/health.json data/teams_cache.json data/llm_cache.json 2>/dev/null)
+          git fetch origin main
+          git reset --hard origin/main
+          tar xf /tmp/generado.tar
+          git add -A site/ data/
+          git commit -m "Actualiza eventos $(date -u +%F)" || echo "sin cambios"
+          git push origin HEAD:main
+      - name: Avisar si alguna fuente falla
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY' > alerts.txt
+          import json, sys; h = json.load(open("data/health.json")); a = h.get("alerts", [])
+          sys.stdout.write("\n".join("- " + x for x in a) + ("\n" if a else ""))
+          PY
+          if [ -s alerts.txt ]; then
+            title="Alerta de fuentes $(date -u +%F)"
+            if [ -z "$(gh issue list --state open --json number,title --jq '.[] | select(.title|startswith("Alerta de fuentes")) | .number')" ]; then
+              gh issue create --title "$title" --body "$(printf 'Fuentes con menos eventos de lo normal o con error:\n\n%s\n\nRevisa data/health.json y el log del workflow.' "$(cat alerts.txt)")"
+            else
+              echo "Ya hay una alerta abierta; no se duplica."
+            fi
+          else
+            for n in $(gh issue list --state open --json number,title --jq '.[] | select(.title|startswith("Alerta de fuentes")) | .number'); do
+              gh issue close "$n" --comment "Todas las fuentes han respondido con normalidad en la ejecución de $(date -u +%F)."
+            done
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment:
- Dirección real de la web (dominio propio.*name: github-pages
- Dirección real de la web (dominio propio.*url: ${{ steps.deployment.outputs.page_url }}
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
- Dirección real de la web (dominio propio.*- id: deployment
- Dirección real de la web (dominio propio.*  uses: actions/deploy-pages@v4
+      - id: deployment
+        uses: actions/deploy-pages@v4
