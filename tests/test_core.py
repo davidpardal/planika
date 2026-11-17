@@ -219,6 +219,23 @@ class TestPermanent(unittest.TestCase):
             with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
                 self.assertIn("promociona-tu-evento.html", fh.read())
 
+    def test_sources_page(self):
+        ev = util.event("Agenda", "1", "Concierto", "2026-11-20",
+                        province_code="50", city="Zaragoza", category="musica")
+        srcs = [{"name": "Ayuntamiento <A>", "home": "https://a.example/?x=1&y=2", "count": 1200, "error": ""},
+                {"name": "Fuente B", "home": "https://b.example/", "count": 34, "error": "timeout"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            pages = publish.write_pages(tmp, [ev], srcs, "2026-11-17T04:30")
+            self.assertIn("fuentes.html", pages)
+            with open(os.path.join(tmp, "fuentes.html"), encoding="utf-8") as fh:
+                page = fh.read()
+            self.assertIn("2 fuentes, 1.234 planes", page)
+            self.assertIn("Ayuntamiento &lt;A&gt;", page)
+            self.assertIn("x=1&amp;y=2", page)
+            self.assertEqual(page.count("con error en la última descarga"), 1)
+            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+                self.assertIn("/fuentes.html", fh.read())
+
     def test_curated_file_merges_without_duplicates(self):
         from planes.src_curated import NAME, fetch, replace_events
         evs = fetch(lambda msg: None)

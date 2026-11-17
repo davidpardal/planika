@@ -253,6 +253,43 @@ def _promo_page():
                          jsonld=json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c"),
                          faq=faq_html)
 
+_SOURCES = """<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fuentes de datos · Planika</title><meta name="description" content="De dónde salen los planes de Planika: portales de datos abiertos, agendas oficiales y APIs públicas, con el número de planes de cada fuente.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="%(site)s/fuentes.html">
+<meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
+<meta property="og:title" content="Fuentes de datos de Planika"><meta property="og:description" content="Portales de datos abiertos, agendas oficiales y APIs públicas de las que sale la agenda de Planika."><meta property="og:url" content="%(site)s/fuentes.html">
+<meta property="og:image" content="%(site)s/og.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Fuentes de datos · Planika"><meta name="twitter:description" content="Portales de datos abiertos, agendas oficiales y APIs públicas de las que sale la agenda de Planika."><meta name="twitter:image" content="%(site)s/og.jpg"><meta name="theme-color" content="#ffd23f">
+<link rel="stylesheet" href="styles.css"><link rel="icon" href="icon.svg" type="image/svg+xml">
+%(analytics)s
+</head><body>
+<header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><h1>Planika</h1></a></div>
+<p class="tagline">Fuentes de datos</p>
+<p class="lead">Los datos proceden de portales de datos abiertos y APIs públicas, más una selección de visitas permanentes (museos, monumentos, espacios naturales y salas) con enlace a su web oficial.</p>
+<p class="meta"><a class="btn primary" href="./">Explorar Planika</a>%(updated)s</p></div></header>
+<main class="wrap">
+<h2 style="margin:22px 0 10px">%(n)d fuentes, %(total)s planes</h2>
+<ul id="sources">%(items)s</ul>
+<p>Cada plan enlaza al organizador. Comprueba siempre fechas, horarios y precios en la fuente original.</p>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="promociona-tu-evento.html">Publica tu evento</a> · <a href="https://github.com/davidpardal/planika">Código en GitHub</a></p></nav>
+</main></body></html>
+"""
+
+
+def _sources_page(sources, updated_at=""):
+    items = []
+    for s in sources:
+        err = " <span class=\"pill\">con error en la última descarga</span>" if s.get("error") else ""
+        items.append("<li><a href=\"%s\" target=\"_blank\" rel=\"noopener\">%s</a> · %d planes%s</li>"
+                     % (html.escape(s.get("home") or "#", quote=True), html.escape(s.get("name") or ""), int(s.get("count") or 0), err))
+    total = sum(int(s.get("count") or 0) for s in sources)
+    upd = ""
+    if updated_at:
+        upd = " &nbsp; Actualizado el %s" % html.escape(updated_at.replace("T", " a las "))
+    return _SOURCES % dict(site=SITE_URL, analytics=static.BEACON, items="".join(items), n=len(sources),
+                           total="{:,}".format(total).replace(",", "."), updated=upd)
+
 
 def _itemlist_ld(items, limit=20):
     """JSON-LD ItemList con los primeros planes de la página, enlazando a la ficha de cada plan."""
@@ -307,7 +344,7 @@ def in_window(e, a, b):
     return e["start"] >= a or (datetime.strptime(e["end"], "%Y-%m-%d") - datetime.strptime(e["start"], "%Y-%m-%d")).days <= 14
 
 
-def write_pages(site_dir, events):
+def write_pages(site_dir, events, sources=None, updated_at=""):
     t0 = iso(today())
     def upcoming(items):
         # Primero la agenda con fecha; después las visitas permanentes.
@@ -428,6 +465,9 @@ def write_pages(site_dir, events):
     with open(os.path.join(site_dir, "promociona-tu-evento.html"), "w", encoding="utf-8") as fh:
         fh.write(_promo_page())
     pages.append("promociona-tu-evento.html")
+    with open(os.path.join(site_dir, "fuentes.html"), "w", encoding="utf-8") as fh:
+        fh.write(_sources_page(sources or [], updated_at))
+    pages.append("fuentes.html")
     prov_slugs = {code: slug(name) for code, name, _ in PROVINCIAS}
     event_pages = static.write_event_pages(site_dir, events, prov_slugs)
     with open(os.path.join(site_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
