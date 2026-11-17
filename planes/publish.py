@@ -207,6 +207,32 @@ def _card(e):
         html.escape(e["source"]))
 
 
+_MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+
+def fmt_es(d):
+    return "%d de %s" % (d.day, _MESES[d.month - 1])
+
+
+def weekend_window(t0_date):
+    """(viernes, domingo) del fin de semana en curso o, si aún no ha empezado, del próximo; en fin de semana arranca hoy."""
+    wd = t0_date.weekday()
+    fri = t0_date - timedelta(days=wd - 4) if wd >= 4 else t0_date + timedelta(days=4 - wd)
+    sun = fri + timedelta(days=2)
+    return max(fri, t0_date), sun
+
+
+def in_window(e, a, b):
+    """¿Ocurre el plan entre a y b (ISO)? Con funciones sueltas cuenta cada fecha; los rangos largos (exposiciones…) no."""
+    if is_permanent(e):
+        return False
+    if e.get("sessions"):
+        return any(a <= d <= b for d in e["sessions"])
+    if e["start"] > b or e["end"] < a:
+        return False
+    return e["start"] >= a or (datetime.strptime(e["end"], "%Y-%m-%d") - datetime.strptime(e["start"], "%Y-%m-%d")).days <= 14
+
+
 def write_pages(site_dir, events):
     t0 = iso(today())
     def upcoming(items):
@@ -239,6 +265,39 @@ def write_pages(site_dir, events):
         with open(os.path.join(prov_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(body)
         pages.append("p/" + fn)
+        # Páginas de intención de búsqueda: "planes este fin de semana en X" y "planes gratis en X"
+        base = slug(name)
+        fri, sun = weekend_window(today())
+        a, b = iso(fri), iso(sun)
+        extras = (
+            ("fin-de-semana", "Planes este fin de semana en %s" % name,
+             "Qué hacer este fin de semana en %s: %%d planes del %s al %s." % (name, fmt_es(fri), fmt_es(sun)),
+             [e for e in items if in_window(e, a, b)], "prov=%s&from=%s&to=%s" % (code, a, b)),
+            ("gratis", "Planes gratis en %s" % name,
+             "Planes gratis en %s: %%d actividades gratuitas próximas, entre conciertos, exposiciones, talleres y fiestas." % name,
+             [e for e in items if e.get("free") and not is_permanent(e)], "prov=%s&free=1" % code),
+        )
+        made = []
+        for suffix, ttl, dsc, sub, params in extras:
+            if len(sub) < 3:
+                continue
+            efn = "%s-%s.html" % (base, suffix)
+            ebody = _PAGE % dict(
+                title=ttl, seo_title=ttl + " · conciertos, teatro y más", site=SITE_URL, desc=html.escape(dsc % len(sub)),
+                canonical="%s/p/%s" % (SITE_URL, efn), rss="../feeds/provincia-%s.xml" % code, params=params, count=len(sub),
+                jsonld=_itemlist_ld(sub), analytics=static.BEACON, cards="".join(_card(e) for e in sub[:60]),
+                more=("<p class=\"hint\">Se muestran 60 de %d. <a href=\"../?%s\">Ver todos en la app</a>.</p>" % (len(sub), params)) if len(sub) > 60 else "",
+                links="<a href=\"%s\">Todos los planes en %s</a> · %s" % (fn, html.escape(name), " · ".join(
+                    "<a href=\"%s-%s.html\">%s</a>" % (base, x, l) for x, l in (("fin-de-semana", "Fin de semana"), ("gratis", "Gratis")) if x != suffix)))
+            with open(os.path.join(prov_dir, efn), "w", encoding="utf-8") as fh:
+                fh.write(ebody)
+            pages.append("p/" + efn)
+            made.append((efn, {"fin-de-semana": "Planes este fin de semana", "gratis": "Planes gratis"}[suffix]))
+        if made:  # enlazado interno desde la página de la provincia
+            path = os.path.join(prov_dir, fn)
+            txt = open(path, encoding="utf-8").read()
+            nav = "<p>%s</p>" % " · ".join("<a href=\"%s\">%s en %s</a>" % (f, l, html.escape(name)) for f, l in made)
+            open(path, "w", encoding="utf-8").write(txt.replace("</main></body></html>", nav + "</main></body></html>", 1))
     for key, name, icon in CATEGORIES:
         items = upcoming([e for e in events if e["category"] == key])
         fn = key + ".html"

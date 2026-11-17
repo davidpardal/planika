@@ -241,3 +241,21 @@ class TestPermanent(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestLandingWindows(unittest.TestCase):
+    def test_weekend_window(self):
+        from datetime import date
+        from planes.publish import weekend_window
+        self.assertEqual(weekend_window(date(2026, 11, 17)), (date(2026, 11, 20), date(2026, 11, 22)))  # martes
+        self.assertEqual(weekend_window(date(2026, 11, 21)), (date(2026, 11, 21), date(2026, 11, 22)))  # sábado: arranca hoy
+        self.assertEqual(weekend_window(date(2026, 11, 20))[0], date(2026, 11, 20))  # viernes
+
+    def test_in_window(self):
+        from planes.publish import in_window
+        ev = lambda s, e, **k: dict({"start": s, "end": e, "category": "musica"}, **k)
+        self.assertTrue(in_window(ev("2026-11-21", "2026-11-21"), "2026-11-20", "2026-11-22"))
+        self.assertFalse(in_window(ev("2026-11-25", "2026-11-25"), "2026-11-20", "2026-11-22"))
+        self.assertFalse(in_window(ev("2026-11-10", "2026-11-30"), "2026-11-20", "2026-11-22"))  # exposición larga
+        self.assertTrue(in_window(ev("2026-11-19", "2026-11-23"), "2026-11-20", "2026-11-22"))  # rango corto
+        self.assertTrue(in_window(ev("2026-11-01", "2026-12-01", sessions=["2026-11-21"]), "2026-11-20", "2026-11-22"))
