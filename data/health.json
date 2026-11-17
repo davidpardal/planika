@@ -40,8 +40,8 @@
    },
    {
     "date": "2026-11-17",
-    "count": 4008,
-    "error": "HTTPError: 403 Client Error: Forbidden for url: https://opendata-ajuntament.barcelona.cat/data/api/3/action/datastore_search?resour"
+    "count": 4179,
+    "error": ""
    }
   ],
   "euskadi": [
@@ -84,7 +84,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 1222,
+    "count": 1224,
     "error": ""
    }
   ],
@@ -282,7 +282,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 3,
+    "count": 5,
     "error": ""
    }
   ],
@@ -425,8 +425,6 @@
    }
   ]
  },
- "updated_at": "2026-11-17T14:31",
- "alerts": [
-  "Ajuntament de Barcelona: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-17"
- ]
+ "updated_at": "2026-11-17T14:55",
+ "alerts": []
 }
