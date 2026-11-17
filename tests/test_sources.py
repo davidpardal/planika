@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from planes import src_deporte_pro, src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
+from planes import src_deporte_pro, src_sportsdb, src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
 
 
 class TestZaragoza(unittest.TestCase):
@@ -197,3 +197,12 @@ class TestDeportePro(unittest.TestCase):
         self.assertEqual(len(evs), 1)
         self.assertEqual((evs[0]["title"], evs[0]["time"], evs[0]["venue"], evs[0]["province"], evs[0]["subtype"]),
                          ("Kosner Baskonia Vitoria-Gasteiz - Paris Basketball", "20:30", "Buesa Arena", "Álava", "Euroliga"))
+
+
+class TestSportsDbTime(unittest.TestCase):
+    def test_utc_to_madrid(self):
+        self.assertEqual(src_sportsdb.to_madrid("2026-11-22", "11:30:00"), ("2026-11-22", "12:30"))  # invierno: UTC+1
+        self.assertEqual(src_sportsdb.to_madrid("2026-07-01", "18:00:00"), ("2026-07-01", "20:00"))  # verano: UTC+2
+        self.assertEqual(src_sportsdb.to_madrid("2026-11-21", "23:30:00"), ("2026-11-22", "00:30"))  # cambia de día
+        self.assertEqual(src_sportsdb.to_madrid("2026-11-21", "00:00:00"), ("2026-11-21", ""))  # sin hora
+        self.assertEqual(src_sportsdb.to_madrid("2026-11-21", ""), ("2026-11-21", ""))
