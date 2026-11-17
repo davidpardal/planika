@@ -88,7 +88,7 @@ def write_site(args, site_dir, payload):
     log("Escrito %s (%.0f KB) y %d bloques de detalles en data/d/" % (os.path.join(args.out, "core.js"), core_size / 1024, chunks))
     if not args.no_pages:
         feeds = publish.write_feeds(os.path.join(site_dir, "feeds"), events)
-        pages = publish.write_pages(site_dir, events)
+        pages = publish.write_pages(site_dir, events, payload.get("sources") or [], payload.get("updated_at") or "")
         log("Generados %d feeds RSS y %d páginas estáticas" % (len(feeds), len(pages)))
 
 

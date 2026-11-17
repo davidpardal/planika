@@ -167,12 +167,6 @@
       b.addEventListener('click', function () { state.cats[c.key] = !state.cats[c.key]; b.classList.toggle('on', !!state.cats[c.key]); refresh(); });
       chips.appendChild(b);
     });
-    var ul = $('sources');
-    DATA.sources.forEach(function (s) {
-      var li = document.createElement('li');
-      li.innerHTML = '<a href="' + esc(s.home) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a> · ' + s.count + ' planes' + (s.error ? ' <span class="pill">con error en la última descarga</span>' : '');
-      ul.appendChild(li);
-    });
     $('meta').textContent = 'Actualizado el ' + (DATA.updated_at || '').replace('T', ' a las ') + ' · ' + EVENTS.length.toLocaleString('es-ES') + ' planes del ' + fmtDay.format(fromIso(DATA.from)) + ' al ' + fmtDay.format(fromIso(DATA.to));
     var pc = provCounts();
     $('seoLinks').innerHTML = DATA.provinces.filter(function (p) { return pc[p.code]; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); })
