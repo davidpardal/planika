@@ -1,19 +1,71 @@
-import requests, time, json
-H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0)"}
-B = "https://www.thesportsdb.com/api/v1/json/123/"
-def get(u):
+import requests, json, re, time
+H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0)", "Accept": "application/json, text/plain, */*"}
+
+def get(u, n=500, **kw):
     try:
-        r = requests.get(B + u, headers=H, timeout=30)
-        return r.json() if r.status_code == 200 and r.text.strip().startswith("{") else {"_status": r.status_code}
+        r = requests.get(u, headers=H, timeout=40, **kw)
+        return r
     except Exception as e:
-        return {"_err": str(e)[:100]}
-for lid, name in (("4408", "ACB"), ("4534", "ASOBAL"), ("5486", "Liga Femenina"), ("4832", "Copa Rey bal")):
-    d = get("eventsnextleague.php?id=%s" % lid); ev = d.get("events") or []
-    print(name, "next:", len(ev), [(e["dateEvent"], e.get("strTime"), e["strHomeTeam"], e["strAwayTeam"]) for e in ev[:3]], d.get("_status", ""))
-    time.sleep(2.2)
-# eventsday por fechas: ¿cuántos partidos devuelve y con qué hora?
-for lid, name in (("4408", "ACB"), ("4534", "ASOBAL")):
-    for day in ("2026-11-21", "2026-11-22", "2026-11-28", "2026-11-29", "2026-12-05", "2026-12-06"):
-        d = get("eventsday.php?d=%s&l=%s" % (day, lid)); ev = d.get("events") or []
-        print(name, day, len(ev), [(e.get("strTime"), e["strHomeTeam"], e["strVenue"]) for e in ev][:5], d.get("_status", ""), d.get("_err", ""))
-        time.sleep(2.2)
+        print("  ERR", str(e)[:150]); return None
+
+def head(u, n=400):
+    r = get(u)
+    if r is None: return None
+    t = re.sub(r"\s+", " ", r.text)[:n]
+    print("  ->", r.status_code, r.headers.get("content-type", "")[:40], len(r.content), "bytes |", t)
+    return r
+
+def ckan(base, q="agenda", rows=15):
+    print("\n== CKAN", base, q)
+    r = get("%s/api/3/action/package_search?q=%s&rows=%d" % (base, q, rows))
+    if r is None: return
+    try:
+        d = r.json()["result"]
+    except Exception:
+        print("  no JSON", r.status_code, re.sub(r"\s+", " ", r.text)[:200]); return
+    print("  count", d["count"])
+    for p in d["results"]:
+        res = [(x.get("format"), x.get("url")) for x in p.get("resources", [])][:3]
+        print("  *", p.get("title", "")[:70], "|", (p.get("metadata_modified") or "")[:10], "|", res)
+
+# 1) CKAN de varios portales
+for base in ("https://opendata.vlci.valencia.es", "https://datosabiertos.navarra.es", "https://opendata.aragon.es",
+             "https://datos.comunidad.madrid", "https://datosabiertos.sevilla.org"):
+    ckan(base, "agenda")
+    ckan(base, "eventos")
+
+# 2) Opendatasoft Valencia
+print("\n== ODS Valencia")
+head("https://valencia.opendatasoft.com/api/explore/v2.1/catalog/datasets?q=agenda&limit=10")
+
+# 3) datos.gob.es: catálogo nacional por título
+for t in ("agenda", "eventos", "agenda cultural"):
+    print("\n== datos.gob.es title", t)
+    r = get("https://datos.gob.es/apidata/catalog/dataset/title/%s?_pageSize=40&_page=0&_sort=-modified" % requests.utils.quote(t))
+    if r is None: continue
+    try:
+        items = r.json()["result"]["items"]
+        print("  items", len(items))
+        for it in items:
+            title = it.get("title")
+            if isinstance(title, list): title = (title[0] or {}).get("_value", "")
+            dist = it.get("distribution") or []
+            if isinstance(dist, dict): dist = [dist]
+            fm = [((d.get("format") or {}).get("value") if isinstance(d.get("format"), dict) else d.get("format")) for d in dist][:3]
+            print("  *", str(title)[:70], "|", (it.get("modified") or "")[:10], "|", fm, "|", (it.get("publisher") or "")[-40:])
+    except Exception as e:
+        print("  parse", e, re.sub(r"\s+", " ", r.text)[:200])
+
+# 4) Bilbao
+print("\n== Bilbao")
+head("https://www.bilbao.eus/cs/Satellite?c=Page&cid=1272990237857&pageid=1272990237857&idioma=es&pagename=Bilbaonet/Page/BIO_ListadoEventosAppInfoBilbao&todos=si", 600)
+head("https://www.bilbao.eus/cs/Satellite?c=Page&pageid=3000094681&idioma=es&pagename=Bilbaonet/Page/OD_obtenerAgendaMunicipal&formato=XML", 600)
+
+# 5) Andalucía y Sevilla
+print("\n== Andalucia")
+head("https://www.andalucia.org/eventos/", 300)
+head("https://datos.juntadeandalucia.es/api/v0/", 300)
+head("https://www.sevilla.org/servicios/datos-abiertos", 200)
+print("\n== Zaragoza / Euskadi turismo")
+head("https://opendata.euskadi.eus/contenidos/ds_eventos/eventos_turisticos/opendata/agenda.xml", 300)
+head("https://www.zaragoza.es/sede/servicio/cultura/evento.json?rows=2", 400)
