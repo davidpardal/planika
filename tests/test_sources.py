@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from planes import src_diba, src_esmadrid, src_municipios, src_murcia, src_zaragoza  # noqa: E402
+from planes import src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
 
 
 class TestZaragoza(unittest.TestCase):
@@ -143,3 +143,28 @@ class TestMurcia(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestVitoria(unittest.TestCase):
+    @staticmethod
+    def item(guid, title, pub):
+        return ("<item><title>%s</title><link>https://v.es/?uid=%s</link><pubDate>%s</pubDate>"
+                "<guid>https://v.es/?uid=%s</guid></item>" % (title, guid, pub, guid))
+
+    def test_groups_days_into_range(self):
+        from planes.util import iso, today
+        from datetime import timedelta
+        d = lambda n: (today() + timedelta(days=n)).strftime("%a, %d %b %Y 10:00:00 GMT")
+        xml = "<rss>" + self.item("a", "Exposici&oacute;n: Arana", d(1)) + self.item("a", "Exposici&oacute;n: Arana", d(3)) \
+            + self.item("b", "Concierto de c&aacute;mara", d(2)) + "</rss>"
+        evs = {e["title"]: e for e in src_vitoria.parse(xml)}
+        self.assertEqual(len(evs), 2)
+        arana = evs["Exposición: Arana"]
+        self.assertEqual((arana["start"], arana["end"], arana["time"]), (iso(today() + timedelta(days=1)), iso(today() + timedelta(days=3)), ""))
+        conc = evs["Concierto de cámara"]
+        self.assertEqual((conc["time"], conc["province"], conc["city"]), ("11:00", "Álava", "Vitoria-Gasteiz"))
+
+    def test_drops_past_and_permanent(self):
+        xml = "<rss>" + self.item("x", "Pasado", "Mon, 05 Jan 2026 10:00:00 GMT") \
+            + self.item("y", "Aula", "Mon, 05 Jan 2026 10:00:00 GMT") + self.item("y", "Aula", "Fri, 05 Jan 2029 10:00:00 GMT") + "</rss>"
+        self.assertEqual(src_vitoria.parse(xml), [])
