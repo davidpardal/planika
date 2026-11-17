@@ -337,6 +337,30 @@
   }
 
   // ---------- mapa
+  // Leaflet se descarga solo cuando se abre el mapa por primera vez:
+  // quien nunca lo abre no paga sus ~150 KB en la carga inicial.
+  var leafletState = '';
+  function loadLeaflet() {
+    if (typeof L !== 'undefined' || leafletState) return;
+    leafletState = 'loading';
+    ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
+     'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css',
+     'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css'].forEach(function (href) {
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l);
+    });
+    var fail = function () { leafletState = 'error'; if (state.view === 'map') renderMap(); };
+    var s1 = document.createElement('script');
+    s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s1.onload = function () {
+      var s2 = document.createElement('script');
+      s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js';
+      s2.onload = function () { leafletState = 'ok'; if (state.view === 'map') renderMap(); };
+      s2.onerror = fail;
+      document.head.appendChild(s2);
+    };
+    s1.onerror = fail;
+    document.head.appendChild(s1);
+  }
   var map = null, cluster = null, youMarker = null;
   function ensureMap() {
     if (map || typeof L === 'undefined') return !!map;
@@ -347,6 +371,10 @@
     return true;
   }
   function renderMap() {
+    if (typeof L === 'undefined' && leafletState !== 'error') {
+      loadLeaflet();
+      $('map').innerHTML = '<p class="empty">Cargando el mapa…</p>'; renderCoverage(); return;
+    }
     if (!ensureMap()) { $('map').innerHTML = '<p class="empty">El mapa no ha podido cargarse (sin conexión a la librería de mapas).</p>'; renderCoverage(); return; }
     var list = filtered();
     cluster.clearLayers();
