@@ -23,7 +23,7 @@ for t in ("agenda cultural", "agenda"):
         try: items = r.json()["result"]["items"]
         except Exception: print("no json", t, page, r.status_code); continue
         for it in items:
-            pub = text(it.get("publisher"))[-10:]
+            pub = text(it.get("publisher"))[-9:]
             if pub in WANT and (pub, text(it.get("title"))) not in [(c[0], c[1]) for c in cands]:
                 dist = it.get("distribution") or []
                 if isinstance(dist, dict): dist = [dist]
@@ -51,10 +51,9 @@ for pub, title, mod, dist in cands:
         yrs = re.findall(r"2026-1[12]-\d\d|2026-0[1-9]-\d\d|2027-\d\d-\d\d|\d\d/\d\d/2026|\d\d/\d\d/2027", r.text)
         print("    fechas 2026-27:", len(yrs), yrs[:4])
 
-print("\n== andalucia.org/eventos")
+print("\n== andalucia.org/eventos: endpoints")
 r = get("https://www.andalucia.org/eventos/")
 if r is not None:
     t = r.text
-    print(r.status_code, len(t), "ld+json:", len(re.findall(r"application/ld\+json", t)), "startDate:", len(re.findall(r"startDate", t)))
-    for m in re.findall(r'(https?://[^"\'\s]+(?:api|json|events?)[^"\'\s]*)', t)[:15]: print("  url", m[:140])
-    i = t.find("startDate"); print(re.sub(r"\s+", " ", t[max(0, i-300):i+500]) if i >= 0 else "sin startDate")
+    for m in sorted(set(re.findall(r'["\'](/[A-Za-z0-9_\-/\.]*(?:api|ajax|json|search|events?)[A-Za-z0-9_\-/\.\?=&]*)["\']', t)))[:25]: print("  path", m[:140])
+    for m in re.findall(r'(?:endpoint|apiUrl|ajaxUrl|restUrl|url)\s*[:=]\s*["\']([^"\']{8,160})["\']', t)[:15]: print("  cfg", m)
