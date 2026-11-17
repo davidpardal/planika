@@ -18,8 +18,8 @@
    },
    {
     "date": "2026-11-17",
-    "count": 1021,
-    "error": "ReadTimeout: HTTPSConnectionPool(host='datos.madrid.es', port=443): Read timed out. (read timeout=90)"
+    "count": 1132,
+    "error": ""
    }
   ],
   "barcelona": [
@@ -62,7 +62,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 3816,
+    "count": 3826,
     "error": ""
    }
   ],
@@ -84,7 +84,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 1179,
+    "count": 1186,
     "error": ""
    }
   ],
@@ -372,7 +372,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 551,
+    "count": 552,
     "error": ""
    }
   ],
@@ -411,8 +411,6 @@
    }
   ]
  },
- "updated_at": "2026-11-17T09:25",
- "alerts": [
-  "Ayuntamiento de Madrid: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-16"
- ]
+ "updated_at": "2026-11-17T10:30",
+ "alerts": []
 }
