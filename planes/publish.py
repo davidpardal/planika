@@ -175,9 +175,83 @@ _PAGE = """<!doctype html>
 <main class="wrap"><h2 style="margin:22px 0 10px">Próximos planes (%(count)d)</h2>
 <div class="list">%(cards)s</div>
 %(more)s
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p>%(links)s</p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p>%(links)s</p>
+<p><a href="../promociona-tu-evento.html">¿Organizas un evento? Publícalo gratis en Planika</a></p></nav>
 </main></body></html>
 """
+
+
+# Formulario de envío de eventos para organizadores (Google Forms).
+# Se rellena al crear el formulario; si está vacío, la página enlaza a "#".
+FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdEWQEESXI2jmjLywT5KY1SXj1azAQlnmSiwE2ubjnrvDe6ZA/viewform"
+
+_PROMO = """<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Promociona tu evento gratis · Planika</title><meta name="description" content="¿Organizas conciertos, teatro, fiestas o talleres? Publica tu evento gratis en Planika: ficha propia en Google, en tu provincia y tu categoría, con enlace a tus entradas.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="%(site)s/promociona-tu-evento.html">
+<meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
+<meta property="og:title" content="Promociona tu evento gratis"><meta property="og:description" content="Publica tu evento en Planika: ficha propia, en tu provincia y tu categoría, con enlace a tus entradas. Gratis y sin registro."><meta property="og:url" content="%(site)s/promociona-tu-evento.html">
+<meta property="og:image" content="%(site)s/og.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Promociona tu evento gratis · Planika"><meta name="twitter:description" content="Publica tu evento en Planika: ficha propia, en tu provincia y tu categoría, con enlace a tus entradas. Gratis y sin registro."><meta name="twitter:image" content="%(site)s/og.jpg"><meta name="theme-color" content="#ffd23f">
+<link rel="stylesheet" href="styles.css"><link rel="icon" href="icon.svg" type="image/svg+xml">
+<script type="application/ld+json">%(jsonld)s</script>
+%(analytics)s
+</head><body>
+<header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><h1>Planika</h1></a></div>
+<p class="tagline">Promociona tu evento gratis</p>
+<p class="lead">¿Organizas conciertos, teatro, fiestas, exposiciones o talleres? Publica tu evento en Planika y llega a la gente que está buscando planes en tu provincia.</p>
+<p class="meta"><a class="btn primary" href="%(form)s" target="_blank" rel="noopener">Publica tu evento</a> &nbsp; <a class="btn" href="./">Explorar Planika</a></p>
+<p class="meta">Más de 12.000 planes publicados · 52 provincias · Actualización diaria</p></div></header>
+<main class="wrap">
+<h2 style="margin:22px 0 10px">Qué consigues</h2>
+<div class="list">
+<article class="card"><div class="body"><h3>🔎 Ficha propia en Google</h3><p class="desc">Tu evento con página propia y datos estructurados (fecha, lugar y entradas) para que Google lo entienda y pueda mostrarlo destacado.</p></div></article>
+<article class="card"><div class="body"><h3>📍 En tu provincia y tu categoría</h3><p class="desc">Apareces en los listados de tu provincia y de tu tipo de plan, y también en los de «este fin de semana» y «planes gratis» si te encajan.</p></div></article>
+<article class="card"><div class="body"><h3>🎫 Entradas y calendario</h3><p class="desc">Botón directo a tu venta de entradas y botón para añadir el evento a Google Calendar.</p></div></article>
+<article class="card"><div class="body"><h3>🆓 Gratis y sin registro</h3><p class="desc">Sin cuentas ni contraseñas: rellenas el formulario, lo revisamos y queda publicado.</p></div></article>
+</div>
+<h2 style="margin:26px 0 10px">Cómo funciona</h2>
+<ol>
+<li><strong>Rellena el formulario</strong> con los datos de tu evento: título, fecha, lugar, precio y enlace de entradas.</li>
+<li><strong>Lo revisamos</strong> para evitar spam y errores. Si falta algo, te escribimos.</li>
+<li><strong>Publicado en 24 horas.</strong> Planika se actualiza cada día; tu evento entra en el siguiente ciclo.</li>
+</ol>
+<h2 style="margin:26px 0 10px">Precios</h2>
+<div class="list">
+<article class="card"><div class="body"><div class="badges"><span class="badge">Publicar</span></div><h3>0 €</h3><p class="desc">Tu evento publicado con ficha propia y en todos los listados que le correspondan. Gratis, para siempre.</p></div></article>
+<article class="card"><div class="body"><div class="badges"><span class="badge">Destacado</span><span class="badge free">Muy pronto</span></div><h3>9,90 € por evento</h3><p class="desc">Primero en tu provincia y tu categoría, con insignia de destacado y foto grande.</p></div></article>
+<article class="card"><div class="body"><div class="badges"><span class="badge">Pack Sala</span><span class="badge free">Muy pronto</span></div><h3>29 € al mes</h3><p class="desc">Todos los eventos de tu sala destacados, sin límite.</p></div></article>
+</div>
+<h2 style="margin:26px 0 10px">Preguntas frecuentes</h2>
+%(faq)s
+<p class="meta" style="margin-top:26px"><a class="btn primary" href="%(form)s" target="_blank" rel="noopener">Publica tu evento gratis</a></p>
+<p class="src">Al enviar el formulario confirmas que tienes derecho a publicar el evento y su imagen. La exactitud de fechas, horarios y precios es responsabilidad del organizador.</p>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="p/alava.html">Planes en Álava</a> · <a href="t/musica.html">Música y conciertos</a></p></nav>
+</main></body></html>
+"""
+
+_FAQ = [
+    ("¿Cuánto cuesta publicar un evento en Planika?",
+     "Publicar es gratis: tu evento tendrá ficha propia y aparecerá en los listados de su provincia y categoría sin coste. Más adelante ofreceremos opciones de destacado de pago para quien quiera más visibilidad."),
+    ("¿Cuándo se publica mi evento?",
+     "Revisamos cada envío a mano para evitar spam. Planika se regenera cada día, así que un evento aprobado suele estar publicado en unas 24 horas."),
+    ("¿Puedo poner mi enlace de venta de entradas?",
+     "Sí. La ficha de tu evento incluye un botón de entradas con tu enlace, y otro para que el público lo añada a su Google Calendar."),
+    ("¿Saldrá mi evento el primero en Google?",
+     "Nadie puede garantizar la primera posición. Lo que sí hacemos es dar a tu evento una ficha con los datos estructurados que Google usa para mostrar eventos, que es donde un evento local tiene opciones reales de salir arriba: en su propio nombre y en búsquedas de su zona."),
+    ("¿Puedo corregir o retirar mi evento?",
+     "Sí: vuelve a enviar el formulario indicando el cambio, o responde al correo de confirmación, y lo actualizamos en el siguiente ciclo diario."),
+]
+
+
+def _promo_page():
+    ld = {"@context": "https://schema.org", "@type": "FAQPage",
+          "mainEntity": [{"@type": "Question", "name": q,
+                          "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in _FAQ]}
+    faq_html = "".join("<h3>%s</h3><p>%s</p>" % (html.escape(q), html.escape(a)) for q, a in _FAQ)
+    return _PROMO % dict(site=SITE_URL, form=html.escape(FORM_URL or "#"), analytics=static.BEACON,
+                         jsonld=json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c"),
+                         faq=faq_html)
 
 
 def _itemlist_ld(items, limit=20):
@@ -313,11 +387,9 @@ def write_pages(site_dir, events):
             made.append((efn, {"fin-de-semana": "Planes este fin de semana", "gratis": "Planes gratis"}[suffix]))
         if made:  # enlazado interno desde la página de la provincia
             path = os.path.join(prov_dir, fn)
-            with open(path, encoding="utf-8") as fh:
-                txt = fh.read()
+            txt = open(path, encoding="utf-8").read()
             nav = "<p>%s</p>" % " · ".join("<a href=\"%s\">%s en %s</a>" % (f, l, html.escape(name)) for f, l in made)
-            with open(path, "w", encoding="utf-8") as fh:
-                fh.write(txt.replace("</main></body></html>", nav + "</main></body></html>", 1))
+            open(path, "w", encoding="utf-8").write(txt.replace("</main></body></html>", nav + "</main></body></html>", 1))
     prov_by_code = {c: (n, a) for c, n, a, _ in prov_pages}
     for (code, key), sub in sorted(combos.items()):
         name, ccaa = prov_by_code[code]
@@ -353,6 +425,9 @@ def write_pages(site_dir, events):
         with open(os.path.join(type_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(body)
         pages.append("t/" + fn)
+    with open(os.path.join(site_dir, "promociona-tu-evento.html"), "w", encoding="utf-8") as fh:
+        fh.write(_promo_page())
+    pages.append("promociona-tu-evento.html")
     prov_slugs = {code: slug(name) for code, name, _ in PROVINCIAS}
     event_pages = static.write_event_pages(site_dir, events, prov_slugs)
     with open(os.path.join(site_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
