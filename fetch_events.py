@@ -19,6 +19,10 @@ from datetime import datetime, timedelta
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
+# El estado completo de eventos vive fuera de site/ (en data/, junto a health.json):
+# es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
+EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
+
 from planes import llm, publish, static  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
@@ -100,9 +104,10 @@ def main():
                     help="no descargar nada: regenerar datos troceados, feeds y páginas desde events.json")
     args = ap.parse_args()
     site_dir = os.path.dirname(os.path.abspath(args.out))
+    os.makedirs(os.path.dirname(EVENTS_FILE), exist_ok=True)
 
     if args.rebuild:
-        with open(os.path.join(args.out, "events.json"), encoding="utf-8") as fh:
+        with open(EVENTS_FILE, encoding="utf-8") as fh:
             payload = json.load(fh)
         # Regenerar también mezcla las visitas permanentes, para poder refrescar
         # la web sin volver a descargar las agendas (y sin dejarlas caducar).
@@ -114,14 +119,14 @@ def main():
                         "seconds": 0, "error": "", "stale_from": ""})
         payload["sources"] = sources
         payload["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
-        with open(os.path.join(args.out, "events.json"), "w", encoding="utf-8") as fh:
+        with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
         write_site(args, site_dir, payload)
         log("Rebuild: %d planes, %d visitas permanentes" % (len(payload["events"]), n_curated))
         return
 
     load_dotenv(os.path.join(ROOT, ".env"))
-    previous = load_previous(os.path.join(args.out, "events.json"))
+    previous = load_previous(EVENTS_FILE)
     t0 = today()
     t_max = t0 + timedelta(days=args.days)
     all_events = []
@@ -182,7 +187,7 @@ def main():
         "alerts": [],
         "events": all_events,
     }
-    with open(os.path.join(args.out, "events.json"), "w", encoding="utf-8") as fh:
+    with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
 
     # Salud de las fuentes (histórico + alertas)
