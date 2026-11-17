@@ -315,7 +315,16 @@ def event_page(e, related=(), t0=None, prov_slug=""):
         rel = "<ul>%s</ul>" % "".join('<li><a href="%s">%s</a> · %s%s</li>' % (
             esc(event_file(r)), esc(r.get("title_es") or r["title"]), esc(_when(r, t0)),
             (" · " + esc(r["city"])) if r.get("city") else "") for r in related)
-    ld = json.dumps(event_jsonld(e, canonical, t0), ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
+    ld_event = event_jsonld(e, canonical, t0)
+    ld_event.pop("@context", None)
+    crumbs = [{"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE_URL + "/"}]
+    if prov_slug:
+        crumbs.append({"@type": "ListItem", "position": 2, "name": e.get("province") or "Provincia",
+                       "item": "%s/p/%s.html" % (SITE_URL, prov_slug)})
+    crumbs.append({"@type": "ListItem", "position": len(crumbs) + 1, "name": title, "item": canonical})
+    ld_doc = {"@context": "https://schema.org", "@graph": [ld_event,
+              {"@type": "BreadcrumbList", "itemListElement": crumbs}]}
+    ld = json.dumps(ld_doc, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     return _EVENT_PAGE % dict(
         title=esc(title), place=esc(place), desc=esc(desc), canonical=esc(canonical),
         og_image=esc(image or SITE_URL + "/hero.jpg"), jsonld=ld, analytics=BEACON, cat=esc(cat), cat_key=esc(e["category"]),
