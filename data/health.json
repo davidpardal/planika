@@ -18,7 +18,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 1132,
+    "count": 1264,
     "error": ""
    }
   ],
@@ -40,8 +40,8 @@
    },
    {
     "date": "2026-11-17",
-    "count": 4008,
-    "error": "HTTPError: 403 Client Error: Forbidden for url: https://opendata-ajuntament.barcelona.cat/data/api/3/action/datastore_search?resour"
+    "count": 4179,
+    "error": ""
    }
   ],
   "euskadi": [
@@ -106,7 +106,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 463,
+    "count": 472,
     "error": ""
    }
   ],
@@ -173,7 +173,7 @@
    {
     "date": "2026-11-17",
     "count": 26,
-    "error": ""
+    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
    }
   ],
   "galicia": [
@@ -216,7 +216,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 49,
+    "count": 48,
     "error": ""
    }
   ],
@@ -355,7 +355,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 310,
+    "count": 312,
     "error": ""
    }
   ],
@@ -372,7 +372,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 574,
+    "count": 554,
     "error": ""
    }
   ],
@@ -413,21 +413,20 @@
   "vitoria": [
    {
     "date": "2026-11-17",
-    "count": 7,
+    "count": 8,
     "error": ""
    }
   ],
   "deporte_pro": [
    {
     "date": "2026-11-17",
-    "count": 305,
+    "count": 303,
     "error": ""
    }
   ]
  },
- "updated_at": "2026-11-17T19:48",
+ "updated_at": "2026-11-17T23:02",
  "alerts": [
-  "Ajuntament de Barcelona: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-17",
-  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-17"
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-17"
  ]
 }
