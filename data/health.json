@@ -62,7 +62,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 3842,
+    "count": 3844,
     "error": ""
    }
   ],
@@ -84,7 +84,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 1206,
+    "count": 1209,
     "error": ""
    }
   ],
@@ -406,13 +406,11 @@
    },
    {
     "date": "2026-11-17",
-    "count": 160,
+    "count": 161,
     "error": ""
    }
   ]
  },
- "updated_at": "2026-11-17T13:17",
- "alerts": [
-  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-17"
- ]
+ "updated_at": "2026-11-17T13:23",
+ "alerts": []
 }
