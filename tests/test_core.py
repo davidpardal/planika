@@ -119,7 +119,7 @@ class TestStatic(unittest.TestCase):
         e = dict(self.ev(), url="javascript:alert(1)", venue="Teatro <Real>", description='Una obra </script> con "comillas"')
         page = static.event_page(e, t0="2026-11-14", prov_slug="madrid")
         self.assertNotIn("javascript:alert", page)
-        self.assertEqual(page.count("</script>"), 1)  # solo el cierre del bloque JSON-LD
+        self.assertEqual(page.count("</script>"), 2)  # solo los dos cierres propios: el bloque JSON-LD y el beacon de analítica
         self.assertIn("Teatro &lt;Real&gt;", page)
         ld = json.loads(page.split('<script type="application/ld+json">')[1].split("</script>")[0])
         self.assertIn("</script>", ld["description"])
