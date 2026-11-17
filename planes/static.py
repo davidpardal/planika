@@ -221,6 +221,7 @@ _EVENT_PAGE = """<!doctype html>
 <header class="hero evhero"><div class="wrap"><a class="evbrand" href="../">Planika</a>
 <p class="tagline">%(cat)s en %(province)s</p></div></header>
 <main class="wrap">
+%(crumbs)s
 <article class="card pop%(pop)d evpage">%(img)s<div class="body">
 <div class="badges"><span class="badge">%(cat)s</span>%(price)s</div>
 <h1>%(title)s</h1>
@@ -328,7 +329,10 @@ def event_page(e, related=(), t0=None, prov_slug=""):
     ld = json.dumps(ld_doc, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     return _EVENT_PAGE % dict(
         title=esc(title), place=esc(place), desc=esc(desc), canonical=esc(canonical),
-        og_image=esc(image or SITE_URL + "/hero.jpg"), jsonld=ld, analytics=BEACON, cat=esc(cat), cat_key=esc(e["category"]),
+        og_image=esc(image or SITE_URL + "/og.jpg"), jsonld=ld, analytics=BEACON, cat=esc(cat), cat_key=esc(e["category"]),
+        crumbs=('<nav class="crumbs" aria-label="Migas de pan"><a href="../">Inicio</a> › '
+                + ('<a href="../p/%s.html">%s</a> › ' % (esc(prov_slug), esc(e.get("province") or "Provincia")) if prov_slug else '')
+                + '<span aria-current="page">%s</span></nav>' % esc(title)),
         province=esc(e.get("province") or "España"), prov_file=esc(prov_slug) + ".html", pop=_pop(e["id"]),
         img=('<img src="%s" alt="" loading="lazy" onerror="this.remove()">' % esc(image)) if image else "",
         price=price, when=esc(when), sessions=sessions, where=esc(where or place),

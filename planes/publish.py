@@ -163,7 +163,7 @@ _PAGE = """<!doctype html>
 <link rel="canonical" href="%(canonical)s">
 <meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
 <meta property="og:title" content="%(seo_title)s"><meta property="og:description" content="%(desc)s"><meta property="og:url" content="%(canonical)s">
-<meta property="og:image" content="%(site)s/hero.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#ffd23f">
+<meta property="og:image" content="%(site)s/og.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="%(seo_title)s"><meta name="twitter:description" content="%(desc)s"><meta name="twitter:image" content="%(site)s/og.jpg"><meta name="theme-color" content="#ffd23f">
 <link rel="stylesheet" href="../styles.css"><link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="alternate" type="application/rss+xml" title="RSS %(title)s" href="%(rss)s">
 <script type="application/ld+json">%(jsonld)s</script>
@@ -244,6 +244,7 @@ def write_pages(site_dir, events):
     os.makedirs(prov_dir, exist_ok=True)
     os.makedirs(type_dir, exist_ok=True)
     prov_links = []
+    prov_links_up = []
     prov_pages = []
     for code, name, ccaa in PROVINCIAS:
         items = upcoming([e for e in events if e["province_code"] == code])
@@ -251,7 +252,24 @@ def write_pages(site_dir, events):
             continue
         prov_pages.append((code, name, ccaa, items))
         prov_links.append("<a href=\"%s.html\">%s</a> (%d)" % (slug(name), html.escape(name), len(items)))
+        prov_links_up.append("<a href=\"../p/%s.html\">%s</a> (%d)" % (slug(name), html.escape(name), len(items)))
     type_links = ["<a href=\"%s.html\">%s %s</a>" % (k, i, html.escape(n)) for k, n, i in CATEGORIES]
+    # Páginas combinadas provincia × tipo ("Música y conciertos en Álava"): solo con
+    # suficientes planes, para no generar páginas pobres que nadie busca.
+    combos = {}
+    for code, name, ccaa, items in prov_pages:
+        for key, cname, _ in CATEGORIES:
+            sub = [e for e in items if e["category"] == key]
+            if len(sub) >= 5:
+                combos[(code, key)] = sub
+
+    def combo_links_prov(code, name):
+        return ["<a href=\"%s-%s.html\">%s en %s</a>" % (slug(name), k, html.escape(cn), html.escape(name))
+                for k, cn, _ in CATEGORIES if (code, k) in combos]
+
+    def combo_links_cat(key):
+        return ["<a href=\"../p/%s-%s.html\">%s en %s</a>" % (slug(n), key, html.escape(CAT_NAME[key]), html.escape(n))
+                for c, n, _, _ in prov_pages if (c, key) in combos]
     for code, name, ccaa, items in prov_pages:
         fn = slug(name) + ".html"
         desc = "Agenda de planes de ocio en %s (%s): %d planes próximos entre conciertos, teatro, exposiciones, deporte, ferias y fiestas." % (name, ccaa, len(items))
@@ -261,7 +279,7 @@ def write_pages(site_dir, events):
             jsonld=_itemlist_ld(items), analytics=static.BEACON,
             cards="".join(_card(e) for e in items[:60]),
             more=("<p class=\"hint\">Se muestran 60 de %d. <a href=\"../?prov=%s\">Ver todos en la app</a>.</p>" % (len(items), code)) if len(items) > 60 else "",
-            links=" · ".join(["<a href=\"../t/%s.html\">%s</a>" % (k, html.escape(n)) for k, n, _ in CATEGORIES] + prov_links))
+            links=" · ".join(["<a href=\"../t/%s.html\">%s</a>" % (k, html.escape(n)) for k, n, _ in CATEGORIES] + combo_links_prov(code, name) + prov_links))
         with open(os.path.join(prov_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(body)
         pages.append("p/" + fn)
@@ -298,6 +316,27 @@ def write_pages(site_dir, events):
             txt = open(path, encoding="utf-8").read()
             nav = "<p>%s</p>" % " · ".join("<a href=\"%s\">%s en %s</a>" % (f, l, html.escape(name)) for f, l in made)
             open(path, "w", encoding="utf-8").write(txt.replace("</main></body></html>", nav + "</main></body></html>", 1))
+    prov_by_code = {c: (n, a) for c, n, a, _ in prov_pages}
+    for (code, key), sub in sorted(combos.items()):
+        name, ccaa = prov_by_code[code]
+        base = slug(name)
+        fn = "%s-%s.html" % (base, key)
+        ttl = "%s en %s" % (CAT_NAME[key], name)
+        desc = "%s en %s (%s): %d planes próximos con fechas, lugar, entradas y calendario." % (CAT_NAME[key], name, ccaa, len(sub))
+        sib = ["<a href=\"%s.html\">Todos los planes en %s</a>" % (base, html.escape(name)),
+               "<a href=\"../t/%s.html\">%s en toda España</a>" % (key, html.escape(CAT_NAME[key]))]
+        sib += ["<a href=\"%s-%s.html\">%s en %s</a>" % (base, k2, html.escape(CAT_NAME[k2]), html.escape(name))
+                for k2, _, _ in CATEGORIES if k2 != key and (code, k2) in combos]
+        body = _PAGE % dict(
+            title=ttl, seo_title=ttl, site=SITE_URL, desc=html.escape(desc), canonical="%s/p/%s" % (SITE_URL, fn),
+            rss="../feeds/provincia-%s.xml" % code, params="prov=%s&cat=%s" % (code, key), count=len(sub),
+            jsonld=_itemlist_ld(sub), analytics=static.BEACON,
+            cards="".join(_card(e) for e in sub[:60]),
+            more=("<p class=\"hint\">Se muestran 60 de %d. <a href=\"../?prov=%s&cat=%s\">Ver todos en la app</a>.</p>" % (len(sub), code, key)) if len(sub) > 60 else "",
+            links=" · ".join(sib))
+        with open(os.path.join(prov_dir, fn), "w", encoding="utf-8") as fh:
+            fh.write(body)
+        pages.append("p/" + fn)
     for key, name, icon in CATEGORIES:
         items = upcoming([e for e in events if e["category"] == key])
         fn = key + ".html"
@@ -308,7 +347,7 @@ def write_pages(site_dir, events):
             jsonld=_itemlist_ld(items), analytics=static.BEACON,
             cards="".join(_card(e) for e in items[:60]),
             more=("<p class=\"hint\">Se muestran 60 de %d. <a href=\"../?cat=%s\">Ver todos en la app</a>.</p>" % (len(items), key)) if len(items) > 60 else "",
-            links=" · ".join(type_links + prov_links))
+            links=" · ".join(type_links + combo_links_cat(key) + prov_links_up))
         with open(os.path.join(type_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(body)
         pages.append("t/" + fn)
