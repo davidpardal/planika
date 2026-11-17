@@ -273,3 +273,11 @@ class TestLandingWindows(unittest.TestCase):
         self.assertFalse(in_window(ev("2026-11-10", "2026-11-30"), "2026-11-20", "2026-11-22"))  # exposición larga
         self.assertTrue(in_window(ev("2026-11-19", "2026-11-23"), "2026-11-20", "2026-11-22"))  # rango corto
         self.assertTrue(in_window(ev("2026-11-01", "2026-12-01", sessions=["2026-11-21"]), "2026-11-20", "2026-11-22"))
+
+
+class TestNavidad(unittest.TestCase):
+    def test_navidad(self):
+        from planes.classify import classify
+        for t in ("Mercado de Navidad", "Cabalgata de Reyes", "Olentzero eguna", "Belén viviente", "Concierto de villancicos", "Nadal a la plaça"):
+            self.assertEqual(classify([], t, ""), "navidad", t)
+        self.assertEqual(classify([], "Concierto de jazz", ""), "musica")

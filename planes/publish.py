@@ -313,9 +313,11 @@ def write_pages(site_dir, events):
             made.append((efn, {"fin-de-semana": "Planes este fin de semana", "gratis": "Planes gratis"}[suffix]))
         if made:  # enlazado interno desde la página de la provincia
             path = os.path.join(prov_dir, fn)
-            txt = open(path, encoding="utf-8").read()
+            with open(path, encoding="utf-8") as fh:
+                txt = fh.read()
             nav = "<p>%s</p>" % " · ".join("<a href=\"%s\">%s en %s</a>" % (f, l, html.escape(name)) for f, l in made)
-            open(path, "w", encoding="utf-8").write(txt.replace("</main></body></html>", nav + "</main></body></html>", 1))
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write(txt.replace("</main></body></html>", nav + "</main></body></html>", 1))
     prov_by_code = {c: (n, a) for c, n, a, _ in prov_pages}
     for (code, key), sub in sorted(combos.items()):
         name, ccaa = prov_by_code[code]

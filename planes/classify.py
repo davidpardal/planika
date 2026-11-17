@@ -12,6 +12,7 @@ CATEGORIES = [
     ("deporte", "Deporte", "⚽"),
     ("gastro", "Gastronomía, ferias y mercados", "🍷"),
     ("infantil", "Infantil y familiar", "🧒"),
+    ("navidad", "Navidad", "🎄"),
     ("fiestas", "Fiestas y tradiciones", "🎉"),
     ("naturaleza", "Naturaleza, rutas y visitas", "🥾"),
     ("charlas", "Charlas, libros y talleres", "📚"),
@@ -23,6 +24,7 @@ CATEGORY_KEYS = [c[0] for c in CATEGORIES]
 # El orden importa: la primera regla que casa gana.
 _RULES = [
     ("infantil", r"\b(infantil|familiar|famil|ninos|nens|haur|txiki|umeentzat|cuentacuentos|titeres|marionet|bebes|nadons|kids|children|peques)\b"),
+    ("navidad", r"\b(navidad|navidenas?|navidenos?|nadal|nadalenc|nadalencs|gabon|gabonetako|belen|belenes|naixement|pesebre|villancicos?|nadales|reyes magos|cabalgata de reyes|cavalcada de reis|reis magos|papa noel|olentzero|mari domingi|fin de ano|nochevieja|nit de cap d.any|campanadas|christmas|xmas|turron)"),
     ("cine", r"\b(cine|cinema|pelicula|film|audiovisual|documental|cortometraje|zinema|proyeccion|projeccio)"),
     ("deporte", r"\b(deport|esport|kirol|futbol|baloncesto|basket|maraton|carrera popular|ciclis|triatlon|running|padel|tenis|natacion|rugby|balonmano|voleibol|motogp|formula|trail|regata|hipica|golf|boxeo|mma|surf|esqui|pelota|trainera)"),
     ("escena", r"\b(teatro|teatre|antzerki|danza|dansa|dantza|ballet|opera|zarzuela|musical|circo|circ|magia|monolog|comedia|humor|performance|clown|improvisacion|bertso|titella|escenic|escenica|arts esceniques|espectacle|espectaculo|flamenco)"),
