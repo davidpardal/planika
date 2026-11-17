@@ -122,7 +122,12 @@ class TestStatic(unittest.TestCase):
         self.assertEqual(page.count("</script>"), 2)  # solo los dos cierres propios: el bloque JSON-LD y el beacon de analítica
         self.assertIn("Teatro &lt;Real&gt;", page)
         ld = json.loads(page.split('<script type="application/ld+json">')[1].split("</script>")[0])
-        self.assertIn("</script>", ld["description"])
+        self.assertIn("</script>", ld["@graph"][0]["description"])
+        crumbs = ld["@graph"][1]
+        self.assertEqual(crumbs["@type"], "BreadcrumbList")
+        self.assertEqual([c["name"] for c in crumbs["itemListElement"]][:2], ["Inicio", "Madrid"])
+        self.assertTrue(crumbs["itemListElement"][1]["item"].endswith("/p/madrid.html"))
+        self.assertEqual(crumbs["itemListElement"][-1]["item"], "https://planikaapp.com/e/" + static.event_file(e))
 
     def test_write_data_roundtrip(self):
         evs = [self.ev(), util.event("S", "id2", "Expo larga", "2026-01-01", end="2027-01-01", province_code="08")]
