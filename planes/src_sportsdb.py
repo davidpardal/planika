@@ -21,6 +21,7 @@ LEAGUES = {
 # en estas ligas se pregunta día a día durante DAILY_DAYS días.
 DAILY = {"4408", "4534", "5486"}
 DAILY_DAYS = 14
+PLAY_WEEKDAYS = {4, 5, 6, 0}  # viernes a lunes: ahí se juegan casi todas las jornadas (la API gratuita limita las peticiones)
 MADRID = ZoneInfo("Europe/Madrid")
 
 
@@ -38,6 +39,8 @@ def to_madrid(date, tm):
 def _daily(lid, lname, log):
     out = []
     for n in range(DAILY_DAYS):
+        if (today() + timedelta(days=n)).weekday() not in PLAY_WEEKDAYS:
+            continue
         day = iso(today() + timedelta(days=n))
         for attempt in (0, 1):
             try:
@@ -47,8 +50,8 @@ def _daily(lid, lname, log):
                 if attempt:
                     log("%s: %s %s (%s); se corta la consulta diaria" % (NAME, lname, day, exc.__class__.__name__))
                     return out
-                time.sleep(20)
-        time.sleep(2.5)
+                time.sleep(45)
+        time.sleep(4)
     return out
 _CACHE = os.path.join(DATA_DIR, "teams_cache.json")
 
