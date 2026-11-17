@@ -1,71 +1,60 @@
 import requests, json, re, time
-H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0)", "Accept": "application/json, text/plain, */*"}
+H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0)", "Accept": "*/*"}
+WANT = {"L01360577": "Vigo", "A05003638": "Canarias", "L01380380": "Santa Cruz Tenerife", "A07002862": "CyL",
+        "L02000001": "Alava", "A16003011": "Euskadi", "L02000048": "Bizkaia", "A08002880": "CLM", "L01300161": "Cartagena"}
 
-def get(u, n=500, **kw):
+def get(u, **kw):
     try:
-        r = requests.get(u, headers=H, timeout=40, **kw)
-        return r
+        return requests.get(u, headers=H, timeout=45, **kw)
     except Exception as e:
-        print("  ERR", str(e)[:150]); return None
+        print("  ERR", str(e)[:120]); return None
 
-def head(u, n=400):
-    r = get(u)
-    if r is None: return None
-    t = re.sub(r"\s+", " ", r.text)[:n]
-    print("  ->", r.status_code, r.headers.get("content-type", "")[:40], len(r.content), "bytes |", t)
-    return r
+def text(v):
+    if isinstance(v, list): v = v[0] if v else ""
+    if isinstance(v, dict): v = v.get("_value") or v.get("value") or ""
+    return str(v)
 
-def ckan(base, q="agenda", rows=15):
-    print("\n== CKAN", base, q)
-    r = get("%s/api/3/action/package_search?q=%s&rows=%d" % (base, q, rows))
-    if r is None: return
-    try:
-        d = r.json()["result"]
-    except Exception:
-        print("  no JSON", r.status_code, re.sub(r"\s+", " ", r.text)[:200]); return
-    print("  count", d["count"])
-    for p in d["results"]:
-        res = [(x.get("format"), x.get("url")) for x in p.get("resources", [])][:3]
-        print("  *", p.get("title", "")[:70], "|", (p.get("metadata_modified") or "")[:10], "|", res)
-
-# 1) CKAN de varios portales
-for base in ("https://opendata.vlci.valencia.es", "https://datosabiertos.navarra.es", "https://opendata.aragon.es",
-             "https://datos.comunidad.madrid", "https://datosabiertos.sevilla.org"):
-    ckan(base, "agenda")
-    ckan(base, "eventos")
-
-# 2) Opendatasoft Valencia
-print("\n== ODS Valencia")
-head("https://valencia.opendatasoft.com/api/explore/v2.1/catalog/datasets?q=agenda&limit=10")
-
-# 3) datos.gob.es: catálogo nacional por título
-for t in ("agenda", "eventos", "agenda cultural"):
-    print("\n== datos.gob.es title", t)
-    r = get("https://datos.gob.es/apidata/catalog/dataset/title/%s?_pageSize=40&_page=0&_sort=-modified" % requests.utils.quote(t))
-    if r is None: continue
-    try:
-        items = r.json()["result"]["items"]
-        print("  items", len(items))
+cands = []
+for t in ("agenda cultural", "agenda"):
+    for page in (0, 1):
+        r = get("https://datos.gob.es/apidata/catalog/dataset/title/%s?_pageSize=50&_page=%d&_sort=-modified" % (requests.utils.quote(t), page))
+        time.sleep(2)
+        if r is None: continue
+        try: items = r.json()["result"]["items"]
+        except Exception: print("no json", t, page, r.status_code); continue
         for it in items:
-            title = it.get("title")
-            if isinstance(title, list): title = (title[0] or {}).get("_value", "")
-            dist = it.get("distribution") or []
-            if isinstance(dist, dict): dist = [dist]
-            fm = [((d.get("format") or {}).get("value") if isinstance(d.get("format"), dict) else d.get("format")) for d in dist][:3]
-            print("  *", str(title)[:70], "|", (it.get("modified") or "")[:10], "|", fm, "|", (it.get("publisher") or "")[-40:])
-    except Exception as e:
-        print("  parse", e, re.sub(r"\s+", " ", r.text)[:200])
+            pub = text(it.get("publisher"))[-10:]
+            if pub in WANT and (pub, text(it.get("title"))) not in [(c[0], c[1]) for c in cands]:
+                dist = it.get("distribution") or []
+                if isinstance(dist, dict): dist = [dist]
+                cands.append((pub, text(it.get("title")), (it.get("modified") or "")[:10], dist))
+print("candidatos", len(cands))
+seen = set()
+for pub, title, mod, dist in cands:
+    if "2015" in title or "2016" in title or "2017" in title or "2018" in title or "2019" in title or "2020" in title or "2021" in title or "2022" in title or "2023" in title or "2024" in title: continue
+    print("\n###", WANT[pub], "|", title[:70], "|", mod)
+    n = 0
+    for d in dist:
+        url = text(d.get("accessURL")) or text(d.get("downloadURL"))
+        fmt = d.get("format"); fmt = text(fmt.get("value") if isinstance(fmt, dict) else fmt)
+        print("  dist", fmt[-30:], url[:150])
+        if url in seen or not url.startswith("http"): continue
+        low = (fmt + url).lower()
+        if not any(k in low for k in ("json", "csv", "xml", "rss")): continue
+        if n >= 2: continue
+        seen.add(url); n += 1
+        r = get(url)
+        time.sleep(1.5)
+        if r is None: continue
+        body = re.sub(r"\s+", " ", r.text)[:450]
+        print("    ->", r.status_code, r.headers.get("content-type", "")[:35], len(r.content), "bytes |", body)
+        yrs = re.findall(r"2026-1[12]-\d\d|2026-0[1-9]-\d\d|2027-\d\d-\d\d|\d\d/\d\d/2026|\d\d/\d\d/2027", r.text)
+        print("    fechas 2026-27:", len(yrs), yrs[:4])
 
-# 4) Bilbao
-print("\n== Bilbao")
-head("https://www.bilbao.eus/cs/Satellite?c=Page&cid=1272990237857&pageid=1272990237857&idioma=es&pagename=Bilbaonet/Page/BIO_ListadoEventosAppInfoBilbao&todos=si", 600)
-head("https://www.bilbao.eus/cs/Satellite?c=Page&pageid=3000094681&idioma=es&pagename=Bilbaonet/Page/OD_obtenerAgendaMunicipal&formato=XML", 600)
-
-# 5) Andalucía y Sevilla
-print("\n== Andalucia")
-head("https://www.andalucia.org/eventos/", 300)
-head("https://datos.juntadeandalucia.es/api/v0/", 300)
-head("https://www.sevilla.org/servicios/datos-abiertos", 200)
-print("\n== Zaragoza / Euskadi turismo")
-head("https://opendata.euskadi.eus/contenidos/ds_eventos/eventos_turisticos/opendata/agenda.xml", 300)
-head("https://www.zaragoza.es/sede/servicio/cultura/evento.json?rows=2", 400)
+print("\n== andalucia.org/eventos")
+r = get("https://www.andalucia.org/eventos/")
+if r is not None:
+    t = r.text
+    print(r.status_code, len(t), "ld+json:", len(re.findall(r"application/ld\+json", t)), "startDate:", len(re.findall(r"startDate", t)))
+    for m in re.findall(r'(https?://[^"\'\s]+(?:api|json|events?)[^"\'\s]*)', t)[:15]: print("  url", m[:140])
+    i = t.find("startDate"); print(re.sub(r"\s+", " ", t[max(0, i-300):i+500]) if i >= 0 else "sin startDate")
