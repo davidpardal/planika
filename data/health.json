@@ -62,7 +62,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 3844,
+    "count": 3845,
     "error": ""
    }
   ],
@@ -84,7 +84,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 1213,
+    "count": 1215,
     "error": ""
    }
   ],
@@ -372,7 +372,7 @@
    },
    {
     "date": "2026-11-17",
-    "count": 567,
+    "count": 568,
     "error": ""
    }
   ],
@@ -409,10 +409,15 @@
     "count": 161,
     "error": ""
    }
+  ],
+  "vitoria": [
+   {
+    "date": "2026-11-17",
+    "count": 7,
+    "error": ""
+   }
   ]
  },
- "updated_at": "2026-11-17T13:28",
- "alerts": [
-  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-17"
- ]
+ "updated_at": "2026-11-17T13:33",
+ "alerts": []
 }
