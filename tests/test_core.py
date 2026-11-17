@@ -190,6 +190,20 @@ class TestPermanent(unittest.TestCase):
             with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
                 self.assertIn("zaragoza.html", fh.read())
 
+    def test_combo_pages_need_five_events(self):
+        evs = [util.event("Agenda", str(i), "Concierto %d" % i, "2026-11-20",
+                          province_code="50", city="Zaragoza", category="musica") for i in range(5)]
+        evs += [util.event("Agenda", "c%d" % i, "Charla %d" % i, "2026-11-20",
+                           province_code="50", city="Zaragoza", category="charlas") for i in range(4)]
+        with tempfile.TemporaryDirectory() as tmp:
+            pages = publish.write_pages(tmp, evs)
+            self.assertIn("p/zaragoza-musica.html", pages)
+            self.assertNotIn("p/zaragoza-charlas.html", pages)
+            with open(os.path.join(tmp, "p", "zaragoza.html"), encoding="utf-8") as fh:
+                self.assertIn("zaragoza-musica.html", fh.read())
+            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+                self.assertIn("zaragoza-musica.html", fh.read())
+
     def test_curated_file_merges_without_duplicates(self):
         from planes.src_curated import NAME, fetch, replace_events
         evs = fetch(lambda msg: None)
