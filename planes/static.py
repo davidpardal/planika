@@ -16,6 +16,9 @@ from .classify import CATEGORIES
 from .util import is_permanent, iso, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
+# Analítica sin cookies (Cloudflare Web Analytics). El token es público por diseño: viaja en el HTML de cada página.
+BEACON = ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+          'data-cf-beacon=\'{"token":"4da50e67f6794aa597670cd65c807dde"}\'></script>')
 CHUNK = 250  # planes por bloque de detalles
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
@@ -212,6 +215,7 @@ _EVENT_PAGE = """<!doctype html>
 <meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#ffd23f">
 <link rel="stylesheet" href="../styles.css"><link rel="icon" href="../icon.svg" type="image/svg+xml">
 <script type="application/ld+json">%(jsonld)s</script>
+%(analytics)s
 </head><body>
 <header class="hero evhero"><div class="wrap"><a class="evbrand" href="../">Planika</a>
 <p class="tagline">%(cat)s en %(province)s</p></div></header>
@@ -314,7 +318,7 @@ def event_page(e, related=(), t0=None, prov_slug=""):
     ld = json.dumps(event_jsonld(e, canonical, t0), ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     return _EVENT_PAGE % dict(
         title=esc(title), place=esc(place), desc=esc(desc), canonical=esc(canonical),
-        og_image=esc(image or SITE_URL + "/hero.jpg"), jsonld=ld, cat=esc(cat), cat_key=esc(e["category"]),
+        og_image=esc(image or SITE_URL + "/hero.jpg"), jsonld=ld, analytics=BEACON, cat=esc(cat), cat_key=esc(e["category"]),
         province=esc(e.get("province") or "España"), prov_file=esc(prov_slug) + ".html", pop=_pop(e["id"]),
         img=('<img src="%s" alt="" loading="lazy" onerror="this.remove()">' % esc(image)) if image else "",
         price=price, when=esc(when), sessions=sessions, where=esc(where or place),

@@ -161,6 +161,8 @@ _PAGE = """<!doctype html>
 <title>%(title)s · Planika</title><meta name="description" content="%(desc)s">
 <link rel="canonical" href="%(canonical)s"><link rel="stylesheet" href="../styles.css"><link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="alternate" type="application/rss+xml" title="RSS %(title)s" href="%(rss)s">
+<script type="application/ld+json">%(jsonld)s</script>
+%(analytics)s
 </head><body>
 <header class="hero"><div class="wrap"><div class="brand"><a href="../" style="text-decoration:none;color:inherit"><h1>Planika</h1></a></div>
 <p class="tagline">%(title)s</p><p class="lead">%(desc)s</p>
@@ -171,6 +173,15 @@ _PAGE = """<!doctype html>
 <nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p>%(links)s</p></nav>
 </main></body></html>
 """
+
+
+def _itemlist_ld(items, limit=20):
+    """JSON-LD ItemList con los primeros planes de la página, enlazando a la ficha de cada plan."""
+    els = [{"@type": "ListItem", "position": i, "url": "%s/e/%s" % (SITE_URL, static.event_file(e)),
+            "name": e.get("title_es") or e["title"]} for i, e in enumerate(items[:limit], 1)]
+    ld = {"@context": "https://schema.org", "@type": "ItemList",
+          "numberOfItems": len(items), "itemListElement": els}
+    return json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
 
 
 def _card(e):
@@ -216,6 +227,7 @@ def write_pages(site_dir, events):
         body = _PAGE % dict(
             title="Planes en %s" % name, desc=html.escape(desc), canonical="%s/p/%s" % (SITE_URL, fn),
             rss="../feeds/provincia-%s.xml" % code, params="prov=%s" % code, count=len(items),
+            jsonld=_itemlist_ld(items), analytics=static.BEACON,
             cards="".join(_card(e) for e in items[:60]),
             more=("<p class=\"hint\">Se muestran 60 de %d. <a href=\"../?prov=%s\">Ver todos en la app</a>.</p>" % (len(items), code)) if len(items) > 60 else "",
             links=" · ".join(["<a href=\"../t/%s.html\">%s</a>" % (k, html.escape(n)) for k, n, _ in CATEGORIES] + prov_links))
@@ -229,6 +241,7 @@ def write_pages(site_dir, events):
         body = _PAGE % dict(
             title="%s %s" % (icon, name), desc=html.escape(desc), canonical="%s/t/%s" % (SITE_URL, fn),
             rss="../feeds/tipo-%s.xml" % key, params="cat=%s" % key, count=len(items),
+            jsonld=_itemlist_ld(items), analytics=static.BEACON,
             cards="".join(_card(e) for e in items[:60]),
             more=("<p class=\"hint\">Se muestran 60 de %d. <a href=\"../?cat=%s\">Ver todos en la app</a>.</p>" % (len(items), key)) if len(items) > 60 else "",
             links=" · ".join(type_links + prov_links))
