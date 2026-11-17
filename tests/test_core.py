@@ -204,6 +204,21 @@ class TestPermanent(unittest.TestCase):
             with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
                 self.assertIn("zaragoza-musica.html", fh.read())
 
+    def test_promo_page_and_footer_link(self):
+        ev = util.event("Agenda", "1", "Concierto", "2026-11-20",
+                        province_code="50", city="Zaragoza", category="musica")
+        with tempfile.TemporaryDirectory() as tmp:
+            pages = publish.write_pages(tmp, [ev])
+            self.assertIn("promociona-tu-evento.html", pages)
+            with open(os.path.join(tmp, "promociona-tu-evento.html"), encoding="utf-8") as fh:
+                promo = fh.read()
+            self.assertIn("Promociona tu evento gratis", promo)
+            self.assertIn("FAQPage", promo)
+            with open(os.path.join(tmp, "p", "zaragoza.html"), encoding="utf-8") as fh:
+                self.assertIn("../promociona-tu-evento.html", fh.read())
+            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+                self.assertIn("promociona-tu-evento.html", fh.read())
+
     def test_curated_file_merges_without_duplicates(self):
         from planes.src_curated import NAME, fetch, replace_events
         evs = fetch(lambda msg: None)
