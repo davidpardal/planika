@@ -1,0 +1,12 @@
+# Cabeceras de Cloudflare Pages (GitHub Pages las ignora)
+/hero.jpg
+  Cache-Control: public, max-age=86400
+/icon.svg
+  Cache-Control: public, max-age=86400
+/data/*
+  Cache-Control: public, max-age=3600
+/e/*
+  Cache-Control: public, max-age=3600
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
