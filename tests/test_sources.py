@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from planes import src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
+from planes import src_deporte_pro, src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
 
 
 class TestZaragoza(unittest.TestCase):
@@ -168,3 +168,32 @@ class TestVitoria(unittest.TestCase):
         xml = "<rss>" + self.item("x", "Pasado", "Mon, 05 Jan 2026 10:00:00 GMT") \
             + self.item("y", "Aula", "Mon, 05 Jan 2026 10:00:00 GMT") + self.item("y", "Aula", "Fri, 05 Jan 2029 10:00:00 GMT") + "</rss>"
         self.assertEqual(src_vitoria.parse(xml), [])
+
+
+class TestDeportePro(unittest.TestCase):
+    def test_laliga(self):
+        data = {"matches": [
+            {"round": "Matchday 14", "date": "2026-11-22", "time": "21:00", "team1": "Real Madrid CF", "team2": "FC Barcelona"},
+            {"round": "Matchday 3", "date": "2026-11-22", "team1": "Deportivo Alavés", "team2": "Getafe CF"},
+            {"round": "Matchday 1", "date": "2026-08-15", "team1": "Getafe CF", "team2": "Sevilla FC"},
+            {"round": "Matchday 2", "date": "2026-11-23", "team1": "Equipo Desconocido", "team2": "Sevilla FC", "score": {}},
+            {"round": "Matchday 5", "date": "2026-11-24", "team1": "Sevilla FC", "team2": "Valencia CF", "score": {"ft": [1, 1]}},
+        ]}
+        evs = src_deporte_pro.parse_laliga(data, "2026-11-17")
+        self.assertEqual(len(evs), 2)
+        ev = evs[0]
+        self.assertEqual((ev["title"], ev["start"], ev["time"], ev["province"], ev["category"]),
+                         ("Real Madrid CF - FC Barcelona", "2026-11-22", "21:00", "Madrid", "deporte"))
+        self.assertEqual((evs[1]["province"], evs[1]["time"]), ("Álava", ""))
+
+    def test_euroleague(self):
+        item = ("<item><gameday>7</gameday><arenaname>BUESA ARENA</arenaname><date>%s</date><startime>20:30</startime>"
+                "<gamecode>E2026_70</gamecode><hometeam>KOSNER BASKONIA</hometeam><homecode>%s</homecode>"
+                "<awayteam>PARIS</awayteam><awaycode>PRS</awaycode><played>%s</played></item>")
+        xml = "<schedule>" + item % ("Nov 20, 2026", "BAS", "false") + item % ("Nov 20, 2026", "PRS", "false") \
+            + item % ("Oct 01, 2026", "BAS", "true") + "</schedule>"
+        teams = '<clubs><club code="BAS"><name>Kosner Baskonia Vitoria-Gasteiz</name></club><club code="PRS"><name>Paris Basketball</name></club></clubs>'
+        evs = src_deporte_pro.parse_euro(xml, teams, "E", "2026-11-17")
+        self.assertEqual(len(evs), 1)
+        self.assertEqual((evs[0]["title"], evs[0]["time"], evs[0]["venue"], evs[0]["province"], evs[0]["subtype"]),
+                         ("Kosner Baskonia Vitoria-Gasteiz - Paris Basketball", "20:30", "Buesa Arena", "Álava", "Euroliga"))

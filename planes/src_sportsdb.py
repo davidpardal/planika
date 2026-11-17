@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""TheSportsDB (clave pública de pruebas): partidos de LaLiga, LaLiga 2, ACB, Copa del Rey y Supercopa."""
+"""TheSportsDB (clave pública de pruebas): partidos de LaLiga 2, ACB, Copa del Rey y Supercopa (LaLiga y Euroliga vienen de src_deporte_pro)."""
 import json
 import os
 import time
@@ -11,7 +11,7 @@ HOME = "https://www.thesportsdb.com/"
 KEY = os.environ.get("THESPORTSDB_KEY", "123")
 BASE = "https://www.thesportsdb.com/api/v1/json/%s/" % KEY
 LEAGUES = {
-    "4335": ("LaLiga", "Fútbol"), "4400": ("LaLiga Hypermotion", "Fútbol"), "4408": ("Liga Endesa ACB", "Baloncesto"),
+    "4400": ("LaLiga Hypermotion", "Fútbol"), "4408": ("Liga Endesa ACB", "Baloncesto"),
     "4483": ("Copa del Rey", "Fútbol"), "4511": ("Supercopa de España", "Fútbol"),
 }
 _CACHE = os.path.join(DATA_DIR, "teams_cache.json")
