@@ -55,7 +55,6 @@
 <url><loc>https://planikaapp.com/p/ciudad-real.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/cordoba.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/a-coruna.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/a-coruna-pagina-2.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/cuenca.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/girona.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/girona-pagina-2.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -184,6 +183,7 @@
 <url><loc>https://planikaapp.com/p/santa-cruz-de-tenerife-fin-de-semana.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/segovia-fin-de-semana.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/segovia-gratis.html</loc><lastmod>2026-11-18</lastmod></url>
+<url><loc>https://planikaapp.com/p/sevilla-gratis.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/soria-fin-de-semana.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/tarragona-fin-de-semana.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/tarragona-gratis.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -203,6 +203,7 @@
 <url><loc>https://planikaapp.com/p/alava-expos.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/alava-musica.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/alava-naturaleza.html</loc><lastmod>2026-11-18</lastmod></url>
+<url><loc>https://planikaapp.com/p/alava-navidad.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/alicante-deporte.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/alicante-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/alicante-musica.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -228,6 +229,7 @@
 <url><loc>https://planikaapp.com/p/burgos-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/burgos-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/burgos-infantil.html</loc><lastmod>2026-11-18</lastmod></url>
+<url><loc>https://planikaapp.com/p/burgos-navidad.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/burgos-otros.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/castellon-cine.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/castellon-deporte.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -237,13 +239,8 @@
 <url><loc>https://planikaapp.com/p/ciudad-real-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/ciudad-real-musica.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/cordoba-naturaleza.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/a-coruna-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/a-coruna-cine.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/a-coruna-deporte.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/a-coruna-escena.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/a-coruna-expos.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/a-coruna-musica.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/a-coruna-otros.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/girona-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/girona-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/girona-expos.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -252,6 +249,7 @@
 <url><loc>https://planikaapp.com/p/girona-infantil.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/girona-musica.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/girona-naturaleza.html</loc><lastmod>2026-11-18</lastmod></url>
+<url><loc>https://planikaapp.com/p/girona-navidad.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/granada-naturaleza.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/gipuzkoa-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/gipuzkoa-cine.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -271,7 +269,6 @@
 <url><loc>https://planikaapp.com/p/lleida-expos.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/lleida-fiestas.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/lleida-musica.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/lugo-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/madrid-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/madrid-cine.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/madrid-deporte.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -304,8 +301,8 @@
 <url><loc>https://planikaapp.com/p/navarra-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/navarra-expos.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/navarra-musica.html</loc><lastmod>2026-11-18</lastmod></url>
+<url><loc>https://planikaapp.com/p/navarra-navidad.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/ourense-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/ourense-expos.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/asturias-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/asturias-expos.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/asturias-musica.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -315,7 +312,6 @@
 <url><loc>https://planikaapp.com/p/palencia-infantil.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/palencia-musica.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/pontevedra-deporte.html</loc><lastmod>2026-11-18</lastmod></url>
-<url><loc>https://planikaapp.com/p/pontevedra-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/salamanca-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/salamanca-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/salamanca-infantil.html</loc><lastmod>2026-11-18</lastmod></url>
@@ -324,6 +320,7 @@
 <url><loc>https://planikaapp.com/p/cantabria-deporte.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/segovia-escena.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/segovia-infantil.html</loc><lastmod>2026-11-18</lastmod></url>
+<url><loc>https://planikaapp.com/p/segovia-navidad.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/sevilla-deporte.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/sevilla-naturaleza.html</loc><lastmod>2026-11-18</lastmod></url>
 <url><loc>https://planikaapp.com/p/soria-charlas.html</loc><lastmod>2026-11-18</lastmod></url>
