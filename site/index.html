@@ -119,7 +119,10 @@
     </section>
 
   <section class="bar">
-    <div class="countwrap"><div class="count" id="count"></div><button type="button" class="linkbtn" id="clearAll" hidden>Borrar filtros</button></div>
+    <div class="countbox">
+      <div class="countwrap"><h2 class="count" id="count" aria-live="polite"></h2><button type="button" class="linkbtn" id="clearAll" hidden>Borrar filtros</button></div>
+      <p class="count-ctx" id="countCtx"></p>
+    </div>
     <div class="barbtns">
       <div class="segmented view" id="view">
         <button type="button" data-view="list" class="on">☰ Lista</button>

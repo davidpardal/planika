@@ -102,8 +102,16 @@ h1, h2 { letter-spacing: -.02em; }
 .chip small { font-weight: 800; background: var(--yellow); border: 1.5px solid var(--ink); border-radius: 999px; padding: 0 7px; font-size: 12px; color: var(--ink); }
 
 .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 8px 0 18px; flex-wrap: wrap; }
-.count { font-size: 15px; font-weight: 600; background: var(--white); border: var(--b2); border-radius: 999px; padding: 6px 14px; box-shadow: var(--sh); }
-.count strong { font-weight: 900; }
+/* Número de resultados: etiqueta amarilla grande, como los títulos de sección */
+.count {
+  margin: 0; display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  background: var(--yellow); color: var(--ink); border: var(--b); border-radius: var(--r-in);
+  padding: 4px 16px 6px; box-shadow: 4px 4px 0 var(--ink); font-size: 20px; font-weight: 800; line-height: 1.15;
+}
+.count strong { font-size: 34px; font-weight: 900; letter-spacing: -.03em; }
+.count small { font-size: 15px; font-weight: 700; color: var(--ink-2); }
+.count-ctx { margin: 10px 0 0; font-size: 15px; font-weight: 700; color: var(--ink-2); }
+.countbox { min-width: 0; }
 
 /* ---------- tarjetas: cuatro colores pop */
 .pop0 { --c: var(--yellow); }
@@ -278,3 +286,4 @@ a.chip.on { color: var(--white); }
   .what::-webkit-scrollbar { display: none; }
   .what .chip { flex: none; white-space: nowrap; }
 }
+.count:empty { display: none; }
