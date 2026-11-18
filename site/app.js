@@ -231,6 +231,38 @@
     var n = advCount(); $('advN').hidden = !n; $('advN').textContent = n;
     $('clearAll').hidden = !anyFilter();
   }
+  // Número de planes bien visible y, debajo, los filtros activos en palabras (en el móvil el panel queda arriba).
+  function setCount(n, small, extra) {
+    $('count').innerHTML = '<strong>' + n.toLocaleString('es-ES') + '</strong> ' + (n === 1 ? 'plan' : 'planes') +
+      (small ? ' <small>' + esc(small) + '</small>' : '');
+    var ctx = filterSummary(); if (extra) ctx = ctx ? ctx + ' · ' + extra : extra;
+    $('countCtx').textContent = ctx;
+  }
+  function filterSummary() {
+    var parts = [];
+    if (state.q) parts.push('«' + state.q + '»');
+    var catNames = {}; DATA.categories.forEach(function (c) { catNames[c.key] = c.name; });
+    var cats = Object.keys(state.cats).filter(function (k) { return state.cats[k]; }).map(function (k) { return catNames[k] || k; });
+    if (state.free) parts.push('Gratis');
+    parts = parts.concat(cats);
+    var where = 'toda España';
+    if (state.prov) { var pv = DATA.provinces.filter(function (p) { return p.code === state.prov; })[0]; if (pv) where = pv.name; }
+    else if (state.ccaa) where = state.ccaa;
+    parts.push((parts.length ? 'en ' : 'En ') + where);
+    var q = $('quick').querySelector('button.on');
+    var labels = { today: 'hoy', weekend: 'este fin de semana', '7': 'en los próximos 7 días', '30': 'en los próximos 30 días' };
+    if (q && labels[q.dataset.range]) parts.push(labels[q.dataset.range]);
+    else if (!q && (state.from || state.to)) {
+      parts.push((state.from ? 'del ' + fmtDay.format(fromIso(state.from)) : 'desde hoy') + (state.to ? ' al ' + fmtDay.format(fromIso(state.to)) : ''));
+    }
+    var tod = { manana: 'por la mañana', tarde: 'por la tarde', noche: 'por la noche' }[state.tod]; if (tod) parts.push(tod);
+    if (state.aud === 'familiar') parts.push('infantil y familiar'); else if (state.aud === 'adultos') parts.push('para adultos');
+    if (state.pmax) parts.push('hasta ' + state.pmax + ' €');
+    if (state.tickets) parts.push('con venta de entradas');
+    if (state.geo) parts.push('a menos de ' + state.radius + ' km');
+    if (state.favs) parts.push('solo favoritos');
+    return parts.join(' · ');
+  }
   function anyCat() { for (var k in state.cats) if (state.cats[k]) return true; return false; }
   function inDates(e) {
     // Sin un día concreto: se pueden visitar dentro de cualquier filtro de fechas.
@@ -316,7 +348,7 @@
   function renderList() {
     var list = sorted(filtered());
     var el = $('list');
-    $('count').innerHTML = '<strong>' + list.length.toLocaleString('es-ES') + '</strong> planes' + (list.length !== EVENTS.length ? ' de ' + EVENTS.length.toLocaleString('es-ES') : '') + (state.geo ? ' a menos de ' + state.radius + ' km' : '');
+    setCount(list.length, list.length !== EVENTS.length ? 'de ' + EVENTS.length.toLocaleString('es-ES') : '', '');
     if (!list.length) { el.innerHTML = '<div class="empty">No hay planes con esos filtros. Prueba a ampliar las fechas o quitar algún filtro.</div>'; $('more').hidden = true; return; }
     var page = list.slice(0, state.shown);
     need(page);
@@ -435,7 +467,7 @@
     } else if (state.prov && CENTROIDS[state.prov]) {
       map.setView(CENTROIDS[state.prov], 9);
     }
-    $('count').innerHTML = '<strong>' + markers.length.toLocaleString('es-ES') + '</strong> planes en el mapa de ' + list.length.toLocaleString('es-ES') + ' (solo los que tienen ubicación)';
+    setCount(markers.length, 'en el mapa', 'De ' + list.length.toLocaleString('es-ES') + ', solo los que tienen ubicación');
     setTimeout(function () { map.invalidateSize(); }, 50);
     renderCoverage();
   }
