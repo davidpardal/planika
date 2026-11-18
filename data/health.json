@@ -77,7 +77,7 @@
    },
    {
     "date": "2026-11-18",
-    "count": 3943,
+    "count": 3957,
     "error": ""
    }
   ],
@@ -104,7 +104,7 @@
    },
    {
     "date": "2026-11-18",
-    "count": 1282,
+    "count": 1286,
     "error": ""
    }
   ],
@@ -462,8 +462,8 @@
    },
    {
     "date": "2026-11-18",
-    "count": 591,
-    "error": ""
+    "count": 549,
+    "error": "ConnectTimeout: HTTPSConnectionPool(host='www.zaragoza.es', port=443): Max retries exceeded with url: /sede/servicio/actividades/evento/"
    }
   ],
   "murcia": [
@@ -535,6 +535,9 @@
    }
   ]
  },
- "updated_at": "2026-11-18T13:06",
- "alerts": []
+ "updated_at": "2026-11-18T15:32",
+ "alerts": [
+  "Ayuntamiento de Zaragoza: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18",
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18"
+ ]
 }
