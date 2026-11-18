@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """Ajuntament de Barcelona: agenda cultural de la ciudad (JSON completo del catálogo Open Data BCN)."""
+import html
+import re
+
 from .classify import classify
-from .util import event, http_json, iso, parse_ics, strip_html, today
+from .util import event, http_json, iso, norm, parse_ics, strip_html, today
 
 BROWSER = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
            "Accept": "application/json,*/*;q=0.8", "Accept-Language": "ca,es;q=0.9"}
@@ -12,6 +15,8 @@ NAME = "Ajuntament de Barcelona"
 URL = ("https://opendata-ajuntament.barcelona.cat/data/dataset/2767159c-1c98-46b8-a686-2b25b40cb053/"
        "resource/59b9c807-f6c1-4c10-ac51-1ace65485079/download")
 HOME = "https://www.barcelona.cat/ca/que-pots-fer-a-bcn/agenda"
+# Ficha oficial de cada actividad en la Guia de Barcelona (comprobado: responde con el identificador del registro)
+GUIA = "https://guia.barcelona.cat/es/detall/%s_%s.html"
 
 
 def fetch(log):
@@ -83,8 +88,60 @@ def fetch(log):
     return out
 
 
+_CELL = re.compile(r'<td class="timetable-(day|hour|price|description)"[^>]*>(.*?)</td>', re.S)
+_HOUR = re.compile(r"(\d{1,2})[.:](\d{2})\s*h")
+_NUM = re.compile(r"(?<![\d.,])(\d{1,4}(?:[.,]\d{1,2})?)(?![\d.,]*\s*(?:%|h\b|anys|años|x))")
+
+
+def _text(fragment):
+    return strip_html(html.unescape(re.sub(r"<br\s*/?>|</p>", " ", fragment or "")))
+
+
+def timetable(raw):
+    """Lee la tabla de horario de la agenda de Barcelona (días, horas, precio y observaciones).
+
+    Devuelve (texto, hora, gratis, precio): el texto resume el horario tal como lo da la fuente; la hora solo
+    se rellena si todas las sesiones empiezan a la misma hora."""
+    days, hours, prices, notes = [], [], [], []
+    for kind, cell in _CELL.findall(raw or ""):
+        t = _text(cell)
+        if not t:
+            continue
+        {"day": days, "hour": hours, "price": prices, "description": notes}[kind].append(t)
+    if not (days or hours or prices or notes):
+        return "", "", None, ""
+    slots = ["%s %s" % (d, h) if d else h for d, h in zip(days + [""] * len(hours), hours)] or days
+    parts = []
+    if slots:
+        parts.append("Horario: " + " · ".join(dict.fromkeys(slots)) + ".")
+    uniq_prices = list(dict.fromkeys(prices))
+    if uniq_prices:
+        parts.append("Precio: " + " · ".join(uniq_prices) + ".")
+    uniq_notes = [n for n in dict.fromkeys(notes) if n not in uniq_prices]
+    if uniq_notes:
+        parts.append(" ".join(n if n.endswith(".") else n + "." for n in uniq_notes))
+    # Cada sesión es un trozo separado por comas o " i "; en "de 18.00 h a 21.00 h" la primera hora es la de inicio.
+    starts = {"%02d:%s" % (int(m.group(1)), m.group(2)) for h in hours for frag in re.split(r",|\bi\b|\by\b", h)
+              for m in [_HOUR.search(frag)] if m}
+    tm = starts.pop() if len(starts) == 1 else ""
+    ptxt = " ".join(uniq_prices).lower()
+    free, price = None, ""
+    if re.search(r"gratu|gratis|lliure|free", ptxt):
+        free, price = True, "Gratuït"
+    else:
+        # Todos los importes de las líneas de precio con "€" ("de 35 a 220 €", "General: 12 € Reduïda: 8 €")
+        eur = sorted(float(x.replace(",", ".")) for p in uniq_prices if "€" in p for x in _NUM.findall(p))
+        if eur:
+            free = False
+            price = ("%g €" % eur[0]) if eur[0] == eur[-1] else ("De %g a %g €" % (eur[0], eur[-1]))
+            price = price.replace(".", ",")
+    return " ".join(parts), (tm if tm != "00:00" else ""), free, price
+
+
 def _fetch_datastore(log, t0):
-    """Versión reducida (sin descripción, imagen ni enlaces) a partir de la API datastore de CKAN."""
+    """A partir de la API datastore de CKAN (la descarga completa en JSON devuelve 403 a los servidores de GitHub).
+
+    No trae descripción, sala ni imagen, pero sí horario, precio, barrio y enlaces de entradas o información."""
     out = []
     offset = 0
     while True:
@@ -97,12 +154,27 @@ def _fetch_datastore(log, t0):
                 continue
             title = r.get("name") or ""
             sec = [x.strip() for x in (r.get("secondary_filters_name") or "").split(",") if x.strip()]
+            when, tm, free, price = timetable(r.get("timetable"))
+            barri, districte = r.get("addresses_neighborhood_name") or "", r.get("addresses_district_name") or ""
+            zone = ""
+            if barri:
+                zone = "Barrio: %s%s." % (barri, (" (%s)" % districte) if districte and districte != barri else "")
+            desc = " ".join(x for x in (when, zone) if x)
+            link = r.get("values_value") or ""
+            attr = (r.get("values_attribute_name") or "").lower()
+            tickets = link if link.startswith("http") and "entrades" in attr else ""
+            web = link if link.startswith("http") and not tickets else ""
+            rid = str(r.get("register_id") or "").strip("\ufeff").strip()
+            if not web and rid.isdigit():
+                slug = re.sub(r"[^a-z0-9]+", "-", norm(strip_html(title))).strip("-")[:80]
+                web = GUIA % (slug, rid)
             ev = event(
-                NAME, str(r.get("register_id") or "").strip("\ufeff"), title, start, end=end,
-                subtype=sec[0] if sec else "", category=classify(sec, title),
+                NAME, rid, title, start, end=end, time=tm,
+                description=desc, subtype=sec[0] if sec else "", category=classify(sec, title, desc),
                 province_code="08", city=(r.get("addresses_town") or "Barcelona").title(),
                 address=" ".join(str(x) for x in (r.get("addresses_road_name"), r.get("addresses_start_street_number")) if x),
-                lat=r.get("geo_epgs_4326_lat"), lon=r.get("geo_epgs_4326_lon"), url=HOME,
+                lat=r.get("geo_epgs_4326_lat"), lon=r.get("geo_epgs_4326_lon"), url=web or HOME, tickets_url=tickets,
+                free=free, price=price,
             )
             if ev:
                 out.append(ev)
