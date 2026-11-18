@@ -254,7 +254,8 @@
     }
     return '<article class="card pop' + pop + '" data-id="' + e.id + '" data-c="' + Math.floor(e.i / CHUNK) + '" data-pop="' + pop + '"' + (opts.noOngoing ? ' data-no="1"' : '') + '>' + img + '<div class="body">' +
       '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + permBadge + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + (d !== null ? '<span class="badge dist">a ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + ' km</span>' : '') + '</div>' +
-      '<h3><a href="' + esc(e.url || e.tickets_url || evFile(e)) + '" target="_blank" rel="noopener">' + esc(title(e)) + '</a></h3>' +
+      // El título lleva a la ficha del plan en Planika (enlace rastreable); la web oficial sigue en "Entradas" y "Más info".
+      '<h3><a href="' + esc(evFile(e)) + '">' + esc(title(e)) + '</a></h3>' +
       (e.title_es ? '<div class="where">' + esc(e.title) + '</div>' : '') +
       '<div class="when">📅 ' + esc(whenText(e)) + '</div>' + sess +
       (where ? '<div class="where">📍 ' + esc(where) + '</div>' : '') +
