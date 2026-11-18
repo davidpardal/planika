@@ -12,6 +12,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from planes import classify, publish, static, util  # noqa: E402
 
 
+
+def _all_sitemaps(site_dir):
+    """sitemap.xml es un índice: devuelve el texto del índice y de todos los sitemaps que enlaza."""
+    import io
+    parts = []
+    for fn in sorted(os.listdir(site_dir)):
+        if fn.startswith("sitemap") and fn.endswith(".xml"):
+            with open(os.path.join(site_dir, fn), encoding="utf-8") as fh:
+                parts.append(fh.read())
+    return io.StringIO("\n".join(parts))
+
 class TestUtil(unittest.TestCase):
     def test_parse_date(self):
         self.assertEqual(util.parse_date("2026-11-21 18:00:00.0"), "2026-11-21")
@@ -188,7 +199,7 @@ class TestPermanent(unittest.TestCase):
                 html = fh.read()
             self.assertIn("La Seo", html)
             self.assertIn("Visita permanente", html)
-            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+            with _all_sitemaps(tmp) as fh:
                 self.assertIn("zaragoza.html", fh.read())
 
     def test_combo_pages_need_five_events(self):
@@ -202,7 +213,7 @@ class TestPermanent(unittest.TestCase):
             self.assertNotIn("p/zaragoza-charlas.html", pages)
             with open(os.path.join(tmp, "p", "zaragoza.html"), encoding="utf-8") as fh:
                 self.assertIn("zaragoza-musica.html", fh.read())
-            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+            with _all_sitemaps(tmp) as fh:
                 self.assertIn("zaragoza-musica.html", fh.read())
 
     def test_promo_page_and_footer_link(self):
@@ -217,7 +228,7 @@ class TestPermanent(unittest.TestCase):
             self.assertIn("FAQPage", promo)
             with open(os.path.join(tmp, "p", "zaragoza.html"), encoding="utf-8") as fh:
                 self.assertIn("../promociona-tu-evento.html", fh.read())
-            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+            with _all_sitemaps(tmp) as fh:
                 self.assertIn("promociona-tu-evento.html", fh.read())
 
     def test_sources_page(self):
@@ -236,7 +247,7 @@ class TestPermanent(unittest.TestCase):
             self.assertIn("x=1&amp;y=2", page)
             self.assertNotIn("con error en la última descarga", page)   # los errores no se enseñan al público
             self.assertNotIn("Fuente vacía", page)                     # fuentes con 0 planes fuera de la lista
-            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+            with _all_sitemaps(tmp) as fh:
                 self.assertIn("/fuentes.html", fh.read())
 
     def test_legal_pages(self):
@@ -246,7 +257,7 @@ class TestPermanent(unittest.TestCase):
             pages = publish.write_pages(tmp, [], [], "")
             self.assertIn("privacidad.html", pages)
             self.assertIn("aviso-legal.html", pages)
-            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+            with _all_sitemaps(tmp) as fh:
                 sm = fh.read()
             self.assertIn("/privacidad.html", sm)
             self.assertIn("/aviso-legal.html", sm)

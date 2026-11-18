@@ -23,7 +23,7 @@ sys.path.insert(0, ROOT)
 # es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
 EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
 
-from planes import llm, publish, static  # noqa: E402
+from planes import llm, publish, seo, static  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
@@ -88,8 +88,10 @@ def write_site(args, site_dir, payload):
     log("Escrito %s (%.0f KB) y %d bloques de detalles en data/d/" % (os.path.join(args.out, "core.js"), core_size / 1024, chunks))
     if not args.no_pages:
         feeds = publish.write_feeds(os.path.join(site_dir, "feeds"), events)
-        pages = publish.write_pages(site_dir, events, payload.get("sources") or [], payload.get("updated_at") or "")
-        log("Generados %d feeds RSS y %d páginas estáticas" % (len(feeds), len(pages)))
+        pages = publish.write_pages(site_dir, events, payload.get("sources") or [], payload.get("updated_at") or "",
+                                    state_path=os.path.join(ROOT, "data", "sitemap_state.json"))
+        indexables = sum(1 for e in events if seo.is_indexable(e))
+        log("Generados %d feeds RSS y %d páginas estáticas (%d fichas indexables de %d)" % (len(feeds), len(pages), indexables, len(events)))
 
 
 def main():
