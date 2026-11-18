@@ -90,6 +90,7 @@ def write_site(args, site_dir, payload):
         feeds = publish.write_feeds(os.path.join(site_dir, "feeds"), events)
         pages = publish.write_pages(site_dir, events, payload.get("sources") or [], payload.get("updated_at") or "",
                                     state_path=os.path.join(ROOT, "data", "sitemap_state.json"))
+        static.stamp_index(site_dir)  # versiones en las URL de estilos, datos y app de la portada
         indexables = sum(1 for e in events if seo.is_indexable(e))
         log("Generados %d feeds RSS y %d páginas estáticas (%d fichas indexables de %d)" % (len(feeds), len(pages), indexables, len(events)))
 
