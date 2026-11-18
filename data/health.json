@@ -213,7 +213,7 @@
    {
     "date": "2026-11-18",
     "count": 34,
-    "error": ""
+    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
    }
   ],
   "galicia": [
@@ -535,8 +535,10 @@
    }
   ]
  },
- "updated_at": "2026-11-18T15:47",
+ "updated_at": "2026-11-18T15:59",
  "alerts": [
-  "Ayuntamiento de Zaragoza: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18"
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18",
+  "Ayuntamiento de Zaragoza: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18",
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18"
  ]
 }
