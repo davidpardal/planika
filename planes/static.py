@@ -17,9 +17,10 @@ from .classify import CATEGORIES
 from .util import is_permanent, iso, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
-# Analítica sin cookies (Cloudflare Web Analytics). El token es público por diseño: viaja en el HTML de cada página.
-BEACON = ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
-          'data-cf-beacon=\'{"token":"4da50e67f6794aa597670cd65c807dde"}\'></script>')
+# Analítica: Google Analytics 4 (cuenta de Planika, planikaapp.com@gmail.com). El ID de medición es público por diseño: viaja en el HTML de cada página.
+BEACON = ('<script async src="https://www.googletagmanager.com/gtag/js?id=G-E4DXWFYPH1"></script>'
+                    '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}'
+                    'gtag("js",new Date());gtag("config","G-E4DXWFYPH1");</script>')
 CHUNK = 250  # planes por bloque de detalles
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
