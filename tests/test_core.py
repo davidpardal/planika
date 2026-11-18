@@ -226,6 +226,8 @@ class TestPermanent(unittest.TestCase):
                 promo = fh.read()
             self.assertIn("Promociona tu evento gratis", promo)
             self.assertIn("FAQPage", promo)
+            self.assertNotIn("9,90", promo)       # sin precios de destacados hasta validarlos con organizadores
+            self.assertNotIn("Pack Sala", promo)
             with open(os.path.join(tmp, "p", "zaragoza.html"), encoding="utf-8") as fh:
                 self.assertIn("../promociona-tu-evento.html", fh.read())
             with _all_sitemaps(tmp) as fh:

@@ -217,11 +217,9 @@ _PROMO = """<!doctype html>
 <li><strong>Lo revisamos</strong> para evitar spam y errores. Si falta algo, te escribimos.</li>
 <li><strong>Publicado en 24 horas.</strong> Planika se actualiza cada día; tu evento entra en el siguiente ciclo.</li>
 </ol>
-<h2 style="margin:26px 0 10px">Precios</h2>
+<h2 style="margin:26px 0 10px">¿Cuánto cuesta?</h2>
 <div class="list">
-<article class="card"><div class="body"><div class="badges"><span class="badge">Publicar</span></div><h3>0 €</h3><p class="desc">Tu evento publicado con ficha propia y en todos los listados que le correspondan. Gratis, para siempre.</p></div></article>
-<article class="card"><div class="body"><div class="badges"><span class="badge">Destacado</span><span class="badge free">Muy pronto</span></div><h3>9,90 € por evento</h3><p class="desc">Primero en tu provincia y tu categoría, con insignia de destacado y foto grande.</p></div></article>
-<article class="card"><div class="body"><div class="badges"><span class="badge">Pack Sala</span><span class="badge free">Muy pronto</span></div><h3>29 € al mes</h3><p class="desc">Todos los eventos de tu sala destacados, sin límite.</p></div></article>
+<article class="card"><div class="body"><div class="badges"><span class="badge">Publicar</span><span class="badge free">Gratis</span></div><h3>0 €</h3><p class="desc">Tu evento publicado con ficha propia y en todos los listados que le correspondan. Gratis, para siempre.</p></div></article>
 </div>
 <h2 style="margin:26px 0 10px">Preguntas frecuentes</h2>
 %(faq)s
