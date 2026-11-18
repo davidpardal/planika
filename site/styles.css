@@ -62,7 +62,7 @@ h1, h2 { letter-spacing: -.02em; }
 .hero-img { display: block; width: 100%; height: auto; border: var(--b); border-radius: var(--r); box-shadow: var(--sh-lg); order: -1; }
 .brand { display: flex; align-items: center; gap: 12px; }
 .logo { width: 52px; height: 52px; flex: none; filter: drop-shadow(3px 3px 0 var(--ink)); }
-.hero h1 {
+.brand h1, .brand .brandname {
   margin: 0; font-size: clamp(40px, 8vw, 72px); line-height: 1.05; font-weight: 900;
   background: var(--rainbow); -webkit-background-clip: text; background-clip: text; color: transparent;
   padding-right: .06em;
