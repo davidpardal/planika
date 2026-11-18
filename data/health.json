@@ -131,7 +131,7 @@
    },
    {
     "date": "2026-11-18",
-    "count": 468,
+    "count": 463,
     "error": ""
    }
   ],
@@ -462,8 +462,8 @@
    },
    {
     "date": "2026-11-18",
-    "count": 558,
-    "error": ""
+    "count": 510,
+    "error": "ConnectTimeout: HTTPSConnectionPool(host='www.zaragoza.es', port=443): Max retries exceeded with url: /sede/servicio/actividades/evento/"
    }
   ],
   "murcia": [
@@ -535,6 +535,8 @@
    }
   ]
  },
- "updated_at": "2026-11-18T10:52",
- "alerts": []
+ "updated_at": "2026-11-18T10:58",
+ "alerts": [
+  "Ayuntamiento de Zaragoza: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18"
+ ]
 }
