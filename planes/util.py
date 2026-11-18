@@ -62,11 +62,39 @@ _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
 
 
+# Texto UTF-8 leído con otra codificación ("exposiciÃģn", "MÃšsica"): cada letra acentuada se convierte en
+# "Ã" o "Â" seguida de un carácter de 0x80-0xBF. Se deshace carácter a carácter (latin-1, latin-6, cp1252).
+_MOJI_RE = re.compile("([\u00c2\u00c3])(.)")
+_MOJI_REV = {}
+for _codec in ("latin_1", "iso8859_10", "cp1252"):
+    for _b in range(0x80, 0xC0):
+        try:
+            _MOJI_REV.setdefault(bytes([_b]).decode(_codec), _b)
+        except UnicodeDecodeError:
+            pass
+
+
+def fix_mojibake(s):
+    if "\u00c3" not in s and "\u00c2" not in s:
+        return s
+
+    def rep(m):
+        b = _MOJI_REV.get(m.group(2))
+        if b is None:
+            return m.group(0)
+        try:
+            r = bytes([0xC3 if m.group(1) == "\u00c3" else 0xC2, b]).decode("utf-8")
+        except UnicodeDecodeError:
+            return m.group(0)
+        return m.group(0) if "\x80" <= r <= "\x9f" else r  # nunca caracteres de control
+    return _MOJI_RE.sub(rep, s)
+
+
 def strip_html(s, limit=None):
     if not s:
         return ""
     s = html.unescape(_TAG_RE.sub(" ", str(s)))
-    s = s.replace("\ufffd", "")
+    s = fix_mojibake(s.replace("\ufffd", ""))
     s = _WS_RE.sub(" ", s).strip()
     if limit and len(s) > limit:
         cut = s[:limit]
@@ -396,6 +424,6 @@ def parse_ics(text):
         elif cur is not None and ":" in line:
             key, val = line.split(":", 1)
             key = key.split(";", 1)[0].upper()
-            val = val.replace("\\n", "\n").replace("\\,", ",").replace("\;", ";")
+            val = val.replace("\\n", "\n").replace("\\,", ",").replace("\\;", ";")
             cur.setdefault(key, val)
     return events

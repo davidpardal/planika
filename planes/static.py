@@ -12,6 +12,7 @@ try:
 except ImportError:  # pragma: no cover - Python < 3.9
     ZoneInfo = None
 
+from . import seo
 from .classify import CATEGORIES
 from .util import is_permanent, iso, today
 
@@ -100,6 +101,42 @@ def fmt_day(day):
     return "%s %d %s %d" % (DIAS[d.weekday()], d.day, MESES[d.month - 1], d.year)
 
 
+def _dshort(day):
+    d = datetime.strptime(day, "%Y-%m-%d")
+    return "%d %s" % (d.day, MESES[d.month - 1])
+
+
+def short_when(e, t0):
+    """Fecha corta para títulos: "21 nov", "21 nov–3 dic", "hasta el 15 ene"; vacío en visitas permanentes."""
+    if is_permanent(e):
+        return ""
+    if e.get("sessions"):
+        return _dshort(next_session(e, t0))
+    if e["end"] != e["start"]:
+        if e["start"] < t0:
+            return "hasta el " + _dshort(e["end"])
+        return "%s–%s" % (_dshort(e["start"]), _dshort(e["end"]))
+    return _dshort(e["start"])
+
+
+def clip(s, n):
+    """Recorta en una palabra sin pasar de n caracteres (con "…")."""
+    s = " ".join(str(s or "").split())
+    if len(s) <= n:
+        return s
+    cut = s[: n - 1].rsplit(" ", 1)[0].rstrip(" ,.;:-–·")
+    return (cut or s[: n - 1]) + "…"
+
+
+def seo_title(e, t0, place):
+    """Título de la ficha: plan · fecha corta · lugar, sin pasar de ~60 caracteres (más " · Planika")."""
+    tail = " · ".join(x for x in (short_when(e, t0), clip(place, 26)) if x)
+    base = e.get("title_es") or e["title"]
+    room = max(24, 58 - len(tail) - 3)
+    base = clip(base, room)
+    return "%s · %s" % (base, tail) if tail else base
+
+
 def price_num(e):
     if e.get("free"):
         return 0.0
@@ -171,6 +208,8 @@ def _ld_date(e, day):
 
 def event_jsonld(e, canonical, t0=None):
     t0 = t0 or iso(today())
+    if is_permanent(e):
+        return place_jsonld(e, canonical)
     start = next_session(e, t0)
     end = start if e.get("sessions") else e["end"]
     place = {"@type": "Place", "name": e.get("venue") or e.get("city") or e.get("province") or "España",
@@ -194,8 +233,8 @@ def event_jsonld(e, canonical, t0=None):
         ld["image"] = [safe_url(e["image"])]
     tickets = safe_url(e.get("tickets_url"))
     if e.get("free") or tickets:
-        offer = {"@type": "Offer", "url": tickets or safe_url(e.get("url")) or canonical, "priceCurrency": "EUR",
-                 "availability": "https://schema.org/InStock"}
+        # Sin "availability": las fuentes no dicen si quedan entradas y no se inventa.
+        offer = {"@type": "Offer", "url": tickets or safe_url(e.get("url")) or canonical, "priceCurrency": "EUR"}
         p = price_num(e)
         if p is not None:
             offer["price"] = ("%.2f" % p).rstrip("0").rstrip(".") if p else "0"
@@ -203,14 +242,39 @@ def event_jsonld(e, canonical, t0=None):
     return ld
 
 
+def place_jsonld(e, canonical):
+    """Las visitas permanentes (museos, monumentos, espacios naturales) no son eventos: Google pide no marcarlas
+    como Event. Se describen como TouristAttraction con su dirección y coordenadas."""
+    addr = {"@type": "PostalAddress", "addressCountry": "ES"}
+    if e.get("address"):
+        addr["streetAddress"] = e["address"]
+    if e.get("city"):
+        addr["addressLocality"] = e["city"]
+    if e.get("province"):
+        addr["addressRegion"] = e["province"]
+    ld = {"@context": "https://schema.org", "@type": "TouristAttraction", "name": e.get("title_es") or e["title"],
+          "url": canonical, "address": addr}
+    if e.get("lat") is not None and e.get("lon") is not None:
+        ld["geo"] = {"@type": "GeoCoordinates", "latitude": e["lat"], "longitude": e["lon"]}
+    if e.get("description"):
+        ld["description"] = e["description"]
+    if safe_url(e.get("image")):
+        ld["image"] = [safe_url(e["image"])]
+    if safe_url(e.get("url")):
+        ld["sameAs"] = safe_url(e["url"])
+    if e.get("free"):
+        ld["isAccessibleForFree"] = True
+    return ld
+
+
 # ---------------------------------------------------------------- una página por plan
 
 _EVENT_PAGE = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>%(title)s · %(place)s · Planika</title><meta name="description" content="%(desc)s">
+<title>%(seo_title)s · Planika</title><meta name="description" content="%(desc)s">
 <link rel="canonical" href="%(canonical)s">
 <meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
-<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="robots" content="%(robots)s">
 <meta property="og:title" content="%(title)s"><meta property="og:description" content="%(desc)s">
 <meta property="og:url" content="%(canonical)s"><meta property="og:image" content="%(og_image)s">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="%(title)s"><meta name="twitter:description" content="%(desc)s"><meta name="twitter:image" content="%(og_image)s"><meta name="theme-color" content="#ffd23f">
@@ -229,10 +293,10 @@ _EVENT_PAGE = """<!doctype html>
 <div class="where">📍 %(where)s</div>
 %(body)s
 <div class="actions">%(actions)s</div>
-<div class="src">Fuente: %(source)s%(srclink)s. Comprueba siempre fechas y precios en la web del organizador.</div>
+<div class="src">Fuente: %(source)s%(srclink)s. %(updated)sComprueba siempre fechas y precios en la web del organizador.</div>
 </div></article>
 <nav class="foot evnav"><h2 class="sticker">Más planes</h2>%(related)s
-<p><a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../aviso-legal.html">Aviso legal</a></p></nav>
+<p>%(city_link)s<a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../aviso-legal.html">Aviso legal</a></p></nav>
 </main></body></html>
 """
 
@@ -281,19 +345,21 @@ def _gcal(e, t0):
             % (quote(e.get("title_es") or e["title"]), s, f, quote(loc)))
 
 
-def event_page(e, related=(), t0=None, prov_slug=""):
+def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None, updated="", indexable=None):
+    """city: (nombre, archivo sin .html) si la ciudad tiene página propia. title_place: lugar para el <title>
+    (se usa la sala cuando hay varios planes con el mismo nombre y fecha en la misma ciudad)."""
     t0 = t0 or iso(today())
     esc = html.escape
     title = e.get("title_es") or e["title"]
     canonical = "%s/e/%s" % (SITE_URL, event_file(e))
+    if indexable is None:
+        indexable = seo.is_indexable(e)
     cat = "%s %s" % (CAT_ICON.get(e["category"], "✨"), CAT_NAME.get(e["category"], "Otros planes"))
     where = " · ".join(x for x in (e.get("venue"), e.get("address"), e.get("city"),
                                    e.get("province") if e.get("province") != e.get("city") else "") if x)
     when = _when(e, t0)
     place = e.get("city") or e.get("province") or "España"
-    desc = "%s. %s. %s" % (when, where or place, e.get("description") or "Fechas, lugar y entradas en Planika.")
-    if len(desc) > 300:
-        desc = desc[:299].rsplit(" ", 1)[0] + "…"
+    desc = clip("%s. %s. %s" % (when, where or place, e.get("description") or "Fechas, lugar y enlace a la web oficial en Planika."), 158)
     image = safe_url(e.get("image"))
     tickets, url = safe_url(e.get("tickets_url")), safe_url(e.get("url"))
     actions = []
@@ -323,27 +389,52 @@ def event_page(e, related=(), t0=None, prov_slug=""):
     if prov_slug:
         crumbs.append({"@type": "ListItem", "position": 2, "name": e.get("province") or "Provincia",
                        "item": "%s/p/%s.html" % (SITE_URL, prov_slug)})
+    if city:
+        crumbs.append({"@type": "ListItem", "position": len(crumbs) + 1, "name": city[0],
+                       "item": "%s/c/%s.html" % (SITE_URL, city[1])})
     crumbs.append({"@type": "ListItem", "position": len(crumbs) + 1, "name": title, "item": canonical})
     ld_doc = {"@context": "https://schema.org", "@graph": [ld_event,
               {"@type": "BreadcrumbList", "itemListElement": crumbs}]}
     ld = json.dumps(ld_doc, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     return _EVENT_PAGE % dict(
-        title=esc(title), place=esc(place), desc=esc(desc), canonical=esc(canonical),
+        title=esc(title), seo_title=esc(seo_title(e, t0, title_place or place)), desc=esc(desc), canonical=esc(canonical),
+        robots="index,follow,max-image-preview:large" if indexable else "noindex,follow",
+        updated=('<span class="upd">Agenda actualizada el %s. </span>' % esc(updated)) if updated else "",
+        city_link=('<a href="../c/%s.html">Planes en %s</a> · ' % (esc(city[1]), esc(city[0]))) if city else "",
         og_image=esc(image or SITE_URL + "/og.jpg"), jsonld=ld, analytics=BEACON, cat=esc(cat), cat_key=esc(e["category"]),
         crumbs=('<nav class="crumbs" aria-label="Migas de pan"><a href="../">Inicio</a> › '
                 + ('<a href="../p/%s.html">%s</a> › ' % (esc(prov_slug), esc(e.get("province") or "Provincia")) if prov_slug else '')
+                + ('<a href="../c/%s.html">%s</a> › ' % (esc(city[1]), esc(city[0])) if city else '')
                 + '<span aria-current="page">%s</span></nav>' % esc(title)),
         province=esc(e.get("province") or "España"), prov_file=esc(prov_slug) + ".html", pop=_pop(e["id"]),
-        img=('<img src="%s" alt="" loading="lazy" onerror="this.remove()">' % esc(image)) if image else "",
+        img=('<img src="%s" alt="%s" fetchpriority="high" decoding="async" onerror="this.remove()">' % (esc(image), esc(title))) if image else "",
         price=price, when=esc(when), sessions=sessions, where=esc(where or place),
         body=('<p class="desc">%s</p>' % esc(e["description"])) if e.get("description") else "",
         actions="".join(actions), source=esc(e["source"]), related=rel,
         srclink=(' · <a href="%s" target="_blank" rel="noopener">ver en la web oficial ↗</a>' % esc(url or tickets)) if (url or tickets) else "")
 
 
-def write_event_pages(site_dir, events, prov_slugs):
-    """Una página por plan en site/e/. prov_slugs: código de provincia -> nombre de archivo (sin .html) de su página."""
+def _event_digest(e, t0, indexable):
+    """Huella de lo que muestra la ficha del propio plan (no de la lista de "Más planes", que rota a diario)."""
+    keys = ("title", "title_es", "start", "end", "time", "venue", "address", "city", "province", "description",
+            "price", "free", "image", "url", "tickets_url", "category", "source")
+    core = [e.get(k) for k in keys] + [_when(e, t0), [d for d in e.get("sessions") or [] if d >= t0], indexable]
+    return seo.digest(json.dumps(core, ensure_ascii=False, sort_keys=True))
+
+
+def write_event_pages(site_dir, events, prov_slugs, cities=None, updated=""):
+    """Una página por plan en site/e/. prov_slugs: código de provincia -> nombre de archivo (sin .html) de su página.
+    cities: (código de provincia, ciudad normalizada) -> (nombre, archivo) de las ciudades con página propia.
+
+    Devuelve [(ruta, indexable, huella)]."""
+    from .util import norm
     t0 = iso(today())
+    cities = cities or {}
+    # Planes que compartirían título (mismo nombre, fecha y ciudad): en el <title> se usa la sala.
+    seen_titles = {}
+    for e in events:
+        k = (seo_title(e, t0, e.get("city") or e.get("province") or "España"))
+        seen_titles[k] = seen_titles.get(k, 0) + 1
     out_dir = os.path.join(site_dir, "e")
     os.makedirs(out_dir, exist_ok=True)
     for fn in os.listdir(out_dir):
@@ -367,7 +458,14 @@ def write_event_pages(site_dir, events, prov_slugs):
                 related.append(r)
         related = related[:6]
         fn = event_file(e)
+        place = e.get("city") or e.get("province") or "España"
+        title_place = None
+        if seen_titles.get(seo_title(e, t0, place), 0) > 1:
+            title_place = e.get("venue") or e.get("address") or None
+        indexable = seo.is_indexable(e)
+        city = cities.get((e["province_code"], norm(e.get("city") or "")))
         with open(os.path.join(out_dir, fn), "w", encoding="utf-8") as fh:
-            fh.write(event_page(e, related, t0, prov_slugs.get(e["province_code"], "")))
-        pages.append("e/" + fn)
+            fh.write(event_page(e, related, t0, prov_slugs.get(e["province_code"], ""), city=city,
+                                title_place=title_place, updated=updated, indexable=indexable))
+        pages.append(("e/" + fn, indexable, _event_digest(e, t0, indexable)))
     return pages

@@ -44,9 +44,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Se conservan los archivos generados, se sincroniza con la rama remota y se vuelven a aplicar:
           # así no hay conflictos aunque otra ejecución haya publicado datos mientras tanto.
-          tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/sitemap.xml site/robots.txt site/fuentes.html site/promociona-tu-evento.html site/privacidad.html site/aviso-legal.html data/health.json data/events.json data/teams_cache.json data/tsdb_days.json data/llm_cache.json 2>/dev/null)
+          tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/c site/sitemap.xml site/sitemap-*.xml site/robots.txt site/fuentes.html site/promociona-tu-evento.html site/privacidad.html site/aviso-legal.html site/planes-hoy.html site/planes-este-fin-de-semana.html site/planes-gratis.html site/festivales.html data/sitemap_state.json data/health.json data/events.json data/teams_cache.json data/tsdb_days.json data/llm_cache.json 2>/dev/null)
           git fetch origin main
           git reset --hard origin/main
+          # Las páginas generadas se sustituyen enteras: así se borran las que hoy ya no tocan
+          # (p. ej. un "fin de semana" con menos de 3 planes) en vez de quedarse publicadas con datos viejos.
+          rm -rf site/p site/t site/c site/feeds
+          rm -f site/sitemap-*.xml site/planes-hoy.html site/planes-este-fin-de-semana.html site/planes-gratis.html site/festivales.html
           tar xf /tmp/generado.tar
           git add -A site/ data/
           git commit -m "Actualiza eventos $(date -u +%F)" || echo "sin cambios"
@@ -71,6 +75,11 @@ jobs:
               gh issue close "$n" --comment "Todas las fuentes han respondido con normalidad en la ejecución de $(date -u +%F)."
             done
           fi
+      # Comprobación SEO del sitio generado (enlaces internos, canónicas, sitemaps, robots, JSON-LD).
+      # Informa en el log; no bloquea la publicación diaria de la agenda.
+      - name: Comprobación SEO
+        continue-on-error: true
+        run: python3 tools/seo_check.py site
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
