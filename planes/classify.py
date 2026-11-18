@@ -113,3 +113,34 @@ def classify(raw_types, title="", description="", audience=""):
         if rx.search(text2):
             return key
     return "otros"
+
+
+# ---------------------------------------------------------------- tema Navidad
+# Un "Concierto de Navidad" sigue siendo un concierto y un taller navideño para niños sigue siendo infantil:
+# la Navidad es un tema que se suma al tipo de plan, no lo sustituye.
+_XMAS_TITLE = re.compile(
+    r"\b(navidad|navidades|navidenos?|navidenas?|nadal|nadals|nadalencs?|nadalenca|gabon|gabonak|gabonetako|gabonetan|"
+    r"christmas|xmas|nochebuena|villancicos?|nadales|reyes magos|reis mags|reis d.orient|olentzero|mari domingi|papa noel|pare noel|"
+    r"cabalgatas?|cavalcadas?|belenes|belen (de navidad|monumental|viviente|napolitano|municipal|artesanal|tradicional|en movimiento)|"
+    r"pessebres?|jaiotzak?|naixement|nochevieja|cap d.any|urtezahar|campanadas|san silvestre|sant silvestre)\b")
+_XMAS_DESC = re.compile(
+    r"\b(mercados? de navidad|mercadillos? navidenos?|mercats? de nadal|fira de nadal|fires de nadal|productes nadalencs|"
+    r"productos navidenos|inaugura la navidad|espiritu navideno|ambiente navideno|magia de la navidad|cuentos de navidad|"
+    r"villancicos|nadales|belen viviente|pessebre vivent|olentzero|cabalgata de reyes|reyes magos|papa noel|pare noel|"
+    r"gabonetako azoka|concierto de navidad|concert de nadal|alumbrado navideno|luces de navidad)\b")
+_XMAS_NOT = re.compile(r"\brafa(el)? nadal\b|\bfestius de nadal\b|\bexcepte .{0,40}nadal")
+
+
+def is_xmas(e):
+    """¿Es un plan de Navidad? Por el título (palabras inequívocas) o por frases claras de la descripción."""
+    if e.get("category") == "navidad":
+        return True
+    if (e.get("subtype") or "") == "Permanente":
+        return False
+    title = norm(" ".join([e.get("title") or "", e.get("title_es") or ""]))
+    if _XMAS_NOT.search(title):
+        return False
+    if _XMAS_TITLE.search(title):
+        return True
+    desc = norm(e.get("description") or "")[:400]
+    return bool(_XMAS_DESC.search(desc)) and not _XMAS_NOT.search(desc)

@@ -144,7 +144,7 @@ def write_feeds(out_dir, events, days=30):
             fh.write(_rss("Planika · %s" % name, "%s/?prov=%s" % (SITE_URL, code), "Planes de ocio en %s los próximos %d días" % (name, days), items))
         written.append(fn)
     for key, name, _ in CATEGORIES:
-        items = [e for e in soon if e["category"] == key][:120]
+        items = [e for e in soon if in_cat(e, key)][:120]
         if not items:
             continue
         fn = "tipo-%s.xml" % key
@@ -265,7 +265,7 @@ _SOURCES = """<!doctype html>
 </head><body>
 <header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><span class="brandname">Planika</span></a></div>
 <h1 class="tagline">Fuentes de datos</h1>
-<p class="lead">Los datos proceden de portales de datos abiertos y APIs públicas, más una selección de visitas permanentes (museos, monumentos, espacios naturales y salas) con enlace a su web oficial.</p>
+<p class="lead">Los datos proceden de portales de datos abiertos y APIs públicas, más una selección de visitas permanentes (museos, monumentos, espacios naturales y salas) con enlace a su web oficial y unas pocas grandes citas con fecha comprobada a mano en webs públicas («Selección Planika»).</p>
 <p class="meta"><a class="btn primary" href="./">Explorar Planika</a>%(updated)s</p></div></header>
 <main class="wrap">
 <h2 style="margin:22px 0 10px">%(n)d fuentes, %(total)s planes</h2>
@@ -360,6 +360,11 @@ def season_year(t0):
     """Año de la temporada de Navidad: en enero todavía es la del año anterior."""
     y, m = int(t0[:4]), int(t0[5:7])
     return y - 1 if m == 1 else y
+
+
+def in_cat(e, key):
+    """¿Va el plan en la página del tipo `key`? Navidad incluye los planes con tema navideño de cualquier tipo."""
+    return e["category"] == key or (key == "navidad" and bool(e.get("xmas")))
 
 
 def fmt_n(n):
@@ -592,7 +597,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
     combos = {}
     for code, name, ccaa, items in prov_pages:
         for key, _, _ in CATEGORIES:
-            sub = [e for e in items if e["category"] == key]
+            sub = [e for e in items if in_cat(e, key)]
             if len(sub) >= 5:
                 combos[(code, key)] = sub
     # Subpáginas de intención por provincia: fin de semana y gratis (solo con al menos 3 planes).
@@ -733,7 +738,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
 
     # ---- tipos de plan en toda España
     for key, cname, icon in CATEGORIES:
-        items = upcoming([e for e in events if e["category"] == key])
+        items = upcoming([e for e in events if in_cat(e, key)])
         fn = "t/%s.html" % key
         intent = CAT_INTENT[key]
         combo = ['<a href="../p/%s-%s.html">%s en %s</a>' % (prov_slug[c], key, html.escape(intent), html.escape(n))
