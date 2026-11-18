@@ -169,8 +169,8 @@ _PAGE = """<!doctype html>
 <script type="application/ld+json">%(jsonld)s</script>
 %(analytics)s
 </head><body>
-<header class="hero"><div class="wrap"><div class="brand"><a href="../" style="text-decoration:none;color:inherit"><h1>Planika</h1></a></div>
-<p class="tagline">%(title)s</p><p class="lead">%(desc)s</p>
+<header class="hero"><div class="wrap"><div class="brand"><a href="../" style="text-decoration:none;color:inherit"><span class="brandname">Planika</span></a></div>
+<h1 class="tagline">%(title)s</h1><p class="lead">%(desc)s</p>
 <p class="meta"><a class="btn primary" href="../?%(params)s">Abrir en la app con filtros y calendario</a> &nbsp; <a class="btn" href="%(rss)s">RSS</a></p></div></header>
 <main class="wrap"><h2 style="margin:22px 0 10px">Próximos planes (%(count)d)</h2>
 <div class="list">%(cards)s</div>
@@ -197,8 +197,8 @@ _PROMO = """<!doctype html>
 <script type="application/ld+json">%(jsonld)s</script>
 %(analytics)s
 </head><body>
-<header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><h1>Planika</h1></a></div>
-<p class="tagline">Promociona tu evento gratis</p>
+<header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><span class="brandname">Planika</span></a></div>
+<h1 class="tagline">Promociona tu evento gratis</h1>
 <p class="lead">¿Organizas conciertos, teatro, fiestas, exposiciones o talleres? Publica tu evento en Planika y llega a la gente que está buscando planes en tu provincia.</p>
 <p class="meta"><a class="btn primary" href="%(form)s" target="_blank" rel="noopener">Publica tu evento</a> &nbsp; <a class="btn" href="./">Explorar Planika</a></p>
 <p class="meta">Más de 12.000 planes publicados · 52 provincias · Actualización diaria</p></div></header>
@@ -264,8 +264,8 @@ _SOURCES = """<!doctype html>
 <link rel="stylesheet" href="styles.css"><link rel="icon" href="icon.svg" type="image/svg+xml">
 %(analytics)s
 </head><body>
-<header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><h1>Planika</h1></a></div>
-<p class="tagline">Fuentes de datos</p>
+<header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><span class="brandname">Planika</span></a></div>
+<h1 class="tagline">Fuentes de datos</h1>
 <p class="lead">Los datos proceden de portales de datos abiertos y APIs públicas, más una selección de visitas permanentes (museos, monumentos, espacios naturales y salas) con enlace a su web oficial.</p>
 <p class="meta"><a class="btn primary" href="./">Explorar Planika</a>%(updated)s</p></div></header>
 <main class="wrap">
