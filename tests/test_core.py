@@ -239,6 +239,26 @@ class TestPermanent(unittest.TestCase):
             with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
                 self.assertIn("/fuentes.html", fh.read())
 
+    def test_legal_pages(self):
+        from planes import legal
+        cfg = {"nombre": "Ana <Test>", "nif": "", "domicilio": "", "email": "hola@example.com"}
+        with tempfile.TemporaryDirectory() as tmp:
+            pages = publish.write_pages(tmp, [], [], "")
+            self.assertIn("privacidad.html", pages)
+            self.assertIn("aviso-legal.html", pages)
+            with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
+                sm = fh.read()
+            self.assertIn("/privacidad.html", sm)
+            self.assertIn("/aviso-legal.html", sm)
+            with open(os.path.join(tmp, "privacidad.html"), encoding="utf-8") as fh:
+                base = fh.read()
+            self.assertIn("planika_favs", base)
+            self.assertNotIn("Titular:", base)            # sin datos de titular no se inventa ninguno
+        priv, aviso = legal.privacy_page(cfg), legal.legal_page(cfg)
+        self.assertIn("Ana &lt;Test&gt;", priv)
+        self.assertIn("mailto:hola@example.com", aviso)
+        self.assertNotIn("NIF:", aviso)
+
     def test_strip_html_cuts_at_sentence(self):
         txt = "Primera frase completa que ocupa bastante espacio. Segunda frase larga que ya no cabe del todo aquí"
         out = util.strip_html(txt, 70)

@@ -232,7 +232,7 @@ _EVENT_PAGE = """<!doctype html>
 <div class="src">Fuente: %(source)s%(srclink)s. Comprueba siempre fechas y precios en la web del organizador.</div>
 </div></article>
 <nav class="foot evnav"><h2 class="sticker">Más planes</h2>%(related)s
-<p><a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a></p></nav>
+<p><a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../aviso-legal.html">Aviso legal</a></p></nav>
 </main></body></html>
 """
 

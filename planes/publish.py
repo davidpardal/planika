@@ -6,7 +6,7 @@ import os
 import re
 from datetime import datetime, timedelta
 
-from . import static
+from . import legal, static
 from .classify import CATEGORIES
 from .util import PROVINCIAS, is_permanent, iso, norm, today
 
@@ -176,7 +176,7 @@ _PAGE = """<!doctype html>
 <div class="list">%(cards)s</div>
 %(more)s
 <nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p>%(links)s</p>
-<p><a href="../promociona-tu-evento.html">¿Organizas un evento? Publícalo gratis en Planika</a></p></nav>
+<p><a href="../promociona-tu-evento.html">¿Organizas un evento? Publícalo gratis en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../aviso-legal.html">Aviso legal</a></p></nav>
 </main></body></html>
 """
 
@@ -226,7 +226,7 @@ _PROMO = """<!doctype html>
 %(faq)s
 <p class="meta" style="margin-top:26px"><a class="btn primary" href="%(form)s" target="_blank" rel="noopener">Publica tu evento gratis</a></p>
 <p class="src">Al enviar el formulario confirmas que tienes derecho a publicar el evento y su imagen. La exactitud de fechas, horarios y precios es responsabilidad del organizador.</p>
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="p/alava.html">Planes en Álava</a> · <a href="t/musica.html">Música y conciertos</a></p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="p/alava.html">Planes en Álava</a> · <a href="t/musica.html">Música y conciertos</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a></p></nav>
 </main></body></html>
 """
 
@@ -272,7 +272,7 @@ _SOURCES = """<!doctype html>
 <h2 style="margin:22px 0 10px">%(n)d fuentes, %(total)s planes</h2>
 <ul id="sources">%(items)s</ul>
 <p>Cada plan enlaza al organizador. Comprueba siempre fechas, horarios y precios en la fuente original.</p>
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="promociona-tu-evento.html">Publica tu evento</a> · <a href="https://github.com/davidpardal/planika">Código en GitHub</a></p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="promociona-tu-evento.html">Publica tu evento</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://github.com/davidpardal/planika">Código en GitHub</a></p></nav>
 </main></body></html>
 """
 
@@ -469,6 +469,7 @@ def write_pages(site_dir, events, sources=None, updated_at=""):
     with open(os.path.join(site_dir, "fuentes.html"), "w", encoding="utf-8") as fh:
         fh.write(_sources_page(sources or [], updated_at))
     pages.append("fuentes.html")
+    pages.extend(legal.write_legal_pages(site_dir))
     prov_slugs = {code: slug(name) for code, name, _ in PROVINCIAS}
     event_pages = static.write_event_pages(site_dir, events, prov_slugs)
     with open(os.path.join(site_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
