@@ -104,7 +104,7 @@
    },
    {
     "date": "2026-11-18",
-    "count": 1253,
+    "count": 1257,
     "error": ""
    }
   ],
@@ -131,7 +131,7 @@
    },
    {
     "date": "2026-11-18",
-    "count": 463,
+    "count": 468,
     "error": ""
    }
   ],
@@ -213,7 +213,7 @@
    {
     "date": "2026-11-18",
     "count": 34,
-    "error": ""
+    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
    }
   ],
   "galicia": [
@@ -462,8 +462,8 @@
    },
    {
     "date": "2026-11-18",
-    "count": 510,
-    "error": "ConnectTimeout: HTTPSConnectionPool(host='www.zaragoza.es', port=443): Max retries exceeded with url: /sede/servicio/actividades/evento/"
+    "count": 558,
+    "error": ""
    }
   ],
   "murcia": [
@@ -506,7 +506,7 @@
    },
    {
     "date": "2026-11-18",
-    "count": 159,
+    "count": 160,
     "error": ""
    }
   ],
@@ -535,8 +535,9 @@
    }
   ]
  },
- "updated_at": "2026-11-18T10:58",
+ "updated_at": "2026-11-18T11:20",
  "alerts": [
-  "Ayuntamiento de Zaragoza: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18"
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18",
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18"
  ]
 }
