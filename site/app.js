@@ -467,12 +467,6 @@
     if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { toast(msg); }, function () { prompt('Copia el enlace:', text); });
     else prompt('Copia el enlace:', text);
   }
-  function feedURL() {
-    var cats = Object.keys(state.cats).filter(function (k) { return state.cats[k]; });
-    if (state.prov) return 'feeds/provincia-' + state.prov + '.xml';
-    if (cats.length === 1) return 'feeds/tipo-' + cats[0] + '.xml';
-    return 'feeds/todos.xml';
-  }
 
   // ---------- añadir al calendario
   function calTimes(e) {
@@ -646,8 +640,6 @@
   $('prevM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); state.selDay = null; renderCalendar(); });
   $('nextM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); state.selDay = null; renderCalendar(); });
   $('todayM').addEventListener('click', function () { state.month = fromIso(TODAY); state.selDay = TODAY; renderCalendar(); });
-  $('rssBtn').addEventListener('click', function () { var u = feedURL(); copy(new URL(u, location.href).href, 'Dirección RSS copiada. Pégala en tu lector de feeds.'); window.open(u, '_blank'); });
-  $('shareFilters').addEventListener('click', function () { copy(location.href, 'Enlace con los filtros actuales copiado'); });
 
   // ---------- arranque
   var openId = readURL();
