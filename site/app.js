@@ -27,7 +27,7 @@
   var CENTROIDS = { '01': [42.85, -2.67], '02': [38.99, -1.86], '03': [38.35, -0.48], '04': [36.84, -2.46], '05': [40.66, -4.70], '06': [38.88, -6.97], '07': [39.57, 2.65], '08': [41.39, 2.17], '09': [42.34, -3.70], '10': [39.47, -6.37], '11': [36.53, -6.29], '12': [39.99, -0.04], '13': [38.99, -3.93], '14': [37.89, -4.78], '15': [43.36, -8.41], '16': [40.07, -2.14], '17': [41.98, 2.82], '18': [37.18, -3.60], '19': [40.63, -3.17], '20': [43.32, -1.98], '21': [37.26, -6.95], '22': [42.14, -0.41], '23': [37.78, -3.79], '24': [42.60, -5.57], '25': [41.62, 0.62], '26': [42.47, -2.45], '27': [43.01, -7.56], '28': [40.42, -3.70], '29': [36.72, -4.42], '30': [37.98, -1.13], '31': [42.82, -1.64], '32': [42.34, -7.86], '33': [43.36, -5.85], '34': [42.01, -4.53], '35': [28.12, -15.43], '36': [42.43, -8.64], '37': [40.97, -5.66], '38': [28.47, -16.25], '39': [43.46, -3.81], '40': [40.95, -4.12], '41': [37.39, -5.98], '42': [41.76, -2.47], '43': [41.12, 1.25], '44': [40.34, -1.11], '45': [39.86, -4.02], '46': [39.47, -0.38], '47': [41.65, -4.72], '48': [43.26, -2.93], '49': [41.50, -5.74], '50': [41.65, -0.89], '51': [35.89, -5.32], '52': [35.29, -2.94] };
 
   var $ = function (id) { return document.getElementById(id); };
-  var state = { q: '', ccaa: '', prov: '', from: '', to: '', free: false, tickets: false, cats: {}, tod: '', aud: '', pmax: '',
+  var state = { q: '', ccaa: '', prov: '', city: '', from: '', to: '', free: false, tickets: false, cats: {}, tod: '', aud: '', pmax: '',
                 favs: false, geo: null, radius: 25, view: 'list', shown: PAGE, month: null, selDay: null };
   var favSet = loadFavs();
 
@@ -125,7 +125,7 @@
   // ---------- estado en la URL (enlaces compartibles con filtros)
   function readURL() {
     var p = new URLSearchParams(location.search);
-    state.q = p.get('q') || ''; state.ccaa = p.get('ccaa') || ''; state.prov = p.get('prov') || '';
+    state.q = p.get('q') || ''; state.ccaa = p.get('ccaa') || ''; state.prov = p.get('prov') || ''; state.city = p.get('city') || '';
     state.from = p.get('from') || ''; state.to = p.get('to') || ''; state.free = p.get('free') === '1'; state.tickets = p.get('tickets') === '1';
     state.tod = p.get('tod') || ''; state.aud = p.get('aud') || ''; state.pmax = p.get('pmax') || ''; state.favs = p.get('favs') === '1';
     (p.get('cat') || '').split(',').filter(Boolean).forEach(function (c) { state.cats[c] = true; });
@@ -134,7 +134,7 @@
   }
   function writeURL() {
     var p = new URLSearchParams();
-    if (state.q) p.set('q', state.q); if (state.ccaa) p.set('ccaa', state.ccaa); if (state.prov) p.set('prov', state.prov);
+    if (state.q) p.set('q', state.q); if (state.ccaa) p.set('ccaa', state.ccaa); if (state.prov) p.set('prov', state.prov); if (state.city) p.set('city', state.city);
     if (state.from) p.set('from', state.from); if (state.to) p.set('to', state.to); if (state.free) p.set('free', '1'); if (state.tickets) p.set('tickets', '1');
     if (state.tod) p.set('tod', state.tod); if (state.aud) p.set('aud', state.aud); if (state.pmax) p.set('pmax', state.pmax); if (state.favs) p.set('favs', '1');
     var cats = Object.keys(state.cats).filter(function (k) { return state.cats[k]; }); if (cats.length) p.set('cat', cats.join(','));
@@ -159,6 +159,7 @@
     selC.value = state.ccaa;
     fillProvinces();
     fillWhere(ccaas);
+    fillCities();
     var nCat = {}; var nFree = 0;
     EVENTS.forEach(function (e) { nCat[e.category] = (nCat[e.category] || 0) + 1; if (e.free && !isPermanent(e)) nFree++; });
     $('what').querySelectorAll('a.chip').forEach(function (a) {
@@ -206,6 +207,27 @@
     });
     syncWhere();
   }
+  // "Ciudad": aparece al elegir provincia o comunidad, con las localidades que tienen planes allí.
+  var CITY_KEY = '';
+  function fillCities() {
+    var sel = $('city'); var counts = {}; var names = {};
+    sel.innerHTML = '<option value="">Todas</option>';
+    if (state.prov || state.ccaa) {
+      EVENTS.forEach(function (e) {
+        if (!e.city || (state.prov && e.province_code !== state.prov) || (state.ccaa && e.ccaa !== state.ccaa)) return;
+        var k = norm(e.city); counts[k] = (counts[k] || 0) + 1;
+        names[k] = names[k] || {}; names[k][e.city] = (names[k][e.city] || 0) + 1;
+      });
+    }
+    var keys = Object.keys(counts).map(function (k) {
+      var best = Object.keys(names[k]).sort(function (a, b) { return names[k][b] - names[k][a]; })[0];
+      return { key: k, name: best, n: counts[k] };
+    }).sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
+    keys.forEach(function (c) { var o = document.createElement('option'); o.value = c.name; o.textContent = c.name + ' (' + c.n.toLocaleString('es-ES') + ')'; sel.appendChild(o); });
+    $('cityField').hidden = keys.length < 2;
+    var cur = keys.filter(function (c) { return c.key === norm(state.city); })[0];
+    if (!cur) { state.city = ''; CITY_KEY = ''; sel.value = ''; } else { state.city = cur.name; CITY_KEY = cur.key; sel.value = cur.name; }
+  }
   function syncWhere() {
     var sel = $('where'); var v = state.prov ? 'p:' + state.prov : (state.ccaa ? 'c:' + state.ccaa : '');
     sel.value = v; if (sel.value !== v) sel.value = '';
@@ -220,7 +242,7 @@
   }
   function anyFilter() {
     var quickAll = $('quick').querySelector('button.on[data-range="all"]');
-    return !!(state.q || state.ccaa || state.prov || state.free || anyCat() || advCount() || (!quickAll && (state.from || state.to)));
+    return !!(state.q || state.ccaa || state.prov || state.city || state.free || anyCat() || advCount() || (!quickAll && (state.from || state.to)));
   }
   function syncUI() {
     $('what').querySelectorAll('a.chip').forEach(function (a) {
@@ -247,6 +269,7 @@
     parts = parts.concat(cats);
     var where = 'toda España';
     if (state.prov) { var pv = DATA.provinces.filter(function (p) { return p.code === state.prov; })[0]; if (pv) where = pv.name; }
+    if (state.city) where = state.city + (where !== 'toda España' && where !== state.city ? ' (' + where + ')' : '');
     else if (state.ccaa) where = state.ccaa;
     parts.push((parts.length ? 'en ' : 'En ') + where);
     var q = $('quick').querySelector('button.on');
@@ -276,6 +299,7 @@
   function matches(e, ignoreDates) {
     if (state.ccaa && e.ccaa !== state.ccaa) return false;
     if (state.prov && e.province_code !== state.prov) return false;
+    if (state.city && norm(e.city) !== CITY_KEY) return false;
     if (state.free && !e.free) return false;
     if (state.tickets && !e.tk) return false;
     if (state.favs && !favSet.has(e.id)) return false;
@@ -625,8 +649,9 @@
   $('where').addEventListener('change', function () {
     var v = this.value;
     state.ccaa = v.indexOf('c:') === 0 ? v.slice(2) : ''; state.prov = v.indexOf('p:') === 0 ? v.slice(2) : '';
-    $('ccaa').value = state.ccaa; fillProvinces(); $('prov').value = state.prov; refresh();
+    $('ccaa').value = state.ccaa; fillProvinces(); $('prov').value = state.prov; state.city = ''; fillCities(); refresh();
   });
+  $('city').addEventListener('change', function () { state.city = this.value; CITY_KEY = norm(this.value); refresh(); });
   $('what').querySelectorAll('a.chip').forEach(function (a) { if (a.dataset.cat) WHAT_CATS[a.dataset.cat] = true; });
   $('what').addEventListener('click', function (ev) {
     var a = ev.target.closest('a.chip');
@@ -640,10 +665,10 @@
     if (ev.target.closest('#moreTypes')) { $('adv').open = true; $('cats').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
   });
   $('clearAll').addEventListener('click', function () {
-    state.q = ''; state.ccaa = ''; state.prov = ''; state.free = false; state.tickets = false; state.cats = {};
+    state.q = ''; state.ccaa = ''; state.prov = ''; state.city = ''; state.free = false; state.tickets = false; state.cats = {};
     state.tod = ''; state.aud = ''; state.pmax = ''; state.favs = false;
     if (state.geo) { state.geo = null; $('geoBtn').textContent = '📍 Activar'; $('geoBtn').classList.remove('on'); }
-    $('q').value = ''; $('ccaa').value = ''; fillProvinces(); syncWhere(); $('free').checked = false; $('tickets').checked = false;
+    $('q').value = ''; $('ccaa').value = ''; fillProvinces(); syncWhere(); fillCities(); $('free').checked = false; $('tickets').checked = false;
     $('tod').value = ''; $('aud').value = ''; $('pmax').value = ''; $('favs').checked = false;
     setRange('all');
   });

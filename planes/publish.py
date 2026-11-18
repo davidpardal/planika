@@ -718,7 +718,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
         pname, base = prov_name[code], prov_slug[code]
         fn = "c/%s.html" % cfile
         from urllib.parse import quote
-        params = "prov=%s&q=%s" % (code, quote(cname))
+        params = "prov=%s&city=%s" % (code, quote(cname))
         links = ['<a href="../p/%s.html">Todos los planes en %s</a>' % (base, html.escape(pname))]
         links += ['<a href="../p/%s-%s.html">%s en %s</a>' % (base, suf, lab, html.escape(pname)) for suf, lab in
                   (("fin-de-semana", "Planes este fin de semana"), ("gratis", "Planes gratis")) if (code, suf) in extras]
