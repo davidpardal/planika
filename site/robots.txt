@@ -1,3 +1,7 @@
 User-agent: *
 Allow: /
+# La app guarda búsqueda y filtros en parámetros (?e=, ?prov=, ?cat=, ?q=…) sobre la misma página,
+# que ya tiene canonical a la portada: son navegación facetada y no hace falta rastrearlos.
+Disallow: /?
+
 Sitemap: https://planikaapp.com/sitemap.xml
