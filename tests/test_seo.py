@@ -195,6 +195,30 @@ class TestArchitecture(unittest.TestCase):
             self.assertTrue(any("enlace roto" in e for e in errors), errors)
 
 
+class TestSeason(unittest.TestCase):
+    def test_xmas_sections(self):
+        mk = lambda i, t, d, **kw: util.event("Agenda", "x%d" % i, t, d, province_code="28", city="Madrid", **kw)
+        evs = [mk(1, "Mercado de Navidad de la Plaza Mayor", "2026-11-26", end="2026-12-31"),
+               mk(2, "Mercat de Nadal de Tordera", "2026-11-28"), mk(3, "Christmas Market del puerto", "2026-12-05"),
+               mk(4, "Gran concierto de Fin de Año", "2026-12-28"), mk(5, "Concierto de Año Nuevo", "2027-01-01"),
+               mk(6, "Pre campanadas", "2026-12-30"), mk(7, "Programa Fin de Año Musical", "2026-11-21"),  # fuera de fechas
+               mk(8, "Belén Rueda presenta su libro", "2026-12-02"),                                     # no es un belén
+               mk(9, "Taller de iluminación escénica", "2026-12-02")]                                   # no son luces de Navidad
+        secs = {k: [e["title"] for e in it] for k, _, it in publish.xmas_sections(evs, "2026-11-18")}
+        self.assertEqual(len(secs["mercados"]), 3)
+        self.assertEqual(sorted(secs["nochevieja"]), ["Concierto de Año Nuevo", "Gran concierto de Fin de Año", "Pre campanadas"])
+        self.assertNotIn("belenes", secs)
+        self.assertNotIn("luces", secs)
+        self.assertEqual(publish.season_year("2027-01-03"), 2026)
+        evs.append(mk(10, "Encendido navideño", "2026-11-21", category="navidad"))
+        with tempfile.TemporaryDirectory() as tmp:
+            build(tmp, evs)
+            nav = read(tmp, "t", "navidad.html")
+            self.assertIn('<section id="mercados">', nav)
+            self.assertIn("Planes de Navidad 2026 en España", nav)
+            self.assertEqual(seo_check.check(tmp, SITE)[0], [])
+
+
 class TestDataQuality(unittest.TestCase):
     def test_mojibake(self):
         self.assertEqual(util.strip_html("Visitas a la exposiciÃģn de MÃšsica en MÃĄlaga"),

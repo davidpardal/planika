@@ -6,7 +6,26 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from planes import src_deporte_pro, src_sportsdb, src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
+from planes import src_barcelona, src_deporte_pro, src_sportsdb, src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
+
+
+class TestBarcelonaTimetable(unittest.TestCase):
+    ROW = '<td class="timetable-day" rowspan=1><div>%s</div></td><td class="timetable-hour" rowspan=1><div>%s</div></td>'
+
+    def test_free_and_schedule(self):
+        raw = ('<table class="timetable-table"><tr class="timetable-header"><th>Dies</th></tr><tr>' + self.ROW % ("Dissabte", "de 18.00&nbsp;h a 21.00&nbsp;h")
+               + '<td class="timetable-price" rowspan=2><div>Entrada Gratuïta</div></td><td class="timetable-description" rowspan=2>'
+               '<div><p style="margin:0">Aforament limitat</p></div></td></tr><tr>' + self.ROW % ("Diumenge", "d'11.00&nbsp;h a 14.00&nbsp;h") + '</tr></table>')
+        text, tm, free, price = src_barcelona.timetable(raw)
+        self.assertEqual(text, "Horario: Dissabte de 18.00 h a 21.00 h · Diumenge d'11.00 h a 14.00 h. Precio: Entrada Gratuïta. Aforament limitat.")
+        self.assertEqual((tm, free, price), ("", True, "Gratuït"))  # dos horas de inicio distintas: sin hora única
+
+    def test_single_time_and_prices(self):
+        raw = '<tr>' + self.ROW % ("diumenge", "a les 10:30 h") + '<td class="timetable-price"><div>General: 12 €<br>Reduïda: 8 €</div></td></tr>'
+        self.assertEqual(src_barcelona.timetable(raw)[1:], ("10:30", False, "De 8 a 12 €"))
+        several = '<tr>' + self.ROW % ("Dimecres", "a les 16.00 h, <br>a les 18.15 h i <br>a les 19.00 h") + '</tr>'
+        self.assertEqual(src_barcelona.timetable(several)[1], "")
+        self.assertEqual(src_barcelona.timetable(""), ("", "", None, ""))
 
 
 class TestZaragoza(unittest.TestCase):

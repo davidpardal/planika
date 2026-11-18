@@ -309,6 +309,61 @@ FESTIVAL_RX = re.compile(r"\b(festival|festivala|festivalak|festivales|festivals
 _MES_CORTO = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"]
 
 
+# Secciones de temporada de la página de Navidad. Solo se muestran con al menos 3 planes; se buscan en todos
+# los planes (un belén puede estar clasificado como exposición) y, si hace falta, dentro de unas fechas.
+_XMAS = re.compile(r"\b(navidad|navidenos?|navidenas?|nadal|nadalencs?|gabon|gabonetako|christmas|xmas|reyes magos|olentzero)")
+XMAS_SECTIONS = [
+    ("mercados", "Mercados de Navidad", re.compile(
+        r"\b(mercados? de navidad|mercadillos? navidenos?|mercado navideno|feria de navidad|mercats? de nadal|mercat nadalenc|"
+        r"fira de nadal|fires de nadal|christmas market|gabonetako azoka|gabon azoka)"), None, False),
+    ("belenes", "Belenes", re.compile(
+        r"\b(belenes|belen (de navidad|monumental|viviente|napolitano|municipal|artesanal|tradicional|en movimiento)|"
+        r"pessebres?|jaiotzak?|naixement)\b"), None, False),
+    ("olentzero-y-reyes", "Olentzero, Papá Noel y Reyes Magos", re.compile(
+        r"\b(cabalgatas?|cavalcadas?|reyes magos|reis mags|reis d.orient|olentzero|mari domingi|papa noel|pare noel|erregeak)"), None, False),
+    ("luces", "Encendido de luces", re.compile(r"\b(encendido|alumbrado|iluminacion|enllumenat|argiztapen)"), None, True),
+    ("nochevieja", "Nochevieja y Año Nuevo", re.compile(
+        r"\b(nochevieja|fin de ano|cap d.any|urtezahar|campanadas|san silvestre|sant silvestre|ano nuevo|any nou|urte berri)"),
+     ("12-26", "01-01"), False),
+]
+
+
+# Cómo se nombra cada sección en el título (corto) y en la descripción de la página.
+XMAS_LABELS = {"mercados": ("mercados", "mercados de Navidad"), "belenes": ("belenes", "belenes"),
+               "olentzero-y-reyes": ("cabalgatas", "Olentzero, Papá Noel y Reyes Magos"),
+               "luces": ("luces", "encendido de luces"), "nochevieja": ("Nochevieja", "Nochevieja")}
+
+
+def xmas_sections(events, t0):
+    """[(ancla, título, planes)] con los planes de cada tema navideño que aún no han terminado."""
+    out = []
+    for key, title, rx, window, needs_xmas in XMAS_SECTIONS:
+        items = []
+        for e in events:
+            if is_permanent(e) or e["end"] < t0:
+                continue
+            text = norm(e.get("title_es") or e["title"])
+            if not rx.search(text):
+                continue
+            if needs_xmas and not (e["category"] == "navidad" or _XMAS.search(text)):
+                continue
+            if window:
+                # Ventana de fechas que cruza el año (26 dic - 1 ene): el plan tiene que tocarla.
+                days = e.get("sessions") or [e["start"], e["end"]]
+                if not any(d[5:] >= window[0] or d[5:] <= window[1] for d in days):
+                    continue
+            items.append(e)
+        if len(items) >= 3:
+            out.append((key, title, items))
+    return out
+
+
+def season_year(t0):
+    """Año de la temporada de Navidad: en enero todavía es la del año anterior."""
+    y, m = int(t0[:4]), int(t0[5:7])
+    return y - 1 if m == 1 else y
+
+
 def fmt_n(n):
     return "{:,}".format(n).replace(",", ".")
 
@@ -685,10 +740,33 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
         intent = CAT_INTENT[key]
         combo = ['<a href="../p/%s-%s.html">%s en %s</a>' % (prov_slug[c], key, html.escape(intent), html.escape(n))
                  for c, n, _, _ in prov_pages if (c, key) in combos]
-        page = _render(site_dir, fn, "../", seo_title="%s en España: agenda por provincia" % intent, h1="%s %s en España" % (icon, intent),
-                       desc="%s en toda España: %s planes próximos por provincia, con fechas, entradas y calendario." % (intent, fmt_n(len(items))),
+        seo_t, h1, desc = ("%s en España: agenda por provincia" % intent, "%s %s en España" % (icon, intent),
+                           "%s en toda España: %s planes próximos por provincia, con fechas, entradas y calendario." % (intent, fmt_n(len(items))))
+        intro = _intro(items, "de Navidad en España" if key == "navidad" else "de %s en España" % intent.lower(), t0)
+        if key == "navidad":
+            secs = xmas_sections(upcoming(events), t0)
+            yr = season_year(t0)
+            short = [XMAS_LABELS[k][0] for k, _, _ in secs if k != "luces"][:4]
+            names = [XMAS_LABELS[k][1] for k, _, _ in secs]
+            seo_t = "Navidad %d en España: %s" % (yr, _join_es(short) if short else "planes y agenda")
+            h1 = "%s Planes de Navidad %d en España" % (icon, yr)
+            desc = "Navidad %d en España: %s planes%s, por provincia y con fechas." % (
+                yr, fmt_n(len(items)), (" entre " + _join_es(names)) if names else "")
+            if secs:
+                nav = " · ".join('<a href="#%s">%s (%s)</a>' % (k, html.escape(t), fmt_n(len(it))) for k, t, it in secs)
+                blocks = []
+                for k, t, it in secs:
+                    byp = {}
+                    for e in it:
+                        byp[e.get("province") or "España"] = byp.get(e.get("province") or "España", 0) + 1
+                    provs = " · ".join("%s (%d)" % (html.escape(n), c) for n, c in sorted(byp.items(), key=lambda x: -x[1])[:8])
+                    blocks.append('<section id="%s"><h2 style="margin:26px 0 10px">%s (%s)</h2><div class="list">%s</div>'
+                                  '<p class="hint">Por provincia: %s</p></section>'
+                                  % (k, html.escape(t), fmt_n(len(it)), "".join(_card(e, "../", t0) for e in it[:9]), provs))
+                intro += '<nav class="pages" aria-label="Secciones"><p>En esta página: %s</p></nav>%s' % (nav, "".join(blocks))
+        page = _render(site_dir, fn, "../", seo_title=seo_t, h1=h1, desc=desc,
                        items=items, crumbs=[("Inicio", ""), (intent, fn)], params="cat=%s" % key, t0=t0, updated=upd,
-                       intro=_intro(items, "de %s en España" % intent.lower(), t0), rss="../feeds/tipo-%s.xml" % key,
+                       intro=intro, rss="../feeds/tipo-%s.xml" % key,
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"../?cat=%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(items)), key)) if len(items) > FIRST_PAGE else "",
                        links=_p(combo) + _p(type_links("../")) + _p(nat("../")) + _p(prov_links("../")))
         done(fn, page)
