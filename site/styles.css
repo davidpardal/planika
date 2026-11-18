@@ -46,7 +46,10 @@ h1, h2 { letter-spacing: -.02em; }
 }
 .segmented button:hover, .chip:hover, .btn:hover, .more button:hover, .cal-head button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
 .segmented button:active, .chip:active, .btn:active, .more button:active, .cal-head button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
-.segmented button.on, .chip.on, .btn.primary { background: var(--hot); color: var(--white); }
+.btn.primary { background: var(--hot); color: var(--white); }
+/* Seleccionado: tinta con sombra rosa (el blanco sobre rosa no llega al contraste mínimo en texto pequeño) */
+.segmented button.on, .chip.on { background: var(--ink); color: var(--white); box-shadow: 3px 3px 0 var(--hot); }
+.segmented button.on:hover, .chip.on:hover { box-shadow: 4px 4px 0 var(--hot); }
 
 /* ---------- etiqueta amarilla (títulos de sección) */
 .sticker, .tagline, .cal-head h2 {
@@ -244,3 +247,34 @@ h1, h2 { letter-spacing: -.02em; }
 .pages { margin: 22px 0 0; font-size: 15px; }
 .pages a, .pages strong { display: inline-block; min-width: 1.6em; text-align: center; }
 .pages a { font-weight: 800; }
+
+/* ---------- buscador simple: Qué, Búsqueda avanzada y Borrar filtros */
+.field.where { flex: 0 1 340px; }
+.what-field { margin-top: 14px; }
+.what { display: flex; flex-wrap: wrap; gap: 10px 8px; }
+a.chip { color: var(--ink); }
+a.chip.on { color: var(--white); }
+.adv { margin-top: 18px; }
+.adv summary {
+  list-style: none; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 14px;
+  border: var(--b2); border-radius: var(--r-in); background: var(--page); font-weight: 800; cursor: pointer;
+}
+.adv summary::-webkit-details-marker { display: none; }
+.adv summary::after {
+  content: ""; margin-left: auto; width: 10px; height: 10px; border: solid var(--ink); border-width: 0 3px 3px 0;
+  transform: rotate(45deg) translate(-2px, -2px); transition: transform .15s ease;
+}
+.adv[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.adv summary:hover { background: var(--white); }
+.adv-n { background: var(--ink); color: var(--white); border-radius: 999px; padding: 0 9px; font-size: 13px; line-height: 22px; }
+.adv > .row:first-of-type { margin-top: 16px; }
+.adv .all-types { margin-top: 16px; }
+.adv .chips { margin-top: 0; padding-top: 0; border-top: 0; }
+.countwrap { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.linkbtn { padding: 4px 0; border: 0; background: none; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; min-height: 36px; }
+@media (max-width: 640px) {
+  /* En el móvil, "Qué" es una sola fila que se desliza de lado */
+  .what { flex-wrap: nowrap; overflow-x: auto; margin: 0 -14px; padding: 2px 14px 10px; scrollbar-width: none; }
+  .what::-webkit-scrollbar { display: none; }
+  .what .chip { flex: none; white-space: nowrap; }
+}

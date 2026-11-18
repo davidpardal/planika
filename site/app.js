@@ -158,6 +158,14 @@
     });
     selC.value = state.ccaa;
     fillProvinces();
+    fillWhere(ccaas);
+    var nCat = {}; var nFree = 0;
+    EVENTS.forEach(function (e) { nCat[e.category] = (nCat[e.category] || 0) + 1; if (e.free && !isPermanent(e)) nFree++; });
+    $('what').querySelectorAll('a.chip').forEach(function (a) {
+      var n = a.dataset.free ? nFree : (nCat[a.dataset.cat] || 0);
+      if (!n && a.dataset.cat) { a.hidden = true; return; }  // p. ej. Navidad fuera de temporada
+      a.insertAdjacentHTML('beforeend', ' <small>' + n.toLocaleString('es-ES') + '</small>');
+    });
     var chips = $('cats');
     DATA.categories.forEach(function (c) {
       var n = EVENTS.filter(function (e) { return e.category === c.key; }).length;
@@ -183,6 +191,45 @@
       .sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); })
       .forEach(function (p) { var o = document.createElement('option'); o.value = p.code; o.textContent = p.name + ' (' + pc[p.code] + ')'; sel.appendChild(o); });
     sel.value = cur; if (sel.value !== cur) { state.prov = ''; }
+  }
+  // "Dónde": un solo desplegable con las provincias agrupadas por comunidad (valores "c:<comunidad>" y "p:<código>").
+  function fillWhere(ccaas) {
+    var pc = provCounts(); var sel = $('where');
+    Object.keys(ccaas).sort(function (a, b) { return a.localeCompare(b, 'es'); }).forEach(function (c) {
+      var provs = DATA.provinces.filter(function (p) { return p.ccaa === c && pc[p.code]; })
+        .sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
+      if (!provs.length) return;
+      var g = document.createElement('optgroup'); g.label = c;
+      if (provs.length > 1) { var o = document.createElement('option'); o.value = 'c:' + c; o.textContent = c + ', toda la comunidad (' + ccaas[c].toLocaleString('es-ES') + ')'; g.appendChild(o); }
+      provs.forEach(function (p) { var o = document.createElement('option'); o.value = 'p:' + p.code; o.textContent = p.name + ' (' + pc[p.code].toLocaleString('es-ES') + ')'; g.appendChild(o); });
+      sel.appendChild(g);
+    });
+    syncWhere();
+  }
+  function syncWhere() {
+    var sel = $('where'); var v = state.prov ? 'p:' + state.prov : (state.ccaa ? 'c:' + state.ccaa : '');
+    sel.value = v; if (sel.value !== v) sel.value = '';
+  }
+  var WHAT_CATS = {};
+  // Filtros de "Búsqueda avanzada" activos (para el contador y para abrirla si llegan en el enlace).
+  function advCount() {
+    var quickOn = !!$('quick').querySelector('button.on');
+    var extraCats = Object.keys(state.cats).filter(function (k) { return state.cats[k] && !WHAT_CATS[k]; }).length;
+    return (!quickOn && (state.from || state.to) ? 1 : 0) + (state.tickets ? 1 : 0) + (state.tod ? 1 : 0) + (state.aud ? 1 : 0) +
+      (state.pmax ? 1 : 0) + (state.geo ? 1 : 0) + (state.favs ? 1 : 0) + extraCats;
+  }
+  function anyFilter() {
+    var quickAll = $('quick').querySelector('button.on[data-range="all"]');
+    return !!(state.q || state.ccaa || state.prov || state.free || anyCat() || advCount() || (!quickAll && (state.from || state.to)));
+  }
+  function syncUI() {
+    $('what').querySelectorAll('a.chip').forEach(function (a) {
+      a.classList.toggle('on', a.dataset.free ? state.free : !!state.cats[a.dataset.cat]);
+      a.setAttribute('aria-pressed', a.classList.contains('on') ? 'true' : 'false');
+    });
+    $('cats').querySelectorAll('.chip').forEach(function (b) { b.classList.toggle('on', !!state.cats[b.dataset.cat]); });
+    var n = advCount(); $('advN').hidden = !n; $('advN').textContent = n;
+    $('clearAll').hidden = !anyFilter();
   }
   function anyCat() { for (var k in state.cats) if (state.cats[k]) return true; return false; }
   function inDates(e) {
@@ -525,7 +572,7 @@
   $('modal').addEventListener('click', function (ev) { if (ev.target === $('modal')) closeModal(); });
 
   function rerender() { if (state.view === 'list') renderList(); else if (state.view === 'cal') renderCalendar(); else renderMap(); }
-  function refresh() { state.shown = PAGE; writeURL(); if (state.q) loadAll(); rerender(); }
+  function refresh() { state.shown = PAGE; writeURL(); if (state.q) loadAll(); syncUI(); rerender(); }
   function setView(v) {
     state.view = v;
     $('view').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === v); });
@@ -549,6 +596,31 @@
   var qt;
   $('q').addEventListener('input', function () { clearTimeout(qt); qt = setTimeout(function () { state.q = $('q').value.trim(); refresh(); }, 180); });
   $('ccaa').addEventListener('change', function () { state.ccaa = this.value; fillProvinces(); refresh(); });
+  $('where').addEventListener('change', function () {
+    var v = this.value;
+    state.ccaa = v.indexOf('c:') === 0 ? v.slice(2) : ''; state.prov = v.indexOf('p:') === 0 ? v.slice(2) : '';
+    $('ccaa').value = state.ccaa; fillProvinces(); $('prov').value = state.prov; refresh();
+  });
+  $('what').querySelectorAll('a.chip').forEach(function (a) { if (a.dataset.cat) WHAT_CATS[a.dataset.cat] = true; });
+  $('what').addEventListener('click', function (ev) {
+    var a = ev.target.closest('a.chip');
+    if (a) {
+      // Con modificadores (abrir en otra pestaña) se respeta el enlace a la página del tema.
+      if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      ev.preventDefault();
+      if (a.dataset.free) { state.free = !state.free; $('free').checked = state.free; } else state.cats[a.dataset.cat] = !state.cats[a.dataset.cat];
+      refresh(); return;
+    }
+    if (ev.target.closest('#moreTypes')) { $('adv').open = true; $('cats').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  });
+  $('clearAll').addEventListener('click', function () {
+    state.q = ''; state.ccaa = ''; state.prov = ''; state.free = false; state.tickets = false; state.cats = {};
+    state.tod = ''; state.aud = ''; state.pmax = ''; state.favs = false;
+    if (state.geo) { state.geo = null; $('geoBtn').textContent = '📍 Activar'; $('geoBtn').classList.remove('on'); }
+    $('q').value = ''; $('ccaa').value = ''; fillProvinces(); syncWhere(); $('free').checked = false; $('tickets').checked = false;
+    $('tod').value = ''; $('aud').value = ''; $('pmax').value = ''; $('favs').checked = false;
+    setRange('all');
+  });
   $('prov').addEventListener('change', function () { state.prov = this.value; refresh(); });
   $('from').addEventListener('change', function () { state.from = this.value; clearQuick(); refresh(); });
   $('to').addEventListener('change', function () { state.to = this.value; clearQuick(); refresh(); });
@@ -564,7 +636,11 @@
       state.geo = { lat: pos.coords.latitude, lon: pos.coords.longitude }; btn.textContent = '📍 Activado'; btn.classList.add('on'); refresh();
     }, function () { btn.textContent = '📍 Activar'; toast('No se ha podido obtener tu ubicación'); }, { timeout: 10000, maximumAge: 300000 });
   });
-  $('quick').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setRange(b.dataset.range); });
+  $('quick').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button'); if (!b) return;
+    if (b.dataset.range === 'dates') { $('adv').open = true; $('from').focus(); return; }
+    setRange(b.dataset.range);
+  });
   $('view').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setView(b.dataset.view); });
   $('more').addEventListener('click', function () { state.shown += PAGE; renderList(); });
   $('prevM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); state.selDay = null; renderCalendar(); });
@@ -580,6 +656,7 @@
   window.PLANIKA_Q = [];
   populate();
   if (state.from || state.to) { clearQuick(); refresh(); } else setRange('all');
+  if (advCount()) $('adv').open = true;
   if (state.view !== 'list') setView(state.view);
   if (openId) openModal(openId);
 })();
