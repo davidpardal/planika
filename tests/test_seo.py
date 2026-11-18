@@ -132,6 +132,8 @@ class TestStructuredData(unittest.TestCase):
         self.assertEqual(ld["offers"]["price"], "15")
         self.assertNotIn("availability", ld["offers"])
         self.assertNotIn("offers", static.event_jsonld(rich(4), SITE + "/e/y.html"))  # sin precio ni entradas: sin oferta
+        mixed = static.event_jsonld(rich(5, price="De 0 a 18 €", tickets_url="https://entradas.example/5"), SITE + "/e/z.html")
+        self.assertEqual(mixed["offers"]["price"], "18")  # no se marca como gratis lo que es de pago
 
 
 class TestEventPage(unittest.TestCase):
