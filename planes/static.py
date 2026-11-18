@@ -269,6 +269,33 @@ def place_jsonld(e, canonical):
     return ld
 
 
+def stamp_index(site_dir):
+    """Pone ?v=<huella> en los recursos que carga la portada (estilos, datos y app).
+
+    Si el navegador guarda en caché un index.html de una versión y un app.js de otra, la app se rompe
+    (p. ej. busca un elemento que ya no existe y la lista no se pinta). Con la huella en la URL, cada
+    index.html carga siempre los archivos de su misma versión."""
+    import hashlib
+    path = os.path.join(site_dir, "index.html")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            page = fh.read()
+    except OSError:
+        return False
+    out = page
+    for name in ("styles.css", "app.js", "data/core.js", "data/d/0.js"):
+        try:
+            with open(os.path.join(site_dir, name), "rb") as fh:
+                v = hashlib.sha1(fh.read()).hexdigest()[:10]
+        except OSError:
+            continue
+        out = re.sub(r'((?:href|src)=")%s(?:\?v=[^"]*)?"' % re.escape(name), r'\g<1>%s?v=%s"' % (name, v), out)
+    if out != page:
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(out)
+    return out != page
+
+
 # ---------------------------------------------------------------- una página por plan
 
 _EVENT_PAGE = """<!doctype html>

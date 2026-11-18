@@ -44,7 +44,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Se conservan los archivos generados, se sincroniza con la rama remota y se vuelven a aplicar:
           # así no hay conflictos aunque otra ejecución haya publicado datos mientras tanto.
-          tar cf /tmp/generado.tar $(ls -d site/data site/feeds site/p site/t site/c site/sitemap.xml site/sitemap-*.xml site/robots.txt site/fuentes.html site/promociona-tu-evento.html site/privacidad.html site/aviso-legal.html site/planes-hoy.html site/planes-este-fin-de-semana.html site/planes-gratis.html site/festivales.html data/sitemap_state.json data/health.json data/events.json data/teams_cache.json data/tsdb_days.json data/llm_cache.json 2>/dev/null)
+          tar cf /tmp/generado.tar $(ls -d site/index.html site/data site/feeds site/p site/t site/c site/sitemap.xml site/sitemap-*.xml site/robots.txt site/fuentes.html site/promociona-tu-evento.html site/privacidad.html site/aviso-legal.html site/planes-hoy.html site/planes-este-fin-de-semana.html site/planes-gratis.html site/festivales.html data/sitemap_state.json data/health.json data/events.json data/teams_cache.json data/tsdb_days.json data/llm_cache.json 2>/dev/null)
           git fetch origin main
           git reset --hard origin/main
           # Las páginas generadas se sustituyen enteras: así se borran las que hoy ya no tocan

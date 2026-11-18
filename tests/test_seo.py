@@ -221,6 +221,28 @@ class TestSeason(unittest.TestCase):
             self.assertEqual(seo_check.check(tmp, SITE)[0], [])
 
 
+class TestAssets(unittest.TestCase):
+    def test_stamp_index_versions_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, "data", "d"))
+            for name, body in (("styles.css", "a{}"), ("app.js", "1"), ("data/core.js", "2"), ("data/d/0.js", "3")):
+                with open(os.path.join(tmp, name), "w") as fh:
+                    fh.write(body)
+            with open(os.path.join(tmp, "index.html"), "w") as fh:
+                fh.write('<link rel="stylesheet" href="styles.css"><script defer src="data/core.js"></script>'
+                         '<script defer src="data/d/0.js?v=old"></script><script defer src="app.js"></script><img src="hero.jpg">')
+            self.assertTrue(static.stamp_index(tmp))
+            page = read(tmp, "index.html")
+            self.assertRegex(page, r'href="styles\.css\?v=[0-9a-f]{10}"')
+            self.assertRegex(page, r'src="app\.js\?v=[0-9a-f]{10}"')
+            self.assertNotIn("v=old", page)
+            self.assertIn('src="hero.jpg"', page)
+            self.assertFalse(static.stamp_index(tmp))  # sin cambios: no reescribe
+            with open(os.path.join(tmp, "app.js"), "w") as fh:
+                fh.write("2")
+            self.assertTrue(static.stamp_index(tmp))  # app.js cambia: cambia su versión
+
+
 class TestDataQuality(unittest.TestCase):
     def test_mojibake(self):
         self.assertEqual(util.strip_html("Visitas a la exposiciÃģn de MÃšsica en MÃĄlaga"),
