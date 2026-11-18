@@ -2,6 +2,7 @@
 """Pruebas mínimas de las piezas que más se rompen: fechas, provincias, clasificación, iCal y sesiones."""
 import json
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -223,7 +224,8 @@ class TestPermanent(unittest.TestCase):
         ev = util.event("Agenda", "1", "Concierto", "2026-11-20",
                         province_code="50", city="Zaragoza", category="musica")
         srcs = [{"name": "Ayuntamiento <A>", "home": "https://a.example/?x=1&y=2", "count": 1200, "error": ""},
-                {"name": "Fuente B", "home": "https://b.example/", "count": 34, "error": "timeout"}]
+                {"name": "Fuente B", "home": "https://b.example/", "count": 34, "error": "timeout"},
+                {"name": "Fuente vacía", "home": "https://c.example/", "count": 0, "error": ""}]
         with tempfile.TemporaryDirectory() as tmp:
             pages = publish.write_pages(tmp, [ev], srcs, "2026-11-17T04:30")
             self.assertIn("fuentes.html", pages)
@@ -232,9 +234,31 @@ class TestPermanent(unittest.TestCase):
             self.assertIn("2 fuentes, 1.234 planes", page)
             self.assertIn("Ayuntamiento &lt;A&gt;", page)
             self.assertIn("x=1&amp;y=2", page)
-            self.assertEqual(page.count("con error en la última descarga"), 1)
+            self.assertNotIn("con error en la última descarga", page)   # los errores no se enseñan al público
+            self.assertNotIn("Fuente vacía", page)                     # fuentes con 0 planes fuera de la lista
             with open(os.path.join(tmp, "sitemap.xml"), encoding="utf-8") as fh:
                 self.assertIn("/fuentes.html", fh.read())
+
+    def test_strip_html_cuts_at_sentence(self):
+        txt = "Primera frase completa que ocupa bastante espacio. Segunda frase larga que ya no cabe del todo aquí"
+        out = util.strip_html(txt, 70)
+        self.assertEqual(out, "Primera frase completa que ocupa bastante espacio.")
+        self.assertTrue(util.strip_html("palabra " * 50, 40).endswith("…"))
+
+    def test_related_has_no_repeats_and_official_link(self):
+        evs = [util.event("Agenda", str(i), "Concierto %d" % i, "2026-11-20", province_code="50",
+                          city="Zaragoza", category="musica", url="https://o.example/%d" % i) for i in range(4)]
+        with tempfile.TemporaryDirectory() as tmp:
+            from planes import static
+            static.write_event_pages(tmp, evs, {"50": "zaragoza"})
+            names = os.listdir(os.path.join(tmp, "e"))
+            with open(os.path.join(tmp, "e", names[0]), encoding="utf-8") as fh:
+                page = fh.read()
+        rel = page.split("Más planes</h2>")[1].split("</ul>")[0]
+        links = re.findall(r'<li><a href="([^"]+)"', rel)
+        self.assertEqual(len(links), len(set(links)))
+        self.assertEqual(len(links), 3)
+        self.assertIn("ver en la web oficial", page)
 
     def test_curated_file_merges_without_duplicates(self):
         from planes.src_curated import NAME, fetch, replace_events

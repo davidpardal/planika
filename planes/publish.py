@@ -278,11 +278,12 @@ _SOURCES = """<!doctype html>
 
 
 def _sources_page(sources, updated_at=""):
+    # Solo fuentes con planes; los errores de descarga no se muestran al público (van a las alertas y al historial de salud).
+    sources = [s for s in sources if int(s.get("count") or 0) > 0]
     items = []
     for s in sources:
-        err = " <span class=\"pill\">con error en la última descarga</span>" if s.get("error") else ""
-        items.append("<li><a href=\"%s\" target=\"_blank\" rel=\"noopener\">%s</a> · %d planes%s</li>"
-                     % (html.escape(s.get("home") or "#", quote=True), html.escape(s.get("name") or ""), int(s.get("count") or 0), err))
+        items.append("<li><a href=\"%s\" target=\"_blank\" rel=\"noopener\">%s</a> · %d planes</li>"
+                     % (html.escape(s.get("home") or "#", quote=True), html.escape(s.get("name") or ""), int(s.get("count") or 0)))
     total = sum(int(s.get("count") or 0) for s in sources)
     upd = ""
     if updated_at:

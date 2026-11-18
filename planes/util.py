@@ -69,7 +69,12 @@ def strip_html(s, limit=None):
     s = s.replace("\ufffd", "")
     s = _WS_RE.sub(" ", s).strip()
     if limit and len(s) > limit:
-        s = s[: limit - 1].rsplit(" ", 1)[0] + "…"
+        cut = s[:limit]
+        ends = [m.end() for m in re.finditer(r"[.!?»\"”)](?=\s)", cut)]
+        if ends and ends[-1] >= limit * 0.5:
+            s = cut[:ends[-1]].strip()          # termina en una frase completa, sin puntos suspensivos
+        else:
+            s = s[: limit - 1].rsplit(" ", 1)[0] + "…"
     return s
 
 

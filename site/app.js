@@ -262,7 +262,7 @@
       '<div class="actions">' + tickets + info + '<button type="button" class="btn addcal" data-id="' + e.id + '">＋ Calendario</button>' +
       '<button type="button" class="fav' + (favSet.has(e.id) ? ' on' : '') + '" data-fav="' + e.id + '" title="Guardar en favoritos">' + (favSet.has(e.id) ? '★' : '☆') + '</button>' +
       '<button type="button" class="btn share" data-share="' + e.id + '" title="Compartir este plan">↗ Compartir</button></div>' +
-      '<div class="src">Fuente: ' + esc(e.source) + (e.subtype && !isPermanent(e) ? ' · ' + esc(e.subtype) : '') + '</div>' +
+      ((e.source || (e.subtype && !isPermanent(e))) ? '<div class="src">' + (e.source ? 'Fuente: ' + esc(e.source) : '') + (e.subtype && !isPermanent(e) ? (e.source ? ' · ' : '') + esc(e.subtype) : '') + '</div>' : '') +
       '</div></article>';
   }
   function renderList() {
@@ -452,7 +452,7 @@
     if (e.price) parts.push('Precio: ' + e.price); else if (e.free) parts.push('Entrada gratuita');
     if (e.tickets_url) parts.push('Entradas: ' + e.tickets_url);
     if (e.url && e.url !== e.tickets_url) parts.push('Más información: ' + e.url);
-    parts.push('Fuente: ' + e.source + ' · vía Planika');
+    parts.push((e.source ? 'Fuente: ' + e.source + ' · ' : '') + 'vía Planika');
     return parts.join('\n');
   }
   function location_(e) { return [e.venue, e.address, e.city, e.province].filter(Boolean).join(', '); }

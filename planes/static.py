@@ -229,7 +229,7 @@ _EVENT_PAGE = """<!doctype html>
 <div class="where">📍 %(where)s</div>
 %(body)s
 <div class="actions">%(actions)s</div>
-<div class="src">Fuente: %(source)s. Comprueba siempre fechas y precios en la web del organizador.</div>
+<div class="src">Fuente: %(source)s%(srclink)s. Comprueba siempre fechas y precios en la web del organizador.</div>
 </div></article>
 <nav class="foot evnav"><h2 class="sticker">Más planes</h2>%(related)s
 <p><a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a></p></nav>
@@ -337,7 +337,8 @@ def event_page(e, related=(), t0=None, prov_slug=""):
         img=('<img src="%s" alt="" loading="lazy" onerror="this.remove()">' % esc(image)) if image else "",
         price=price, when=esc(when), sessions=sessions, where=esc(where or place),
         body=('<p class="desc">%s</p>' % esc(e["description"])) if e.get("description") else "",
-        actions="".join(actions), source=esc(e["source"]), related=rel)
+        actions="".join(actions), source=esc(e["source"]), related=rel,
+        srclink=(' · <a href="%s" target="_blank" rel="noopener">ver en la web oficial ↗</a>' % esc(url or tickets)) if (url or tickets) else "")
 
 
 def write_event_pages(site_dir, events, prov_slugs):
@@ -359,7 +360,12 @@ def write_event_pages(site_dir, events, prov_slugs):
     for e in events:
         same = groups[(e["province_code"], e["category"])]
         i = pos[e["id"]]
-        related = [r for r in (same[i + 1:i + 7] + same[:6]) if r is not e][:6]
+        related, seen = [], {e["id"]}
+        for r in same[i + 1:i + 7] + same[:6]:
+            if r["id"] not in seen:
+                seen.add(r["id"])
+                related.append(r)
+        related = related[:6]
         fn = event_file(e)
         with open(os.path.join(out_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(event_page(e, related, t0, prov_slugs.get(e["province_code"], "")))
