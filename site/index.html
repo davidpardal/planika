@@ -47,55 +47,79 @@
 
 <main class="wrap">
   <section class="filters" aria-label="Filtros">
-    <h2 class="sticker">🔎 ¿Buscas un plan?</h2>
-    <div class="row">
-      <label class="field grow">
-        <span>Buscar</span>
-        <input type="search" id="q" placeholder="Artista, obra, lugar, ciudad…" autocomplete="off">
-      </label>
-      <label class="field">
-        <span>Comunidad</span>
-        <select id="ccaa"><option value="">Todas</option></select>
-      </label>
-      <label class="field">
-        <span>Provincia</span>
-        <select id="prov"><option value="">Todas</option></select>
-      </label>
-    </div>
-    <div class="row">
-      <div class="field">
-        <span>Fechas</span>
-        <div class="segmented" id="quick">
-          <button type="button" data-range="all" class="on">Todo</button>
-          <button type="button" data-range="today">Hoy</button>
-          <button type="button" data-range="weekend">Fin de semana</button>
-          <button type="button" data-range="7">7 días</button>
-          <button type="button" data-range="30">30 días</button>
+      <h2 class="sticker">🔎 ¿Buscas un plan?</h2>
+      <div class="row">
+        <label class="field grow">
+          <span>Buscar</span>
+          <input type="search" id="q" placeholder="Artista, obra, lugar, ciudad…" autocomplete="off">
+        </label>
+        <label class="field where">
+          <span>Dónde</span>
+          <select id="where"><option value="">Toda España</option></select>
+        </label>
+        <!-- La app sigue filtrando con estos dos selectores; "Dónde" los maneja. -->
+        <select id="ccaa" hidden aria-hidden="true" tabindex="-1"><option value="">Todas</option></select>
+        <select id="prov" hidden aria-hidden="true" tabindex="-1"><option value="">Todas</option></select>
+      </div>
+      <div class="row">
+        <div class="field">
+          <span>Cuándo</span>
+          <div class="segmented" id="quick">
+            <button type="button" data-range="all" class="on">Todo</button>
+            <button type="button" data-range="today">Hoy</button>
+            <button type="button" data-range="weekend">Fin de semana</button>
+            <button type="button" data-range="7">7 días</button>
+            <button type="button" data-range="30">30 días</button>
+            <button type="button" data-range="dates" aria-controls="adv">Fechas…</button>
+          </div>
         </div>
       </div>
-      <label class="field"><span>Desde</span><input type="date" id="from"></label>
-      <label class="field"><span>Hasta</span><input type="date" id="to"></label>
-      <label class="check"><input type="checkbox" id="free"> Solo gratis</label>
-      <label class="check"><input type="checkbox" id="tickets"> Con venta de entradas</label>
-    </div>
-    <div class="row">
-      <label class="field"><span>Horario</span>
+      <div class="field what-field">
+        <span id="whatLabel">Qué</span>
+        <!-- Enlaces a las páginas de cada tema (para buscadores); en la app filtran sin salir de la portada. -->
+        <div class="what" id="what" role="group" aria-labelledby="whatLabel">
+          <a class="chip" href="planes-gratis.html" data-free="1">Gratis</a>
+          <a class="chip" href="t/navidad.html" data-cat="navidad">Navidad</a>
+          <a class="chip" href="t/infantil.html" data-cat="infantil">Con niños</a>
+          <a class="chip" href="t/musica.html" data-cat="musica">Conciertos</a>
+          <a class="chip" href="t/escena.html" data-cat="escena">Teatro y danza</a>
+          <a class="chip" href="t/expos.html" data-cat="expos">Exposiciones</a>
+          <a class="chip" href="t/cine.html" data-cat="cine">Cine</a>
+          <button type="button" class="chip" id="moreTypes" aria-controls="adv">Más tipos</button>
+        </div>
+      </div>
+      <details class="adv" id="adv">
+        <summary>Búsqueda avanzada <span class="adv-n" id="advN" hidden></span></summary>
+        <div class="row">
+          <label class="field"><span>Desde</span><input type="date" id="from"></label>
+          <label class="field"><span>Hasta</span><input type="date" id="to"></label>
+          <label class="field"><span>Horario</span>
         <select id="tod"><option value="">Cualquiera</option><option value="manana">Mañana (antes de 14:00)</option><option value="tarde">Tarde (14:00 a 20:00)</option><option value="noche">Noche (desde 20:00)</option></select></label>
-      <label class="field"><span>Público</span>
+          <label class="field"><span>Público</span>
         <select id="aud"><option value="">Todos</option><option value="familiar">Infantil y familiar</option><option value="adultos">Para adultos</option></select></label>
-      <label class="field"><span>Precio máx. (€)</span><input type="number" id="pmax" min="0" step="1" placeholder="Sin límite" style="min-width:120px"></label>
-      <div class="field"><span>Cerca de mí</span>
+        </div>
+        <div class="row">
+          <label class="field"><span>Precio máx. (€)</span><input type="number" id="pmax" min="0" step="1" placeholder="Sin límite" style="min-width:120px"></label>
+          <div class="field"><span>Cerca de mí</span>
         <div class="segmented" id="near">
           <button type="button" id="geoBtn" title="Usar mi ubicación">📍 Activar</button>
           <select id="radius" aria-label="Radio en km"><option value="10">10 km</option><option value="25" selected>25 km</option><option value="50">50 km</option><option value="100">100 km</option></select>
         </div></div>
-      <label class="check"><input type="checkbox" id="favs"> ★ Solo favoritos <span id="favCount" class="pill"></span></label>
-    </div>
-    <div class="chips" id="cats" role="group" aria-label="Tipo de plan"></div>
-  </section>
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="tickets"> Con venta de entradas</label>
+          <label class="check"><input type="checkbox" id="favs"> ★ Solo favoritos <span id="favCount" class="pill"></span></label>
+          <input type="checkbox" id="free" hidden aria-hidden="true" tabindex="-1">
+        </div>
+        <div class="field all-types">
+          <span>Todos los tipos de plan</span>
+          <div class="chips" id="cats" role="group" aria-label="Tipo de plan"></div>
+        </div>
+      </details>
+    </section>
 
   <section class="bar">
-    <div class="count" id="count"></div>
+    <div class="countwrap"><div class="count" id="count"></div><button type="button" class="linkbtn" id="clearAll" hidden>Borrar filtros</button></div>
     <div class="barbtns">
       <button type="button" class="btn" id="rssBtn" title="Suscribirse por RSS a estos filtros">RSS</button>
       <button type="button" class="btn" id="shareFilters" title="Copiar enlace con estos filtros">🔗 Enlace</button>
