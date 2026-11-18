@@ -60,7 +60,7 @@ _PAGE = """<!doctype html>
 <p class="meta"><a class="btn primary" href="./">Explorar Planika</a> &nbsp; Última actualización: %(updated)s</p></div></header>
 <main class="wrap legal" style="max-width:820px;line-height:1.6">
 %(body)s
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="fuentes.html">Fuentes de datos</a></p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a> · <a href="fuentes.html">Fuentes de datos</a></p></nav>
 </main></body></html>
 """
 
