@@ -257,7 +257,8 @@ h1, h2 { letter-spacing: -.02em; }
 .pages a { font-weight: 800; }
 
 /* ---------- buscador simple: Qué, Búsqueda avanzada y Borrar filtros */
-.field.where { flex: 0 1 340px; }
+.field.where { flex: 0 1 320px; }
+.field.where-city { flex: 0 1 260px; }
 .what-field { margin-top: 14px; }
 .what { display: flex; flex-wrap: wrap; gap: 10px 8px; }
 a.chip { color: var(--ink); }
@@ -285,6 +286,7 @@ a.chip.on { color: var(--white); }
   .what { flex-wrap: nowrap; overflow-x: auto; margin: 0 -14px; padding: 2px 14px 10px; scrollbar-width: none; }
   .what::-webkit-scrollbar { display: none; }
   .what .chip { flex: none; white-space: nowrap; }
+  .field.where, .field.where-city { flex: 1 1 100%; }
 }
 .count:empty { display: none; }
 
