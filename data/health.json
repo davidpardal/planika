@@ -50,8 +50,8 @@
    },
    {
     "date": "2026-11-18",
-    "count": 4112,
-    "error": ""
+    "count": 3943,
+    "error": "HTTPError: 404 Client Error: Not Found for url: https://opendata-ajuntament.barcelona.cat/data/api/3/action/datastore_search?resour"
    }
   ],
   "euskadi": [
@@ -104,7 +104,7 @@
    },
    {
     "date": "2026-11-18",
-    "count": 1223,
+    "count": 1222,
     "error": ""
    }
   ],
@@ -213,7 +213,7 @@
    {
     "date": "2026-11-18",
     "count": 34,
-    "error": ""
+    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
    }
   ],
   "galicia": [
@@ -535,8 +535,10 @@
    }
   ]
  },
- "updated_at": "2026-11-18T08:05",
+ "updated_at": "2026-11-18T08:18",
  "alerts": [
-  "Ayuntamiento de Zaragoza: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-17"
+  "Ajuntament de Barcelona: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18",
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18",
+  "Ayuntamiento de Zaragoza: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-18"
  ]
 }
