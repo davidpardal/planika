@@ -370,3 +370,65 @@ class TestNavidad(unittest.TestCase):
         for t in ("Mercado de Navidad", "Cabalgata de Reyes", "Olentzero eguna", "Belén viviente", "Concierto de villancicos", "Nadal a la plaça"):
             self.assertEqual(classify([], t, ""), "navidad", t)
         self.assertEqual(classify([], "Concierto de jazz", ""), "musica")
+
+
+class TestXmasTheme(unittest.TestCase):
+    """La etiqueta navideña: un concierto o un taller de Navidad sigue en su
+    tipo, pero también sale con el filtro y en las páginas de Navidad."""
+
+    def _ev(self, title, category="musica", desc="", subtype=""):
+        return {"title": title, "description": desc, "category": category, "subtype": subtype}
+
+    def test_is_xmas_titles(self):
+        for t in ("Concierto de Navidad de la Banda Municipal", "Taller de adornos navideños", "Gabonetako kontzertua",
+                  "Concert de Nadal", "Christmas Jazz Night", "Cuentacuentos de Olentzero", "Coro de villancicos",
+                  "San Silvestre Lagunera 2026", "Campanadas en la plaza", "Pessebre vivent"):
+            self.assertTrue(classify.is_xmas(self._ev(t)), t)
+
+    def test_is_xmas_rejects_false_friends(self):
+        for t in ("Exposición sobre Rafa Nadal", "Concierto de jazz", "Visita al belén de agua"):
+            self.assertFalse(classify.is_xmas(self._ev(t)), t)
+        # Las visitas permanentes no se etiquetan aunque hablen de Navidad
+        self.assertFalse(classify.is_xmas(self._ev("Museo del Belén", "expos", subtype=util.PERMANENT_SUBTYPE)))
+        # La categoría navidad siempre cuenta
+        self.assertTrue(classify.is_xmas(self._ev("Feria", "navidad")))
+        # En la descripción solo cuentan frases claras
+        self.assertTrue(classify.is_xmas(self._ev("Feria de artesanía", "otros", "Gran mercado de Navidad en la plaza")))
+        self.assertFalse(classify.is_xmas(self._ev("Horario de la biblioteca", "otros", "Cerrado en Navidad")))
+
+    def test_in_cat_and_data_flag(self):
+        e = {"category": "musica", "xmas": True}
+        self.assertTrue(publish.in_cat(e, "navidad"))
+        self.assertTrue(publish.in_cat(e, "musica"))
+        self.assertFalse(publish.in_cat({"category": "musica", "xmas": False}, "navidad"))
+        app = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "site", "app.js"), encoding="utf-8").read()
+        self.assertIn("r[13] & 4", app)  # bit 4 de flags = etiqueta navideña
+        self.assertIn("state.cats.navidad && e.xm", app)
+
+
+class TestDestacados(unittest.TestCase):
+    def test_file_is_valid_and_merges(self):
+        from planes import src_destacados as d
+        items = d.load()
+        self.assertGreaterEqual(len(items), 5)
+        ids = [i["id"] for i in items]
+        self.assertEqual(len(ids), len(set(ids)))
+        for raw in items:
+            self.assertEqual(d.problems(raw), [], raw.get("id"))
+        evs = d.fetch(lambda msg: None)
+        for e in evs:
+            self.assertEqual(e["source"], d.NAME)
+            self.assertTrue(e["province_code"] and e["url"], e["title"])
+            self.assertGreaterEqual(e["end"], util.iso(util.today()))
+        merged = d.replace_events(d.replace_events([{"source": "x", "id": "a"}]))
+        self.assertEqual(sum(1 for e in merged if e["source"] == d.NAME), len(evs))
+
+    def test_problems_catches_bad_entries(self):
+        from planes import src_destacados as d
+        good = {"id": "x", "title": "T", "start": "2026-12-01", "url": "https://a", "province": "Sevilla",
+                "checked": "2026-11-18", "refs": ["https://a"]}
+        self.assertEqual(d.problems(good), [])
+        self.assertIn("sin refs https", d.problems(dict(good, refs=[])))
+        self.assertIn("end anterior a start", d.problems(dict(good, end="2026-11-01")))
+        self.assertIn("time no es HH:MM", d.problems(dict(good, time="18h")))
+        self.assertIn("falta url", d.problems(dict(good, url="")))

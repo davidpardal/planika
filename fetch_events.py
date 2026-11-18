@@ -6,7 +6,7 @@ Uso:
     python3 fetch_events.py                 # próximos 180 días, todas las fuentes
     python3 fetch_events.py --days 90       # horizonte de 90 días
     python3 fetch_events.py --sources madrid,euskadi
-    python3 fetch_events.py --rebuild       # sin descargar: regenera la web desde events.json y mezcla data/curated.json
+    python3 fetch_events.py --rebuild       # sin descargar: regenera la web desde events.json y mezcla data/curated.json y data/destacados.json
 """
 import argparse
 import importlib
@@ -23,13 +23,13 @@ sys.path.insert(0, ROOT)
 # es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
 EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
 
-from planes import llm, publish, seo, static  # noqa: E402
+from planes import classify, llm, publish, seo, static  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
 SOURCES = ["madrid", "esmadrid", "barcelona", "diba", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia",
            "galicia", "zaragoza", "cartagena", "lorca", "murcia", "vitoria", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
-           "ticketmaster", "curated"]
+           "ticketmaster", "destacados", "curated"]
 
 
 def load_dotenv(path):
@@ -81,6 +81,8 @@ def dedupe(events):
 def write_site(args, site_dir, payload):
     """Todo lo que se deriva de events.json: datos troceados para la web, feeds RSS y páginas estáticas."""
     events = static.default_order(static.unique_ids(payload["events"]))
+    for e in events:
+        e["xmas"] = classify.is_xmas(e)
     core_size, chunks = static.write_data(args.out, dict(payload, events=events))
     old = os.path.join(args.out, "events.js")  # formato anterior (un único archivo de varios MB)
     if os.path.exists(old):
@@ -114,18 +116,23 @@ def main():
             payload = json.load(fh)
         # Regenerar también mezcla las visitas permanentes, para poder refrescar
         # la web sin volver a descargar las agendas (y sin dejarlas caducar).
-        from planes.src_curated import HOME as CURATED_HOME, NAME as CURATED_NAME, replace_events
-        payload["events"] = replace_events(payload.get("events") or [], log)
-        sources = [s for s in payload.get("sources") or [] if s.get("key") != "curated"]
-        n_curated = sum(1 for e in payload["events"] if e.get("source") == CURATED_NAME)
-        sources.append({"key": "curated", "name": CURATED_NAME, "home": CURATED_HOME, "count": n_curated,
-                        "seconds": 0, "error": "", "stale_from": ""})
+        # Lo mismo con las citas con fecha comprobadas a mano (data/destacados.json).
+        from planes import src_curated, src_destacados
+        sources = list(payload.get("sources") or [])
+        counts = {}
+        for key, mod in (("destacados", src_destacados), ("curated", src_curated)):
+            payload["events"] = mod.replace_events(payload.get("events") or [], log)
+            counts[key] = sum(1 for e in payload["events"] if e.get("source") == mod.NAME)
+            sources = [s for s in sources if s.get("key") != key]
+            sources.append({"key": key, "name": mod.NAME, "home": mod.HOME, "count": counts[key],
+                            "seconds": 0, "error": "", "stale_from": ""})
+        n_curated = counts["curated"]
         payload["sources"] = sources
         payload["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
         with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
         write_site(args, site_dir, payload)
-        log("Rebuild: %d planes, %d visitas permanentes" % (len(payload["events"]), n_curated))
+        log("Rebuild: %d planes, %d visitas permanentes, %d citas comprobadas" % (len(payload["events"]), n_curated, counts["destacados"]))
         return
 
     load_dotenv(os.path.join(ROOT, ".env"))

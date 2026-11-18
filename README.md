@@ -105,8 +105,13 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Agendas municipales (`planes/src_municipios.py`) | Mérida, Teruel, Ejea de los Caballeros, Siero, Puertollano, Diputación de Albacete, Elche, Orihuela, Villena y Torrent | API JSON de «The Events Calendar» (WordPress) |
 | Ticketmaster Discovery API | toda España, con entradas | API JSON (clave) |
 | Visitas permanentes (`data/curated.json`) | todas las provincias con poca agenda: museos, monumentos, espacios naturales y salas, sin fecha única | JSON mantenido a mano |
+| Selección Planika (`data/destacados.json`) | grandes citas con fecha que aún no traen las agendas abiertas (encendidos de luces, ferias de Navidad…) | JSON mantenido a mano; cada entrada guarda sus fuentes (`refs`) y el día en que se comprobó |
 
 Las visitas permanentes no salen de una agenda. Están en `data/curated.json` y `fetch_events.py` las mezcla en cada ejecución (también con `--rebuild`), así que sobreviven a la regeneración diaria. En la web aparecen como «Visita permanente»: entran en los filtros de provincia y en el mapa, quedan detrás de los planes con fecha y no marcan todos los días del calendario.
+
+`data/destacados.json` funciona igual pero con fecha: solo entran planes con fecha publicada en una web pública, sin rellenar horas ni lugares que no estén anunciados. Caducan solos al pasar su fecha de fin; si una agenda oficial empieza a traer el mismo plan, se borra de aquí.
+
+Etiqueta navideña: además de la categoría «Navidad», `classify.is_xmas` marca los planes de otros tipos con tema navideño (conciertos de Navidad, talleres de Olentzero, San Silvestre…). Siguen en su tipo, pero también salen con el filtro 🎄 Navidad, en `t/navidad.html`, en las combinaciones provincia × Navidad y en su feed.
 
 Fuentes revisadas y descartadas por estar paradas o no ser accesibles por programa: Canarias (CSV parado en 2021), Gijón (JSON parado en 2025), Terrassa (CSV de 2024), municipios de Córdoba vía Eprinsa (datos de 2022), Alcobendas (bloquea el acceso), Cáceres y Santa Cruz de Tenerife (portales que solo sirven HTML), L'Hospitalet y Región de Murcia Digital (recursos vacíos o caídos), Castilla-La Mancha (sin datos descargables), Vigo (solo publica la agenda del día). Webs comerciales como Fever, entradas.com o Wikiloc no se raspan porque sus condiciones de uso lo prohíben.
 

@@ -14,7 +14,7 @@
     var p = PROV[r[7]] || {}, c = DATA.categories[r[2]] || {};
     var e = { i: i, id: r[0], title: r[1], category: c.key || 'otros', subtype: r[3] || '', start: r[4], end: r[5], time: r[6] || '',
       province_code: r[7], province: p.name || '', ccaa: p.ccaa || '', city: r[8] || '', venue: r[9] || '',
-      lat: r[10] == null ? null : r[10], lon: r[11] == null ? null : r[11], price: r[12] || '', free: !!(r[13] & 1), tk: !!(r[13] & 2),
+      lat: r[10] == null ? null : r[10], lon: r[11] == null ? null : r[11], price: r[12] || '', free: !!(r[13] & 1), tk: !!(r[13] & 2), xm: !!(r[13] & 4),
       audience: r[14] || '', source: DATA.srcNames[r[15]] || '', sessions: r[16] || null, title_es: r[17] || '',
       description: '', url: '', tickets_url: '', image: '', address: '', _d: false };
     BY_ID[e.id] = e;
@@ -161,7 +161,10 @@
     fillWhere(ccaas);
     fillCities();
     var nCat = {}; var nFree = 0;
-    EVENTS.forEach(function (e) { nCat[e.category] = (nCat[e.category] || 0) + 1; if (e.free && !isPermanent(e)) nFree++; });
+    EVENTS.forEach(function (e) {
+      nCat[e.category] = (nCat[e.category] || 0) + 1; if (e.xm && e.category !== 'navidad') nCat.navidad = (nCat.navidad || 0) + 1;
+      if (e.free && !isPermanent(e)) nFree++;
+    });
     $('what').querySelectorAll('a.chip').forEach(function (a) {
       var n = a.dataset.free ? nFree : (nCat[a.dataset.cat] || 0);
       if (!n && a.dataset.cat) { a.hidden = true; return; }  // p. ej. Navidad fuera de temporada
@@ -169,7 +172,7 @@
     });
     var chips = $('cats');
     DATA.categories.forEach(function (c) {
-      var n = EVENTS.filter(function (e) { return e.category === c.key; }).length;
+      var n = EVENTS.filter(function (e) { return e.category === c.key || (c.key === 'navidad' && e.xm); }).length;
       if (!n) return;
       var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (state.cats[c.key] ? ' on' : ''); b.dataset.cat = c.key;
       b.innerHTML = c.icon + ' ' + esc(c.name) + ' <small>' + n + '</small>';
@@ -303,7 +306,7 @@
     if (state.free && !e.free) return false;
     if (state.tickets && !e.tk) return false;
     if (state.favs && !favSet.has(e.id)) return false;
-    if (anyCat() && !state.cats[e.category]) return false;
+    if (anyCat() && !state.cats[e.category] && !(state.cats.navidad && e.xm)) return false;
     if (state.tod) {
       if (!e.time) return false;
       var h = +e.time.slice(0, 2);

@@ -160,7 +160,7 @@ def write_data(out_dir, payload):
             src_names.append(e["source"])
     rows = []
     for e in events:
-        flags = (1 if e.get("free") else 0) | (2 if safe_url(e.get("tickets_url")) else 0)
+        flags = (1 if e.get("free") else 0) | (2 if safe_url(e.get("tickets_url")) else 0) | (4 if e.get("xmas") else 0)
         rows.append(_trim([
             e["id"], e["title"], CAT_KEYS.index(e["category"]) if e["category"] in CAT_KEYS else len(CAT_KEYS) - 1,
             e.get("subtype") or "", e["start"], e["end"], e.get("time") or "", e["province_code"],
@@ -441,7 +441,9 @@ def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None
         price=price, when=esc(when), sessions=sessions, where=esc(where or place),
         body=('<p class="desc">%s</p>' % esc(e["description"])) if e.get("description") else "",
         actions="".join(actions), source=esc(e["source"]), related=rel,
-        srclink=(' · <a href="%s" target="_blank" rel="noopener">ver en la web oficial ↗</a>' % esc(url or tickets)) if (url or tickets) else "")
+        srclink=(' · <a href="%s" target="_blank" rel="noopener">%s ↗</a>' % (
+            esc(url or tickets), "ver la fuente" if e.get("source") == "Selección Planika" else "ver en la web oficial"))
+                 if (url or tickets) else "")
 
 
 def _event_digest(e, t0, indexable):
