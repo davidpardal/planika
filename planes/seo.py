@@ -42,7 +42,7 @@ def is_indexable(e):
 
 def digest(text):
     """Huella del contenido de una página; ignora los sellos de "actualizado el…" (<span class="upd">)."""
-    return hashlib.sha1(_UPD.sub("", text).encode("utf-8")).hexdigest()[:16]
+    return hashlib.sha1(_UPD.sub("", text).encode("utf-8")).hexdigest()[:12]
 
 
 def load_state(path):
@@ -98,8 +98,10 @@ def write_sitemaps(site_dir, entries, site_url, state_path=None, day=None):
         fh.write("</sitemapindex>\n")
     if state_path:
         os.makedirs(os.path.dirname(state_path) or ".", exist_ok=True)
+        # Una URL por línea: el commit diario del workflow solo cambia las líneas de las páginas que cambian.
         with open(state_path, "w", encoding="utf-8") as fh:
-            json.dump(state, fh, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+            fh.write("{\n" + ",\n".join(json.dumps(k, ensure_ascii=False) + ":" + json.dumps(v, separators=(",", ":"), sort_keys=True)
+                                         for k, v in sorted(state.items())) + "\n}\n")
     return written
 
 
