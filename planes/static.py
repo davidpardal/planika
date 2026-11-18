@@ -140,8 +140,10 @@ def seo_title(e, t0, place):
 def price_num(e):
     if e.get("free"):
         return 0.0
-    m = re.findall(r"\d+(?:\.\d+)?", str(e.get("price") or "").replace(",", "."))
-    return min(float(x) for x in m) if m else None
+    m = [float(x) for x in re.findall(r"\d+(?:\.\d+)?", str(e.get("price") or "").replace(",", "."))]
+    # "De 0 a 18 €" (gratis para algunos): el precio de pago más bajo, no 0, que haría pasar el plan por gratuito
+    paid = [x for x in m if x > 0]
+    return min(paid) if paid else None
 
 
 # ---------------------------------------------------------------- datos troceados
