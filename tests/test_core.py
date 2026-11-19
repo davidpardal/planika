@@ -390,6 +390,13 @@ class TestXmasTheme(unittest.TestCase):
             self.assertFalse(classify.is_xmas(self._ev(t)), t)
         # Las visitas permanentes no se etiquetan aunque hablen de Navidad
         self.assertFalse(classify.is_xmas(self._ev("Museo del Belén", "expos", subtype=util.PERMANENT_SUBTYPE)))
+        # Ferias de Santo Tomás y Santa Llúcia: solo en diciembre (o de finales de noviembre a diciembre)
+        fair = self._ev("Programa Santo Tomás 2026 en Bilbao", "fiestas")
+        self.assertTrue(classify.is_xmas(dict(fair, start="2026-12-21", end="2026-12-21")))
+        self.assertTrue(classify.is_xmas(dict(self._ev("Fira de Santa Llúcia a l'Avinguda de la Catedral", "fiestas"),
+                                              start="2026-11-27", end="2026-12-23")))
+        self.assertFalse(classify.is_xmas(dict(self._ev("Visita a la iglesia de Santo Tomás", "expos"),
+                                               start="2026-03-07", end="2026-03-07")))
         # La categoría navidad siempre cuenta
         self.assertTrue(classify.is_xmas(self._ev("Feria", "navidad")))
         # En la descripción solo cuentan frases claras
