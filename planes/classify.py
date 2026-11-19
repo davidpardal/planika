@@ -131,6 +131,11 @@ _XMAS_DESC = re.compile(
 _XMAS_NOT = re.compile(r"\brafa(el)? nadal\b|\bfestius de nadal\b|\bexcepte .{0,40}nadal")
 
 
+# Ferias de diciembre que son la Navidad local aunque el título no lo diga: Santo Tomás (21 dic, País Vasco y
+# Navarra) y Santa Llúcia (Cataluña). Solo cuentan si caen en diciembre o empiezan a finales de noviembre.
+_XMAS_FAIRS = re.compile(r"\b(santo tomas|done tomas|santa llucia)\b")
+
+
 def is_xmas(e):
     """¿Es un plan de Navidad? Por el título (palabras inequívocas) o por frases claras de la descripción."""
     if e.get("category") == "navidad":
@@ -141,6 +146,9 @@ def is_xmas(e):
     if _XMAS_NOT.search(title):
         return False
     if _XMAS_TITLE.search(title):
+        return True
+    start, end = (e.get("start") or "")[:10], (e.get("end") or e.get("start") or "")[:10]
+    if _XMAS_FAIRS.search(title) and (start[5:7] == "12" or (start[5:7] == "11" and end[5:7] == "12")):
         return True
     desc = norm(e.get("description") or "")[:400]
     return bool(_XMAS_DESC.search(desc)) and not _XMAS_NOT.search(desc)
