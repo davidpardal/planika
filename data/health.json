@@ -70,7 +70,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 4220,
+    "count": 4396,
     "error": ""
    }
   ],
@@ -107,7 +107,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 3868,
+    "count": 3901,
     "error": ""
    }
   ],
@@ -144,7 +144,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 1318,
+    "count": 1329,
     "error": ""
    }
   ],
@@ -642,7 +642,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 777,
+    "count": 786,
     "error": ""
    }
   ],
@@ -706,7 +706,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 160,
+    "count": 165,
     "error": ""
    }
   ],
@@ -728,8 +728,8 @@
    },
    {
     "date": "2026-11-20",
-    "count": 0,
-    "error": "ConnectTimeout: HTTPSConnectionPool(host='www.vitoria-gasteiz.org', port=443): Max retries exceeded with url: /we001/was/rssAction.do?id"
+    "count": 7,
+    "error": ""
    }
   ],
   "deporte_pro": [
@@ -770,10 +770,15 @@
     "count": 8,
     "error": ""
    }
+  ],
+  "tribe": [
+   {
+    "date": "2026-11-20",
+    "count": 13,
+    "error": ""
+   }
   ]
  },
- "updated_at": "2026-11-20T06:15",
- "alerts": [
-  "Ayuntamiento de Vitoria-Gasteiz: 0 eventos (antes 8) · ConnectTimeout: HTTPSConnectionPool(host='www.vitoria-gasteiz.org', port=443): Max retries exceeded with url: /we001/was/rssAction.do?id"
- ]
+ "updated_at": "2026-11-20T10:46",
+ "alerts": []
 }
