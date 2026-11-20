@@ -11,7 +11,7 @@ import os
 from . import static
 
 SITE_URL = static.SITE_URL
-UPDATED = "18 de noviembre de 2026"
+UPDATED = "20 de noviembre de 2026"
 CONTACT_FALLBACK = "https://github.com/davidpardal/planika/issues"
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "legal.json")
 
@@ -69,14 +69,14 @@ def privacy_page(cfg=None):
     cfg = cfg if cfg is not None else load_config()
     body = """
 <h2>Resumen</h2>
-<p>Planika no tiene cuentas de usuario, no usa cookies y no muestra publicidad. Solo mide visitas de forma agregada y guarda tus favoritos en tu propio navegador.</p>
+<p>Planika no tiene cuentas de usuario ni muestra publicidad. Google Analytics 4 (GA4) se utiliza únicamente si aceptas las cookies de analítica. Si las rechazas, GA4 no se carga. Puedes cambiar tu decisión desde el botón «Privacidad» disponible en la web.</p>
 
 <h2>Responsable</h2>
 %(holder)s
 
 <h2>Qué datos se tratan y para qué</h2>
 <h3>Visitas (analítica)</h3>
-<p>Usamos Cloudflare Web Analytics para saber cuántas personas visitan cada página, desde qué país y con qué tipo de navegador. Según Cloudflare, este servicio no utiliza cookies ni almacenamiento local, no hace seguimiento entre sitios y no elabora perfiles individuales. Base jurídica: interés legítimo en conocer el uso de la web (art. 6.1.f del RGPD).</p>
+<p>Usamos Google Analytics 4 (Google Ireland Limited) para obtener estadísticas de uso, como páginas consultadas, interacciones, información técnica del navegador y datos aproximados de ubicación. GA4 puede utilizar cookies y tecnologías similares y transmitir datos a Google. La analítica permanece desactivada hasta que das tu consentimiento mediante el panel de privacidad. Base jurídica: consentimiento (art. 6.1.a del RGPD y normativa aplicable sobre almacenamiento o acceso a información en el dispositivo). Si rechazas, la etiqueta de GA4 no se carga. Puedes retirar o cambiar el consentimiento en cualquier momento con el botón «Privacidad».</p>
 <h3>Favoritos</h3>
 <p>Cuando marcas un plan como favorito, Planika lo guarda en el almacenamiento local de tu navegador (clave <code>planika_favs</code>). Se queda en tu dispositivo, no se envía a ningún servidor y puedes borrarlo en cualquier momento limpiando los datos del sitio. Es un almacenamiento necesario para una función que tú pides, por lo que no requiere consentimiento.</p>
 <h3>Ubicación («Cerca de mí»)</h3>
@@ -87,7 +87,7 @@ def privacy_page(cfg=None):
 <p>La web se aloja en GitHub Pages, que registra datos técnicos de conexión (como la dirección IP) para prestar el servicio. Las imágenes de algunos planes se cargan directamente desde los servidores de sus organizadores o fuentes, que pueden ver tu dirección IP al pedirlas. Los enlaces a webs de organizadores, entradas y Google Calendar llevan a sitios con sus propias políticas.</p>
 
 <h2>Cookies</h2>
-<p>Planika no instala cookies propias ni de terceros, ni para analítica ni para publicidad; por eso no verás un banner de cookies. Si esto cambia, actualizaremos esta página y pediremos tu consentimiento antes de usarlas.</p>
+<p>GA4 solo se carga después de aceptar las cookies de analítica. Según la configuración y el navegador, Google Analytics puede instalar cookies como <code>_ga</code> y <code>_ga_*</code> para distinguir usuarios y sesiones. Si rechazas, la etiqueta no se carga. La elección se guarda en el almacenamiento local del navegador para recordar tu decisión; este almacenamiento se utiliza para conservar la preferencia. Puedes cambiarla o retirar el consentimiento desde el botón «Privacidad».</p>
 
 <h2>Tus derechos</h2>
 <p>Puedes pedir acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad de tus datos escribiendo a %(contact)s. Si crees que no hemos tratado bien tus datos, puedes reclamar ante la <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos</a>.</p>
@@ -96,7 +96,7 @@ def privacy_page(cfg=None):
 <p>Si cambia algo de lo anterior (por ejemplo, si se añaden cuentas de usuario o se activan servicios de pago), actualizaremos esta página y su fecha.</p>
 """ % dict(holder=_holder(cfg), contact=_contact(cfg))
     return _PAGE % dict(title="Privacidad y cookies", file="privacidad.html", site=SITE_URL, analytics=static.BEACON,
-                        desc="Qué datos trata Planika, para qué y cómo ejercer tus derechos. Sin cookies y sin cuentas de usuario.",
+                        desc="Qué datos trata Planika, cómo utiliza Google Analytics 4 con consentimiento y cómo ejercer tus derechos.",
                         updated=UPDATED, body=body)
 
 
