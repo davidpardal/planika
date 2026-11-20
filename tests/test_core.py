@@ -159,7 +159,7 @@ class TestStatic(unittest.TestCase):
         e = dict(self.ev(), url="javascript:alert(1)", venue="Teatro <Real>", description='Una obra </script> con "comillas"')
         page = static.event_page(e, t0="2026-11-14", prov_slug="madrid")
         self.assertNotIn("javascript:alert", page)
-        self.assertEqual(page.count("</script>"), 1)  # solo el bloque JSON-LD; GA4 se carga desde consent.js
+        self.assertEqual(page.count("</script>"), 2)  # el bloque JSON-LD y consent.js; GA4 solo lo carga consent.js si se acepta
         self.assertIn("Teatro &lt;Real&gt;", page)
         ld = json.loads(page.split('<script type="application/ld+json">')[1].split("</script>")[0])
         self.assertIn("</script>", ld["@graph"][0]["description"])
