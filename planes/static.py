@@ -17,10 +17,8 @@ from .classify import CATEGORIES
 from .util import is_permanent, iso, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
-# Analítica: Google Analytics 4 (cuenta de Planika, planikaapp.com@gmail.com). El ID de medición es público por diseño: viaja en el HTML de cada página.
-BEACON = ('<script async src="https://www.googletagmanager.com/gtag/js?id=G-E4DXWFYPH1"></script>'
-                    '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}'
-                    'gtag("js",new Date());gtag("config","G-E4DXWFYPH1");</script>')
+# GA4 se carga desde consent.js únicamente tras aceptación explícita.
+BEACON = '<script defer src="/consent.js"></script>'
 CHUNK = 250  # planes por bloque de detalles
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
