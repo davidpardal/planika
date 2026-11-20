@@ -107,7 +107,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 3901,
+    "count": 3929,
     "error": ""
    }
   ],
@@ -144,7 +144,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 1330,
+    "count": 1338,
     "error": ""
    }
   ],
@@ -642,7 +642,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 786,
+    "count": 787,
     "error": ""
    }
   ],
@@ -777,11 +777,17 @@
     "count": 13,
     "error": ""
    }
+  ],
+  "jimmyjazz": [
+   {
+    "date": "2026-11-20",
+    "count": 69,
+    "error": ""
+   }
   ]
  },
- "updated_at": "2026-11-20T10:53",
+ "updated_at": "2026-11-20T12:36",
  "alerts": [
-  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-20",
-  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-20"
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-20"
  ]
 }
