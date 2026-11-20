@@ -302,7 +302,9 @@ CAT_INTENT = {
 }
 FIRST_PAGE = 60      # tarjetas en la primera página de cada hub
 ARCHIVE_PAGE = 150   # planes por página en el listado completo de cada provincia
-CITY_MIN = 100       # planes con fecha para que una ciudad (sin provincia del mismo nombre) tenga página
+CITY_MIN = 40        # planes con fecha para que una ciudad (sin provincia del mismo nombre) tenga página
+SUB_MIN = {"fin-de-semana": 3, "gratis": 3}  # mínimo de planes de las subpáginas de intención; las de tipo, 5
+SUB_LABEL = {"fin-de-semana": "Planes este fin de semana", "gratis": "Planes gratis"}
 FESTIVAL_RX = re.compile(r"\b(festival|festivala|festivalak|festivales|festivals)\b")
 _MES_CORTO = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"]
 
@@ -621,6 +623,20 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
     for e in events:
         by_code.setdefault(e["province_code"], []).append(e)
     prov_pages = [(code, name, ccaa, upcoming(by_code[code])) for code, name, ccaa in PROVINCIAS if by_code.get(code)]
+    # Ciudades con página propia: sus planes y sus subpáginas de intención (finde, gratis y tipo de plan),
+    # porque se busca «qué hacer en Bilbao este fin de semana» o «conciertos en Vitoria», no por provincia.
+    city_items = {k: upcoming([e for e in by_code.get(k[0], []) if norm(e.get("city") or "") == k[1]]) for k in cities}
+    city_subs = {}
+    for k, items in city_items.items():
+        for suf, sub in (("fin-de-semana", [e for e in items if in_window(e, wa, wb)]),
+                         ("gratis", [e for e in items if e.get("free") and not is_permanent(e)])):
+            if len(sub) >= SUB_MIN[suf]:
+                city_subs[k + (suf,)] = sub
+        for key, _, _ in CATEGORIES:
+            sub = [e for e in items if in_cat(e, key)]
+            if len(sub) >= 5 and key != "otros":  # «Otros planes en Getxo» no es algo que se busque
+                city_subs[k + (key,)] = sub
+    mes = "%s %s" % (_MESES[int(t0[5:7]) - 1], t0[:4])
     prov_slug = {code: slug(name) for code, name, _ in PROVINCIAS}
     prov_name = {code: name for code, name, _ in PROVINCIAS}
     # Páginas combinadas provincia × tipo ("Conciertos en Álava"): solo con suficientes planes.
@@ -660,9 +676,18 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
                 out.append('<a href="%sp/%s.html">%s</a> (%s)' % (up, prov_slug[code], html.escape(name), fmt_n(len(items))))
         return out
 
-    def city_links(up, code=None):
-        return ['<a href="%sc/%s.html">Planes en %s</a>' % (up, f, html.escape(n))
-                for (c, _), (n, f) in sorted(cities.items(), key=lambda x: x[1][0]) if code in (None, c)]
+    def city_links(up, code=None, sub=None):
+        """Enlaces a las ciudades (de una provincia si se da `code`); con `sub`, a su subpágina si la tiene."""
+        out = []
+        for (c, nc), (n, f) in sorted(cities.items(), key=lambda x: x[1][0]):
+            if code not in (None, c):
+                continue
+            if sub and (c, nc, sub) in city_subs:
+                out.append('<a href="%sc/%s-%s.html">%s en %s</a> (%s)' % (up, f, sub, html.escape(SUB_LABEL.get(sub) or CAT_INTENT[sub]),
+                                                                          html.escape(n), fmt_n(len(city_subs[(c, nc, sub)]))))
+            elif not sub:
+                out.append('<a href="%sc/%s.html">Planes en %s</a>' % (up, f, html.escape(n)))
+        return out
 
     # ---- provincias, con listado completo paginado (todas las fichas a 3 clics de la portada)
     for code, name, ccaa, items in prov_pages:
@@ -685,7 +710,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
                (("fin-de-semana", "Planes este fin de semana"), ("gratis", "Planes gratis")) if (code, suf) in extras]
         sib += ['<a href="%s-%s.html">%s en %s</a>' % (base, k, html.escape(CAT_INTENT[k]), html.escape(name))
                 for k, _, _ in CATEGORIES if (code, k) in combos]
-        page = _render(site_dir, fn, "../", seo_title="Qué hacer en %s: planes y eventos" % name, h1="Planes en %s" % name,
+        page = _render(site_dir, fn, "../", seo_title="Qué hacer en %s: planes y eventos (%s)" % (name, mes), h1="Planes en %s" % name,
                        desc="Agenda de planes en %s (%s): %s planes próximos entre conciertos, teatro, exposiciones, deporte, ferias y fiestas, con fechas y enlace oficial."
                             % (name, ccaa, fmt_n(len(items))),
                        items=items, crumbs=crumbs, params="prov=%s" % code, t0=t0, updated=upd,
@@ -725,7 +750,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
                        intro=_intro(sub, ("este fin de semana en %s" if suf == "fin-de-semana" else "gratis en %s") % name, t0, soon=suf != "fin-de-semana"),
                        rss="../feeds/provincia-%s.xml" % code,
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"../?%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(sub)), html.escape(params))) if len(sub) > FIRST_PAGE else "",
-                       links=_p(links))
+                       links=_p(links) + _p(city_links("../", code, suf)))
         done(fn, page)
 
     # ---- provincia × tipo
@@ -744,26 +769,63 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
                        params="prov=%s&cat=%s" % (code, key), t0=t0, updated=upd, intro=_intro(sub, "de %s en %s" % (intent.lower(), name), t0),
                        rss="../feeds/provincia-%s.xml" % code,
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"../?prov=%s&amp;cat=%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(sub)), code, key)) if len(sub) > FIRST_PAGE else "",
-                       links=_p(sib))
+                       links=_p(sib) + _p(city_links("../", code, key)))
         done(fn, page)
 
     # ---- ciudades con mucha agenda y sin provincia del mismo nombre
+    from urllib.parse import quote
     for (code, ncity), (cname, cfile) in sorted(cities.items(), key=lambda x: x[1][1]):
-        items = upcoming([e for e in by_code.get(code, []) if norm(e.get("city") or "") == ncity])
+        items = city_items[(code, ncity)]
         pname, base = prov_name[code], prov_slug[code]
         fn = "c/%s.html" % cfile
-        from urllib.parse import quote
         params = "prov=%s&city=%s" % (code, quote(cname))
+        own = ['<a href="%s-%s.html">%s en %s</a>' % (cfile, suf, html.escape(SUB_LABEL.get(suf) or CAT_INTENT[suf]), html.escape(cname))
+               for suf in ["fin-de-semana", "gratis"] + [k for k, _, _ in CATEGORIES] if (code, ncity, suf) in city_subs]
         links = ['<a href="../p/%s.html">Todos los planes en %s</a>' % (base, html.escape(pname))]
         links += ['<a href="../p/%s-%s.html">%s en %s</a>' % (base, suf, lab, html.escape(pname)) for suf, lab in
                   (("fin-de-semana", "Planes este fin de semana"), ("gratis", "Planes gratis")) if (code, suf) in extras]
-        page = _render(site_dir, fn, "../", seo_title="Qué hacer en %s: planes y eventos" % cname, h1="Planes en %s" % cname,
+        page = _render(site_dir, fn, "../", seo_title="Qué hacer en %s: planes y eventos (%s)" % (cname, mes), h1="Planes en %s" % cname,
                        desc="Agenda de planes en %s (%s): %s planes próximos entre conciertos, teatro, exposiciones, deporte y fiestas, con fechas y enlace oficial."
                             % (cname, pname, fmt_n(len(items))),
                        items=items, crumbs=[("Inicio", ""), (pname, "p/%s.html" % base), (cname, fn)], params=params,
                        t0=t0, updated=upd, intro=_intro(items, "en %s" % cname, t0, cities=False),
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"../?%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(items)), html.escape(params))) if len(items) > FIRST_PAGE else "",
-                       links=_p(links) + _p([l for l in city_links("../") if cfile + ".html" not in l]))
+                       links=_p(own) + _p(links) + _p([l for l in city_links("../") if 'c/%s.html"' % cfile not in l]))
+        done(fn, page)
+
+    # ---- ciudad: este fin de semana, gratis y por tipo de plan
+    for (code, ncity, suf), sub in sorted(city_subs.items(), key=lambda x: (cities[x[0][:2]][1], x[0][2])):
+        cname, cfile = cities[(code, ncity)]
+        pname, base = prov_name[code], prov_slug[code]
+        fn = "c/%s-%s.html" % (cfile, suf)
+        params = "prov=%s&city=%s" % (code, quote(cname))
+        if suf == "fin-de-semana":
+            ttl, h1 = "Qué hacer este fin de semana en %s (%s)" % (cname, wrange), "Planes este fin de semana en %s" % cname
+            dsc = "Qué hacer este fin de semana en %s: %s planes del %s al %s." % (cname, fmt_n(len(sub)), fmt_es(fri), fmt_es(sun))
+            params += "&from=%s&to=%s" % (wa, wb)
+            scope, nat_fn, nat_lab = "este fin de semana en %s" % cname, "planes-este-fin-de-semana.html", "Planes este fin de semana"
+        elif suf == "gratis":
+            ttl, h1 = "Planes gratis en %s: actividades gratuitas" % cname, "Planes gratis en %s" % cname
+            dsc = "Planes gratis en %s: %s actividades gratuitas próximas, con fechas, lugar y enlace oficial." % (cname, fmt_n(len(sub)))
+            params += "&free=1"
+            scope, nat_fn, nat_lab = "gratis en %s" % cname, "planes-gratis.html", "Planes gratis"
+        else:
+            intent = CAT_INTENT[suf]
+            ttl, h1 = "%s en %s: agenda y próximas fechas" % (intent, cname), "%s en %s" % (intent, cname)
+            dsc = "%s en %s (%s): %s planes próximos con fechas, lugar, entradas y calendario." % (intent, cname, pname, fmt_n(len(sub)))
+            params += "&cat=%s" % suf
+            scope, nat_fn, nat_lab = "de %s en %s" % (intent.lower(), cname), "t/%s.html" % suf, intent
+        links = ['<a href="%s.html">Todos los planes en %s</a>' % (cfile, html.escape(cname))]
+        links += ['<a href="%s-%s.html">%s en %s</a>' % (cfile, s2, html.escape(SUB_LABEL.get(s2) or CAT_INTENT[s2]), html.escape(cname))
+                  for s2 in ["fin-de-semana", "gratis"] + [k for k, _, _ in CATEGORIES] if s2 != suf and (code, ncity, s2) in city_subs]
+        up_prov = (code, suf) in extras or (code, suf) in combos
+        links2 = (['<a href="../p/%s-%s.html">%s en %s</a>' % (base, suf, html.escape(SUB_LABEL.get(suf) or CAT_INTENT[suf]), html.escape(pname))]
+                  if up_prov else []) + ['<a href="../%s">%s en toda España</a>' % (nat_fn, html.escape(nat_lab))]
+        page = _render(site_dir, fn, "../", seo_title=ttl, h1=h1, desc=dsc, items=sub,
+                       crumbs=[("Inicio", ""), (pname, "p/%s.html" % base), (cname, "c/%s.html" % cfile), (h1, fn)],
+                       params=params, t0=t0, updated=upd, intro=_intro(sub, scope, t0, cities=False, soon=suf != "fin-de-semana"),
+                       more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"../?%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(sub)), html.escape(params))) if len(sub) > FIRST_PAGE else "",
+                       links=_p(links) + _p(links2))
         done(fn, page)
 
     # ---- tipos de plan en toda España
@@ -801,7 +863,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
                        items=items, crumbs=[("Inicio", ""), (intent, fn)], params="cat=%s" % key, t0=t0, updated=upd,
                        intro=intro, rss="../feeds/tipo-%s.xml" % key,
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"../?cat=%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(items)), key)) if len(items) > FIRST_PAGE else "",
-                       links=_p(combo) + _p(type_links("../")) + _p(nat("../")) + _p(prov_links("../")))
+                       links=_p(combo) + _p(city_links("../", None, key)) + _p(type_links("../")) + _p(nat("../")) + _p(prov_links("../")))
         done(fn, page)
 
     # ---- páginas nacionales por intención de búsqueda
@@ -842,7 +904,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
                        items=items, crumbs=[("Inicio", ""), (h1, fn)], params=params, t0=day, updated=upd, tail=tail, write=write,
                        intro=_intro(items, "%s en España" % scope, day, soon=sub not in (None, "fin-de-semana") or fn == "festivales.html") if items else "<p class=\"intro\">Ahora mismo no hay planes con estas condiciones; prueba con las provincias o los tipos de plan.</p>",
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"./?%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(items)), html.escape(params))) if len(items) > FIRST_PAGE else "",
-                       links=_p(["Por provincia: " + " · ".join(plinks)] if plinks else []) + _p(city_links("")) + _p([l for l in nat("") if fn not in l]) + _p(type_links("")))
+                       links=_p(["Por provincia: " + " · ".join(plinks)] if plinks else []) + _p(city_links("", None, sub) if sub else city_links("")) + _p([l for l in nat("") if fn not in l]) + _p(type_links("")))
         return page
 
     for fn, ttl, h1, items, params, sub, scope in national:

@@ -15,12 +15,27 @@ Cómo se generan las páginas para buscadores y por qué. El código está en `p
 | Provincia | `/p/<provincia>.html` + `/p/<provincia>-pagina-N.html` | qué hacer en X (listado completo, 150 por página) |
 | Provincia: finde, gratis | `/p/<provincia>-fin-de-semana.html`, `-gratis.html` (3 o más planes) | planes este finde / gratis en X |
 | Provincia × tipo | `/p/<provincia>-<tipo>.html` (5 o más planes) | conciertos en X, teatro en X… |
-| Ciudad | `/c/<ciudad>.html` (100 o más planes con fecha y sin provincia del mismo nombre) | qué hacer en Bilbao, Donostia, Vitoria, Pamplona |
+| Ciudad | `/c/<ciudad>.html` (40 o más planes con fecha y sin provincia del mismo nombre) | qué hacer en Bilbao, Donostia, Vitoria, Getxo, Mérida… |
+| Ciudad: finde, gratis | `/c/<ciudad>-fin-de-semana.html`, `-gratis.html` (3 o más planes) | qué hacer este finde en Bilbao / planes gratis en Vitoria |
+| Ciudad × tipo | `/c/<ciudad>-<tipo>.html` (5 o más planes; sin «otros») | conciertos en Bilbao, teatro en Vitoria… |
 | Ficha | `/e/<titulo>-<id>.html` | el plan concreto |
 
 Cada hub tiene título, H1 y descripción propios, un texto de introducción calculado con los datos de la página
 (cuántos planes, de qué tipo, en qué localidades y lugares, cuántos gratis), migas de pan visibles y en
 JSON-LD (`BreadcrumbList`) y un `ItemList` con los primeros planes. Todas las fichas quedan a 3 clics de la portada.
+
+La gente busca por ciudad («qué hacer en Bilbao este fin de semana»), no por provincia: por eso cada ciudad con
+página propia tiene sus subpáginas de intención, enlazadas desde su ciudad, desde la misma página de la provincia
+(finde, gratis, tipo), desde el tipo de plan en España y desde las páginas nacionales de finde y gratis.
+Las páginas principales de provincia y ciudad llevan el mes en el título («Qué hacer en Bilbao: planes y eventos
+(noviembre 2026)»).
+
+## Títulos de las fichas
+
+`plan · fecha corta · lugar`, en unos 62 caracteres más « · Planika». El nombre va primero y no se recorta por
+debajo de 40 caracteres: es lo que se busca y lo que distingue un plan de otro. Si no cabe todo, se recorta antes el
+lugar. Si dos planes acabarían con el mismo título, primero se usa el nombre entero (cursos que solo se distinguen
+por el nivel del final) y, si aún coinciden, la sala en vez de la ciudad.
 
 Las URL con parámetros (`/?e=`, `/?prov=`…) son la app con filtros; tienen canonical a `/` y `robots.txt`
 no las deja rastrear (`Disallow: /?`), como recomienda Google para la navegación facetada.
@@ -52,3 +67,11 @@ El `lastmod` de cada URL solo cambia cuando cambia su contenido: se guarda una h
 - Fichas: `Event` (o su subtipo: `MusicEvent`, `TheaterEvent`…), con `Offer` solo si hay precio o entradas
   reales y sin `availability` (las fuentes no lo dan). Visitas permanentes: `TouristAttraction`, nunca `Event`.
 - Hubs: `ItemList` + `BreadcrumbList`. Portada: `WebSite` + `Organization`.
+
+## Avisos a buscadores
+
+- **Google**: el sitemap (`/sitemap.xml`) se da de alta en Search Console con el dominio verificado (registro TXT
+  en el DNS). Google no usa IndexNow ni el antiguo «ping» de sitemaps.
+- **Bing, Copilot, ChatGPT Search, Yandex…**: `tools/indexnow.py` envía por IndexNow las URL cuyo `lastmod` es de
+  hoy o de ayer, en un paso del workflow que corre después de publicar (`indexnow`, nunca bloquea). La clave es
+  `site/<clave>.txt`: es pública a propósito (sirve para comprobar que el aviso viene del dominio).
