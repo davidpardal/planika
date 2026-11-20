@@ -129,13 +129,27 @@ def clip(s, n):
     return (cut or s[: n - 1]) + "…"
 
 
-def seo_title(e, t0, place):
-    """Título de la ficha: plan · fecha corta · lugar, sin pasar de ~60 caracteres (más " · Planika")."""
-    tail = " · ".join(x for x in (short_when(e, t0), clip(place, 26)) if x)
-    base = e.get("title_es") or e["title"]
-    room = max(24, 58 - len(tail) - 3)
-    base = clip(base, room)
-    return "%s · %s" % (base, tail) if tail else base
+TITLE_MAX = 62   # caracteres del título de la ficha sin " · Planika"
+NAME_MIN = 40    # el nombre del plan es lo que se busca: no se recorta por debajo de esto
+
+
+def seo_title(e, t0, place, full=False):
+    """Título de la ficha: plan · fecha corta · lugar, en unos 60 caracteres (más " · Planika").
+
+    El nombre va primero y casi entero: es lo que la gente busca y lo que distingue un plan de otro
+    («Taller per a la gent gran: Humanitats» frente a «…: Sardanes»). Si no cabe todo, se recorta antes el lugar.
+    full: el nombre no se recorta nunca (planes que solo se distinguen por el final del nombre)."""
+    when = short_when(e, t0)
+    base = " ".join(str(e.get("title_es") or e["title"]).split())
+    place = " ".join(str(place or "").split())
+    tail = " · ".join(x for x in (when, place) if x)
+    if len(base) + (3 + len(tail) if tail else 0) <= TITLE_MAX:
+        return " · ".join(x for x in (base, tail) if x)
+    name = base if full else clip(base, max(NAME_MIN, TITLE_MAX - 3 - len(tail)))
+    room = TITLE_MAX - len(name) - 3 - (len(when) + 3 if when else 0)
+    if place and len(place) > room:
+        place = clip(place, max(12, room))
+    return " · ".join(x for x in (name, when, place) if x)
 
 
 def price_num(e):
@@ -375,9 +389,10 @@ def _gcal(e, t0):
             % (quote(e.get("title_es") or e["title"]), s, f, quote(loc)))
 
 
-def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None, updated="", indexable=None):
+def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None, updated="", indexable=None, title_full=False):
     """city: (nombre, archivo sin .html) si la ciudad tiene página propia. title_place: lugar para el <title>
-    (se usa la sala cuando hay varios planes con el mismo nombre y fecha en la misma ciudad)."""
+    (se usa la sala cuando hay varios planes con el mismo nombre y fecha en la misma ciudad). title_full: el
+    <title> lleva el nombre entero (planes que solo se distinguen por el final del nombre)."""
     t0 = t0 or iso(today())
     esc = html.escape
     title = e.get("title_es") or e["title"]
@@ -427,7 +442,7 @@ def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None
               {"@type": "BreadcrumbList", "itemListElement": crumbs}]}
     ld = json.dumps(ld_doc, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     return _EVENT_PAGE % dict(
-        title=esc(title), seo_title=esc(seo_title(e, t0, title_place or place)), desc=esc(desc), canonical=esc(canonical),
+        title=esc(title), seo_title=esc(seo_title(e, t0, title_place or place, title_full)), desc=esc(desc), canonical=esc(canonical),
         robots="index,follow,max-image-preview:large" if indexable else "noindex,follow",
         updated=('<span class="upd">Agenda actualizada el %s. </span>' % esc(updated)) if updated else "",
         city_link=('<a href="../c/%s.html">Planes en %s</a> · ' % (esc(city[1]), esc(city[0]))) if city else "",
@@ -462,11 +477,13 @@ def write_event_pages(site_dir, events, prov_slugs, cities=None, updated=""):
     from .util import norm
     t0 = iso(today())
     cities = cities or {}
-    # Planes que compartirían título (mismo nombre, fecha y ciudad): en el <title> se usa la sala.
-    seen_titles = {}
-    for e in events:
-        k = (seo_title(e, t0, e.get("city") or e.get("province") or "España"))
-        seen_titles[k] = seen_titles.get(k, 0) + 1
+    # Planes que compartirían título: primero se prueba con el nombre entero (cursos que solo se distinguen por
+    # el nivel del final: «…iniciació», «…avançat»); si aún coinciden (mismo nombre, fecha y ciudad), con la sala.
+    from collections import Counter
+    def where(e):
+        return e.get("city") or e.get("province") or "España"
+    seen_titles = Counter(seo_title(e, t0, where(e)) for e in events)
+    seen_full = Counter(seo_title(e, t0, where(e), True) for e in events if seen_titles[seo_title(e, t0, where(e))] > 1)
     out_dir = os.path.join(site_dir, "e")
     os.makedirs(out_dir, exist_ok=True)
     for fn in os.listdir(out_dir):
@@ -491,13 +508,15 @@ def write_event_pages(site_dir, events, prov_slugs, cities=None, updated=""):
         related = related[:6]
         fn = event_file(e)
         place = e.get("city") or e.get("province") or "España"
-        title_place = None
-        if seen_titles.get(seo_title(e, t0, place), 0) > 1:
-            title_place = e.get("venue") or e.get("address") or None
+        title_place, title_full = None, False
+        if seen_titles[seo_title(e, t0, place)] > 1:
+            title_full = True
+            if seen_full[seo_title(e, t0, place, True)] > 1:
+                title_place = e.get("venue") or e.get("address") or None
         indexable = seo.is_indexable(e)
         city = cities.get((e["province_code"], norm(e.get("city") or "")))
         with open(os.path.join(out_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(event_page(e, related, t0, prov_slugs.get(e["province_code"], ""), city=city,
-                                title_place=title_place, updated=updated, indexable=indexable))
+                                title_place=title_place, updated=updated, indexable=indexable, title_full=title_full))
         pages.append(("e/" + fn, indexable, _event_digest(e, t0, indexable)))
     return pages

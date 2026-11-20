@@ -98,6 +98,21 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+  # Una vez publicada la web, avisa por IndexNow (Bing, Copilot, ChatGPT Search, Yandex…) de las páginas
+  # nuevas o cambiadas hoy. Lee los sitemaps que el paso de datos ha subido a main. Nunca bloquea nada.
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Avisar a los buscadores (IndexNow)
+        run: python3 tools/indexnow.py site
   # Opcional: publica también en Cloudflare Pages. Se activa con la variable del repositorio
   # CLOUDFLARE_ENABLED=true y los secretos CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID.
   deploy-cloudflare:

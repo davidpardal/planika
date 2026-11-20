@@ -14,6 +14,7 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 from planes import classify, publish, seo, static, util  # noqa: E402
+import indexnow  # noqa: E402
 import seo_check  # noqa: E402
 
 NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
@@ -142,9 +143,27 @@ class TestEventPage(unittest.TestCase):
                        "2026-11-21", city="Bilbao", province_code="48")
         t = static.seo_title(e, "2026-11-18", "Bilbao")
         self.assertTrue(t.endswith("· 21 nov · Bilbao"), t)
-        self.assertLessEqual(len(t), 60)
+        self.assertLessEqual(len(t), static.TITLE_MAX)
+        self.assertTrue(t.startswith("Concierto de la Orquesta Sinfónica de"), t)  # el nombre, casi entero
         exp = util.event("Agenda", "2", "Expo", "2026-10-01", end="2027-01-15", city="Bilbao", province_code="48")
         self.assertEqual(static.seo_title(exp, "2026-11-18", "Bilbao"), "Expo · hasta el 15 ene · Bilbao")
+
+    def test_long_name_keeps_priority_over_place(self):
+        e = util.event("Agenda", "3", "Taller per a la gent gran: Humanitats", "2026-11-10", end="2026-12-21",
+                       city="Barcelona", province_code="08")
+        t = static.seo_title(e, "2026-11-18", "Carrer de Sicília 321")
+        self.assertTrue(t.startswith("Taller per a la gent gran: Humanitats · hasta el 21 dic · "), t)
+
+    def test_names_that_differ_at_the_end_get_full_titles(self):
+        """Cursos que solo se distinguen por el final («…iniciació», «…avançat»): títulos distintos sin recurrir a la sala."""
+        evs = [rich(i, venue="Centre Cívic", city="Barcelona", province_code="08") for i in (20, 21)]
+        evs[0]["title"] = "Taller Costura amb màquina de cosir per a gent gran del barri: iniciació"
+        evs[1]["title"] = "Taller Costura amb màquina de cosir per a gent gran del barri: avançat"
+        with tempfile.TemporaryDirectory() as tmp:
+            static.write_event_pages(tmp, evs, {"08": "barcelona"})
+            titles = sorted(re.search("<title>(.*?)</title>", read(tmp, "e", f)).group(1) for f in os.listdir(os.path.join(tmp, "e")))
+        self.assertEqual(len(set(titles)), 2, titles)
+        self.assertTrue(any("avançat" in t for t in titles), titles)
 
     def test_same_title_same_day_uses_venue(self):
         evs = [rich(i, venue="Centro cívico %s" % n) for i, n in ((10, "Norte"), (11, "Sur"))]
@@ -170,7 +189,8 @@ class TestArchitecture(unittest.TestCase):
             self.assertEqual(errors, [])
             self.assertLessEqual(stats["depth_max"], 3)
             prov = read(tmp, "p", "bizkaia.html")
-            self.assertIn("<title>Qué hacer en Bizkaia: planes y eventos · Planika</title>", prov)
+            mes = "%s %d" % (publish._MESES[util.today().month - 1], util.today().year)
+            self.assertIn("<title>Qué hacer en Bizkaia: planes y eventos (%s) · Planika</title>" % mes, prov)
             self.assertIn('href="../c/bilbao.html"', prov)
             self.assertIn('href="../p/bizkaia-pagina-2.html"', prov)
             self.assertIn("Hay 131 planes con fecha en Bizkaia", prov)  # texto con datos reales de la página
@@ -180,6 +200,44 @@ class TestArchitecture(unittest.TestCase):
             ficha = read(tmp, "e", static.event_file(evs[0]))
             self.assertIn('href="../c/bilbao.html"', ficha)  # miga de pan a la ciudad
             self.assertIn('<span class="upd">Agenda actualizada el 18 nov 2026. </span>', ficha)
+
+    def test_city_intent_pages(self):
+        """Las ciudades con página propia tienen también finde, gratis y tipo de plan, enlazadas desde
+        la provincia, el tipo de plan y las páginas nacionales («qué hacer en Bilbao este fin de semana»)."""
+        fri, _ = publish.weekend_window(util.today())
+        day = util.iso(fri)
+        evs = [dict(rich(i, free=(i % 2 == 0)), start=day, end=day) for i in range(45)]
+        evs += [rich(100 + i, category="otros") for i in range(6)]
+        with tempfile.TemporaryDirectory() as tmp:
+            pages = build(tmp, evs)
+            for p in ("c/bilbao.html", "c/bilbao-fin-de-semana.html", "c/bilbao-gratis.html", "c/bilbao-musica.html"):
+                self.assertIn(p, pages)
+            self.assertNotIn("c/bilbao-otros.html", pages)
+            self.assertIn('href="../c/bilbao-fin-de-semana.html"', read(tmp, "p", "bizkaia-fin-de-semana.html"))
+            self.assertIn('href="c/bilbao-fin-de-semana.html"', read(tmp, "planes-este-fin-de-semana.html"))
+            self.assertIn('href="../c/bilbao-musica.html"', read(tmp, "t", "musica.html"))
+            self.assertIn('href="../c/bilbao-musica.html"', read(tmp, "p", "bizkaia-musica.html"))
+            city = read(tmp, "c", "bilbao.html")
+            self.assertIn('href="bilbao-gratis.html"', city)
+            finde = read(tmp, "c", "bilbao-fin-de-semana.html")
+            self.assertIn("<title>Qué hacer este fin de semana en Bilbao (", finde)
+            self.assertIn('href="../c/bilbao.html"', finde)  # miga de pan: Inicio › Bizkaia › Bilbao › finde
+            errors, _ = seo_check.check(tmp, SITE)
+            self.assertEqual(errors, [])
+
+    def test_indexnow_sends_only_changed_pages(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            build(tmp, [rich(1), rich(2)])
+            self.assertIsNone(indexnow.find_key(tmp))
+            key = "0123456789abcdef0123456789abcdef"
+            with open(os.path.join(tmp, key + ".txt"), "w") as fh:
+                fh.write(key)
+            self.assertEqual(indexnow.find_key(tmp), key)
+            today = util.iso(util.today())
+            urls = indexnow.changed_urls(tmp, today)
+            self.assertIn(SITE + "/p/bizkaia.html", urls)
+            self.assertEqual(len(urls), len(set(urls)))
+            self.assertEqual(indexnow.changed_urls(tmp, "2999-01-01"), [])  # nada cambiado después: nada que enviar
 
     def test_today_page_switches_to_next_day_at_seven(self):
         """«Hoy» lleva ya preparada la versión de mañana, que el navegador activa a las 07:00 de Madrid."""
