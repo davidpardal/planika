@@ -437,3 +437,86 @@ def parse_ics(text):
             val = val.replace("\\n", "\n").replace("\\,", ",").replace("\\;", ";")
             cur.setdefault(key, val)
     return events
+
+
+# ---------------------------------------------------------------- nombres de localidad
+
+# Otros nombres de uso corriente que no están en el nomenclátor del INE (código INE -> nombres).
+_MUNI_EXTRA = {"01059": ["Vitoria", "Gasteiz"], "07040": ["Palma"], "35016": ["Las Palmas"], "48020": ["Bilbo"]}
+_MUNI_PROV = None
+
+
+def _ckey(s):
+    """Clave para comparar nombres de localidad: sin tildes, mayúsculas, signos ni barras."""
+    return " ".join(norm(s).replace("/", " ").split())
+
+
+def _ine_part(piece):
+    """«Coruña, A» -> «A Coruña»; «Hospitalet de Llobregat, L'» -> «L'Hospitalet de Llobregat»."""
+    piece = piece.strip()
+    if "," in piece:
+        base, art = (x.strip() for x in piece.rsplit(",", 1))
+        piece = art + base if art.endswith("'") else "%s %s" % (art, base)
+    return piece
+
+
+def _muni_by_province():
+    """{código provincia: {clave: {código INE}}} y {código INE: [nombres oficiales]}."""
+    global _MUNI_PROV
+    if _MUNI_PROV is None:
+        try:
+            with open(os.path.join(DATA_DIR, "municipios.json"), encoding="utf-8") as fh:
+                rows = json.load(fh)
+        except OSError:
+            rows = []
+        by, names = {}, {}
+        for row in rows:
+            parts = [_ine_part(p) for p in row["nm"].split("/") if p.strip()]
+            names[row["id"]] = parts
+            keys = {_ckey(" ".join(parts))} | {_ckey(p) for p in parts} | {_ckey(x) for x in _MUNI_EXTRA.get(row["id"], [])}
+            for k in keys:
+                by.setdefault(row["id"][:2], {}).setdefault(k, set()).add(row["id"])
+        _MUNI_PROV = (by, names)
+    return _MUNI_PROV
+
+
+def canon_cities(events):
+    """Un solo nombre por localidad dentro de cada provincia, para que la búsqueda, el filtro y las páginas de
+    ciudad no la partan en dos («San Sebastián» y «Donostia / San Sebastián», «Pamplona» y «Pamplona/Iruña»,
+    «Vilanova I La Geltru» y «Vilanova i la Geltrú»).
+    Si el nombre es el de un municipio del INE de esa provincia, se usa la grafía oficial: el nombre doble
+    («Alicante / Alacant») cuando las fuentes usan más de una forma, o la forma que usan. Si no lo es, se unifican
+    las variantes de mayúsculas, tildes y signos con la más frecuente. Devuelve cuántos planes cambian de nombre."""
+    from collections import Counter
+    by, names = _muni_by_province()
+    groups = {}
+    for e in events:
+        city, pc = e.get("city"), e.get("province_code")
+        if not city or not pc:
+            continue
+        k = _ckey(city)
+        ids = by.get(pc, {}).get(k) or set()
+        g = ("ine", next(iter(ids))) if len(ids) == 1 else ("key", pc, k)
+        e["_cg"] = g
+        groups.setdefault(g, Counter())[city] += 1
+    canon = {}
+    for g, cnt in groups.items():
+        if g[0] == "key":
+            canon[g] = cnt.most_common(1)[0][0]
+            continue
+        parts = names[g[1]]
+        full = " / ".join(parts)
+        used = {_ckey(n) for n in cnt}
+        if len(used) == 1:
+            k, best = used.pop(), cnt.most_common(1)[0][0]
+            same = [p for p in parts if _ckey(p) == k]  # «Peñíscola/Peníscola»: las dos formas dan la misma clave
+            canon[g] = best if best in same else (same[0] if same else full)
+        else:
+            canon[g] = full
+    changed = 0
+    for e in events:
+        g = e.pop("_cg", None)
+        if g and canon[g] != e["city"]:
+            e["city"] = canon[g]
+            changed += 1
+    return changed

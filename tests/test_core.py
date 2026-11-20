@@ -62,6 +62,34 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(evs[0]["DTSTART"], "20261118T200000")
 
 
+class TestCanonCities(unittest.TestCase):
+    def _run(self, *pairs):
+        evs = [{"city": c, "province_code": pc} for c, pc in pairs]
+        n = util.canon_cities(evs)
+        return n, [e["city"] for e in evs]
+
+    def test_bilingual_names_join(self):
+        n, out = self._run(("Donostia / San Sebastián", "20"), ("San Sebastián", "20"), ("Pamplona", "31"), ("Pamplona/Iruña", "31"))
+        self.assertEqual(out, ["Donostia / San Sebastián"] * 2 + ["Pamplona / Iruña"] * 2)
+        self.assertEqual(n, 3)
+
+    def test_official_spelling(self):
+        _, out = self._run(("Vilanova I La Geltru", "08"), ("L Hospitalet De Llobregat", "08"), ("Mataro", "08"), ("Palma", "07"),
+                           ("Vitoria", "01"), ("Peñíscola", "12"))
+        self.assertEqual(out, ["Vilanova i la Geltrú", "L'Hospitalet de Llobregat", "Mataró", "Palma de Mallorca", "Vitoria-Gasteiz", "Peñíscola"])
+
+    def test_single_form_kept(self):
+        _, out = self._run(("Alicante", "03"), ("Alicante", "03"), ("Bilbao", "48"))
+        self.assertEqual(out, ["Alicante", "Alicante", "Bilbao"])
+        _, out = self._run(("Alicante", "03"), ("Alacant", "03"))
+        self.assertEqual(out, ["Alicante / Alacant"] * 2)
+
+    def test_other_province_and_unknown_places(self):
+        # Mismo nombre en otra provincia no se toca; lo que no es municipio solo unifica mayúsculas y tildes
+        _, out = self._run(("San Sebastián", "28"), ("El Palmar", "30"), ("El palmar", "30"), ("El Palmar", "30"), ("", "30"))
+        self.assertEqual(out, ["San Sebastián", "El Palmar", "El Palmar", "El Palmar", ""])
+
+
 class TestClassify(unittest.TestCase):
     def test_source_types(self):
         self.assertEqual(classify.classify(["Concierto"], "Lo que sea"), "musica")
