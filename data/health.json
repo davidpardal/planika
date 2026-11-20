@@ -33,7 +33,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 1317,
+    "count": 1351,
     "error": ""
    }
   ],
@@ -144,7 +144,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 1341,
+    "count": 1354,
     "error": ""
    }
   ],
@@ -181,7 +181,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 459,
+    "count": 473,
     "error": ""
    }
   ],
@@ -218,7 +218,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 115,
+    "count": 126,
     "error": ""
    }
   ],
@@ -477,7 +477,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 15,
+    "count": 16,
     "error": ""
    }
   ],
@@ -610,7 +610,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 311,
+    "count": 331,
     "error": ""
    }
   ],
@@ -642,7 +642,7 @@
    },
    {
     "date": "2026-11-20",
-    "count": 787,
+    "count": 788,
     "error": ""
    }
   ],
@@ -781,11 +781,13 @@
   "jimmyjazz": [
    {
     "date": "2026-11-20",
-    "count": 69,
+    "count": 70,
     "error": ""
    }
   ]
  },
- "updated_at": "2026-11-20T13:26",
- "alerts": []
+ "updated_at": "2026-11-20T20:54",
+ "alerts": [
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-20"
+ ]
 }
