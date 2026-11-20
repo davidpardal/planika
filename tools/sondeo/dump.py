@@ -1,42 +1,31 @@
-import requests, json, re, time
-H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0)", "Accept": "*/*"}
-def get(u, **kw):
-    try: return requests.get(u, headers=H, timeout=40, **kw)
+import requests, json, re
+H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0; +https://planikaapp.com)", "Accept": "*/*"}
+B = "https://lagenterula.com"
+def get(u):
+    try:
+        r = requests.get(u, headers=H, timeout=40)
+        print("\n###", u, r.status_code, r.headers.get("content-type"), len(r.content))
+        return r
     except Exception as e:
-        print("  ERR", str(e)[:100]); return None
-def text(v):
-    if isinstance(v, list): v = v[0] if v else ""
-    if isinstance(v, dict): v = v.get("_value") or v.get("value") or ""
-    return str(v)
-BAD = re.compile(r"alcald|concejal|cargos|responsables|lehendakari|2030|presidente|consejer|pleno|transparen|licitaci|convenio|subvenci|contrat|ods\b|sdg", re.I)
-seen = set()
-for q in ("actividades", "eventos", "calendario", "fiestas", "programacion", "espectaculos", "cartelera", "conciertos", "festivales", "teatro", "museos exposiciones", "ocio"):
-    for page in (0,):
-        r = get("https://datos.gob.es/apidata/catalog/dataset/title/%s?_pageSize=40&_page=%d&_sort=-modified" % (requests.utils.quote(q), page))
-        time.sleep(4)
-        if r is None: continue
-        try: items = r.json()["result"]["items"]
-        except Exception: print("##", q, "no json", r.status_code); continue
-        print("\n## %s -> %d" % (q, len(items)))
-        for it in items:
-            t = text(it.get("title"))
-            if BAD.search(t) or t in seen: continue
-            seen.add(t)
-            dist = it.get("distribution") or []
-            if isinstance(dist, dict): dist = [dist]
-            fm = []
-            for d in dist:
-                f = d.get("format"); f = text(f.get("value") if isinstance(f, dict) else f).split("/")[-1].lower()
-                if f not in fm: fm.append(f)
-            print("  *", t[:75], "|", (it.get("modified") or "")[:12], "|", ",".join(fm)[:50], "|", text(it.get("publisher"))[-9:])
-def ckan(base, q):
-    r = get("%s/api/3/action/package_search?q=%s&rows=12" % (base, q))
-    if r is None: return
-    try: d = r.json()["result"]
-    except Exception: print("  no json", base, r.status_code); return
-    print("\n== CKAN", base, q, d["count"])
-    for p in d["results"]:
-        print("  *", p.get("title", "")[:70], "|", (p.get("metadata_modified") or "")[:10], "|", [x.get("format") for x in p.get("resources", [])][:4])
-for b in ("https://dadesobertes.gva.es", "https://catalogo-datos.asturias.es", "https://datos.gijon.es", "https://opendata.palma.cat"):
-    for q in ("agenda", "eventos"):
-        ckan(b, q)
+        print("\n###", u, "ERR", str(e)[:120])
+r = get(B + "/robots.txt")
+if r is not None: print(r.text[:1500])
+r = get(B + "/wp-json/")
+if r is not None and r.ok:
+    try:
+        d = r.json(); print("namespaces:", d.get("namespaces")); print("name:", d.get("name"), "|", d.get("description"))
+    except Exception as e: print("no json", e, r.text[:300])
+for path in ("/wp-json/tribe/events/v1/events?per_page=3", "/wp-json/wp/v2/types", "/wp-json/wp/v2/pages?per_page=50&_fields=link,title",
+             "/events/feed/", "/feed/", "/wp-sitemap.xml", "/sitemap_index.xml"):
+    r = get(B + path)
+    if r is None or not r.ok:
+        if r is not None: print(r.text[:300])
+        continue
+    print(r.text[:3500])
+r = get(B + "/events/tartalo-4/")
+if r is not None:
+    t = r.text
+    print("ld+json:", [x[:1500] for x in re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', t, re.S)[:2]])
+    print("legal links:", sorted(set(re.findall(r'href="([^"]*(?:legal|aviso|privacidad|cookies|condiciones|terminos)[^"]*)"', t, re.I)))[:10])
+    print("plugins:", sorted(set(re.findall(r'wp-content/plugins/([a-z0-9_-]+)/', t)))[:30])
+    m = re.search(r'<main.*?</main>', t, re.S); print(re.sub(r"\s+", " ", (m.group(0) if m else t))[:3000])
