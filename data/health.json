@@ -30,6 +30,11 @@
     "date": "2026-11-19",
     "count": 1326,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 1317,
+    "error": ""
    }
   ],
   "barcelona": [
@@ -61,6 +66,11 @@
    {
     "date": "2026-11-19",
     "count": 4318,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 4220,
     "error": ""
    }
   ],
@@ -94,6 +104,11 @@
     "date": "2026-11-19",
     "count": 3952,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 3868,
+    "error": ""
    }
   ],
   "catalunya": [
@@ -125,6 +140,11 @@
    {
     "date": "2026-11-19",
     "count": 1308,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 1318,
     "error": ""
    }
   ],
@@ -158,6 +178,11 @@
     "date": "2026-11-19",
     "count": 458,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 459,
+    "error": ""
    }
   ],
   "gva": [
@@ -189,6 +214,11 @@
    {
     "date": "2026-11-19",
     "count": 97,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 115,
     "error": ""
    }
   ],
@@ -222,6 +252,11 @@
     "date": "2026-11-19",
     "count": 74,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 71,
+    "error": ""
    }
   ],
   "andalucia": [
@@ -253,6 +288,11 @@
    {
     "date": "2026-11-19",
     "count": 34,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 35,
     "error": ""
    }
   ],
@@ -286,6 +326,11 @@
     "date": "2026-11-19",
     "count": 115,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 114,
+    "error": ""
    }
   ],
   "cartagena": [
@@ -318,6 +363,11 @@
     "date": "2026-11-19",
     "count": 47,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 45,
+    "error": ""
    }
   ],
   "lorca": [
@@ -348,6 +398,11 @@
    },
    {
     "date": "2026-11-19",
+    "count": 0,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
     "count": 0,
     "error": ""
    }
@@ -382,6 +437,11 @@
     "date": "2026-11-19",
     "count": 27,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 27,
+    "error": ""
    }
   ],
   "sportsdb": [
@@ -412,6 +472,11 @@
    },
    {
     "date": "2026-11-19",
+    "count": 15,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
     "count": 15,
     "error": ""
    }
@@ -446,6 +511,11 @@
     "date": "2026-11-19",
     "count": 0,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 0,
+    "error": ""
    }
   ],
   "curated": [
@@ -471,6 +541,11 @@
    },
    {
     "date": "2026-11-19",
+    "count": 173,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
     "count": 173,
     "error": ""
    }
@@ -500,6 +575,11 @@
     "date": "2026-11-19",
     "count": 682,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 681,
+    "error": ""
    }
   ],
   "diba": [
@@ -525,6 +605,11 @@
    },
    {
     "date": "2026-11-19",
+    "count": 311,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
     "count": 311,
     "error": ""
    }
@@ -554,6 +639,11 @@
     "date": "2026-11-19",
     "count": 793,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 777,
+    "error": ""
    }
   ],
   "murcia": [
@@ -579,6 +669,11 @@
    },
    {
     "date": "2026-11-19",
+    "count": 50,
+    "error": ""
+   },
+   {
+    "date": "2026-11-20",
     "count": 50,
     "error": ""
    }
@@ -608,6 +703,11 @@
     "date": "2026-11-19",
     "count": 167,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 160,
+    "error": ""
    }
   ],
   "vitoria": [
@@ -625,6 +725,11 @@
     "date": "2026-11-19",
     "count": 8,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 0,
+    "error": "ConnectTimeout: HTTPSConnectionPool(host='www.vitoria-gasteiz.org', port=443): Max retries exceeded with url: /we001/was/rssAction.do?id"
    }
   ],
   "deporte_pro": [
@@ -642,6 +747,11 @@
     "date": "2026-11-19",
     "count": 302,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 301,
+    "error": ""
    }
   ],
   "destacados": [
@@ -654,9 +764,16 @@
     "date": "2026-11-19",
     "count": 8,
     "error": ""
+   },
+   {
+    "date": "2026-11-20",
+    "count": 8,
+    "error": ""
    }
   ]
  },
- "updated_at": "2026-11-19T13:06",
- "alerts": []
+ "updated_at": "2026-11-20T06:04",
+ "alerts": [
+  "Ayuntamiento de Vitoria-Gasteiz: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-19"
+ ]
 }
