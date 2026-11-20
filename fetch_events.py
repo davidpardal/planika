@@ -6,7 +6,7 @@ Uso:
     python3 fetch_events.py                 # próximos 180 días, todas las fuentes
     python3 fetch_events.py --days 90       # horizonte de 90 días
     python3 fetch_events.py --sources madrid,euskadi
-    python3 fetch_events.py --rebuild       # sin descargar: regenera la web desde events.json y mezcla data/curated.json
+    python3 fetch_events.py --rebuild       # sin descargar: regenera la web desde events.json y mezcla data/curated.json y data/destacados.json
 """
 import argparse
 import importlib
@@ -19,13 +19,17 @@ from datetime import datetime, timedelta
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
-from planes import llm, publish, static  # noqa: E402
+# El estado completo de eventos vive fuera de site/ (en data/, junto a health.json):
+# es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
+EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
+
+from planes import classify, llm, publish, seo, static  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
 SOURCES = ["madrid", "esmadrid", "barcelona", "diba", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia",
-           "galicia", "zaragoza", "cartagena", "lorca", "murcia", "municipios", "tenerife_deporte", "sportsdb",
-           "ticketmaster", "curated"]
+           "galicia", "zaragoza", "cartagena", "murcia", "vitoria", "jimmyjazz", "tribe", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
+           "ticketmaster", "destacados", "curated"]
 
 
 def load_dotenv(path):
@@ -74,9 +78,75 @@ def dedupe(events):
     return [v[1] for v in best.values()]
 
 
+# Palabras que no distinguen un plan de otro al comparar títulos de fuentes distintas
+_TITLE_STOP = set("""entradas entrada sala en de del la el los las y con a al por para gira tour concierto
+    presenta presentacion fin nuevo nueva enero febrero marzo abril mayo junio julio agosto septiembre
+    octubre noviembre diciembre""".split())
+_FILL = ("lat", "lon", "image", "description", "tickets_url", "price", "time", "address", "url")
+
+
+def _title_words(e):
+    venue = set(norm(e.get("venue")).split()) | set(norm(e.get("city")).split())
+    return {w for w in norm(e["title"]).split() if len(w) > 1 and not w.isdigit() and w not in _TITLE_STOP and w not in venue}
+
+
+def _richness(e):
+    return sum(1 for k in ("tickets_url", "image", "time", "venue", "description", "price", "lat") if e.get(k))
+
+
+def dedupe_venue(events):
+    """Une el mismo plan publicado por dos fuentes con títulos distintos (la web de la sala y la agenda de
+    Euskadi: «Bengo & Tatta» y «BENGO + TATTA (Jimmy Jazz Gasteiz)»): mismo día, provincia, localidad y
+    sala, y casi las mismas palabras. Solo entre fuentes distintas: dentro de una fuente, dos planes
+    parecidos el mismo día en la misma sala son planes distintos (dos niveles de un mismo taller).
+    Se queda el más completo y se rellenan sus huecos con el otro. Devuelve (planes, número unido)."""
+    from itertools import combinations
+    groups = {}
+    for i, e in enumerate(events):
+        v = norm(e.get("venue"))
+        if v:
+            groups.setdefault((e["start"], e["province_code"], norm(e.get("city")), v), []).append(i)
+    drop = set()
+    for idxs in groups.values():
+        for a, b in combinations(idxs, 2):
+            ea, eb = events[a], events[b]
+            if a in drop or b in drop or ea.get("source") == eb.get("source"):
+                continue
+            wa, wb = _title_words(ea), _title_words(eb)
+            if not wa or not wb:
+                continue
+            common = len(wa & wb)
+            if common / min(len(wa), len(wb)) >= 0.75 and common / len(wa | wb) >= 0.45:
+                keep, lose = (a, b) if _richness(ea) >= _richness(eb) else (b, a)
+                for k in _FILL:
+                    if not events[keep].get(k) and events[lose].get(k):
+                        events[keep][k] = events[lose][k]
+                drop.add(lose)
+    return [e for i, e in enumerate(events) if i not in drop], len(drop)
+
+
+def fill_venue_coords(events):
+    """Planes sin coordenadas en una sala que otra fuente ya sitúa en el mapa (misma provincia, localidad y
+    nombre de sala): se toman de ahí. Devuelve cuántos se han completado."""
+    known = {}
+    for e in events:
+        if e.get("lat") is not None and e.get("lon") is not None and e.get("venue"):
+            known.setdefault((e["province_code"], norm(e.get("city")), norm(e["venue"])), (e["lat"], e["lon"]))
+    n = 0
+    for e in events:
+        if e.get("lat") is None and e.get("venue"):
+            c = known.get((e["province_code"], norm(e.get("city")), norm(e["venue"])))
+            if c:
+                e["lat"], e["lon"] = c
+                n += 1
+    return n
+
+
 def write_site(args, site_dir, payload):
     """Todo lo que se deriva de events.json: datos troceados para la web, feeds RSS y páginas estáticas."""
     events = static.default_order(static.unique_ids(payload["events"]))
+    for e in events:
+        e["xmas"] = classify.is_xmas(e)
     core_size, chunks = static.write_data(args.out, dict(payload, events=events))
     old = os.path.join(args.out, "events.js")  # formato anterior (un único archivo de varios MB)
     if os.path.exists(old):
@@ -84,8 +154,11 @@ def write_site(args, site_dir, payload):
     log("Escrito %s (%.0f KB) y %d bloques de detalles en data/d/" % (os.path.join(args.out, "core.js"), core_size / 1024, chunks))
     if not args.no_pages:
         feeds = publish.write_feeds(os.path.join(site_dir, "feeds"), events)
-        pages = publish.write_pages(site_dir, events)
-        log("Generados %d feeds RSS y %d páginas estáticas" % (len(feeds), len(pages)))
+        pages = publish.write_pages(site_dir, events, payload.get("sources") or [], payload.get("updated_at") or "",
+                                    state_path=os.path.join(ROOT, "data", "sitemap_state.json"))
+        static.stamp_index(site_dir)  # versiones en las URL de estilos, datos y app de la portada
+        indexables = sum(1 for e in events if seo.is_indexable(e))
+        log("Generados %d feeds RSS y %d páginas estáticas (%d fichas indexables de %d)" % (len(feeds), len(pages), indexables, len(events)))
 
 
 def main():
@@ -100,28 +173,34 @@ def main():
                     help="no descargar nada: regenerar datos troceados, feeds y páginas desde events.json")
     args = ap.parse_args()
     site_dir = os.path.dirname(os.path.abspath(args.out))
+    os.makedirs(os.path.dirname(EVENTS_FILE), exist_ok=True)
 
     if args.rebuild:
-        with open(os.path.join(args.out, "events.json"), encoding="utf-8") as fh:
+        with open(EVENTS_FILE, encoding="utf-8") as fh:
             payload = json.load(fh)
         # Regenerar también mezcla las visitas permanentes, para poder refrescar
         # la web sin volver a descargar las agendas (y sin dejarlas caducar).
-        from planes.src_curated import HOME as CURATED_HOME, NAME as CURATED_NAME, replace_events
-        payload["events"] = replace_events(payload.get("events") or [], log)
-        sources = [s for s in payload.get("sources") or [] if s.get("key") != "curated"]
-        n_curated = sum(1 for e in payload["events"] if e.get("source") == CURATED_NAME)
-        sources.append({"key": "curated", "name": CURATED_NAME, "home": CURATED_HOME, "count": n_curated,
-                        "seconds": 0, "error": "", "stale_from": ""})
+        # Lo mismo con las citas con fecha comprobadas a mano (data/destacados.json).
+        from planes import src_curated, src_destacados
+        sources = list(payload.get("sources") or [])
+        counts = {}
+        for key, mod in (("destacados", src_destacados), ("curated", src_curated)):
+            payload["events"] = mod.replace_events(payload.get("events") or [], log)
+            counts[key] = sum(1 for e in payload["events"] if e.get("source") == mod.NAME)
+            sources = [s for s in sources if s.get("key") != key]
+            sources.append({"key": key, "name": mod.NAME, "home": mod.HOME, "count": counts[key],
+                            "seconds": 0, "error": "", "stale_from": ""})
+        n_curated = counts["curated"]
         payload["sources"] = sources
         payload["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
-        with open(os.path.join(args.out, "events.json"), "w", encoding="utf-8") as fh:
+        with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
         write_site(args, site_dir, payload)
-        log("Rebuild: %d planes, %d visitas permanentes" % (len(payload["events"]), n_curated))
+        log("Rebuild: %d planes, %d visitas permanentes, %d citas comprobadas" % (len(payload["events"]), n_curated, counts["destacados"]))
         return
 
     load_dotenv(os.path.join(ROOT, ".env"))
-    previous = load_previous(os.path.join(args.out, "events.json"))
+    previous = load_previous(EVENTS_FILE)
     t0 = today()
     t_max = t0 + timedelta(days=args.days)
     all_events = []
@@ -165,6 +244,10 @@ def main():
 
     before = len(all_events)
     all_events = dedupe(all_events)
+    all_events, same_venue = dedupe_venue(all_events)
+    located = fill_venue_coords(all_events)
+    if same_venue or located:
+        log("Misma sala y día en dos fuentes: %d unidos; %d planes situados en el mapa por su sala" % (same_venue, located))
     all_events, merged = publish.group_sessions(all_events)
     all_events = static.unique_ids(all_events)
     all_events.sort(key=lambda e: (e["start"], e["time"] or "99", e["title"]))
@@ -182,7 +265,7 @@ def main():
         "alerts": [],
         "events": all_events,
     }
-    with open(os.path.join(args.out, "events.json"), "w", encoding="utf-8") as fh:
+    with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
 
     # Salud de las fuentes (histórico + alertas)

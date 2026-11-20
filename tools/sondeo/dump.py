@@ -1,18 +1,29 @@
-import requests, re, html, json
-H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0; +https://planikaapp.com)", "Accept": "*/*"}
-B = "https://jimmyjazzgasteiz.com"
-def strip(t):
-    t = re.sub(r"\[/?et_pb[^\]]*\]", " ", t)
-    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", t))).strip()
-r = requests.get(B + "/aviso-legal/", headers=H, timeout=40)
-t = re.sub(r"<(script|style).*?</\1>", " ", r.text, flags=re.S)
-s = strip(t); i = s.find("Queda prohibido"); print("LEGAL:", s[i-200:i+2500])
-r = requests.get(B + "/wp-json/wp/v2/posts?per_page=100&categories=1336&_fields=id,link,title,excerpt,content,categories,featured_media", headers=H, timeout=60)
-print("total", r.headers.get("x-wp-total"), r.headers.get("x-wp-totalpages"))
-posts = r.json()
-for p in posts[:40]:
-    print("\n---", p["link"], p["categories"])
-    print("T:", html.unescape(p["title"]["rendered"]), "| EX:", strip(p["excerpt"]["rendered"]))
-    c = p["content"]["rendered"]
-    print("TXT:", strip(c)[:500])
-    print("URLS:", sorted(set(u for u in re.findall(r'(?:url|href|button_url|link_option_url)=["»″\']+([^"«″\' ]+)', c) if "http" in u))[:6])
+import sys, os
+sys.path.insert(0, os.getcwd())
+import fetch_events as F
+from planes import src_euskadi, src_jimmyjazz
+log = print
+jj = src_jimmyjazz.fetch(log)
+eu = [e for e in src_euskadi.fetch(log) if e["province_code"] == "01"]
+print("JJ", len(jj), "Euskadi Álava", len(eu))
+for e in jj:
+    print("  JJ", e["start"], e["time"] or "--:--", e["category"], "|", e["title"][:70], "|", e["venue"], "|", e["price"][:40], "|", e["tickets_url"][:50])
+allev = F.dedupe(eu + jj)
+before = list(allev)
+ids_before = {id(e) for e in allev}
+out, n = F.dedupe_venue(allev)
+print("unidos:", n)
+kept_jj = [e for e in out if e["source"] == src_jimmyjazz.NAME]
+print("JJ que quedan (no estaban en Euskadi):", len(kept_jj))
+gone = [e for e in before if all(e is not x for x in out)]
+for e in gone:
+    print("  quitado:", e["source"][:12], e["start"], e["title"][:70])
+# posibles duplicados que no se han unido: misma sala y día con fuentes distintas
+from collections import defaultdict
+g = defaultdict(list)
+for e in out:
+    if e["venue"] in ("Sala Jimmy Jazz", "Sala Kubik"): g[(e["start"], e["venue"])].append(e)
+for k, v in sorted(g.items()):
+    if len({e["source"] for e in v}) > 1:
+        print("  misma sala y día, sin unir:", k, [ (e["source"][:8], e["title"][:50]) for e in v])
+print("situados por sala:", F.fill_venue_coords(out))
