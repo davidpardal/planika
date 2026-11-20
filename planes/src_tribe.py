@@ -29,6 +29,13 @@ def _text(s):
     return html.unescape(re.sub(r"<[^>]+>", "", s or "")).strip()
 
 
+def _city(found, default):
+    """La ciudad de la web manda salvo que el lugar diga otra; «Elx-Elche» se queda en «Elche»."""
+    if not found or default.lower() in found.lower():
+        return default
+    return found
+
+
 def parse(name, base, city, province, items):
     out = []
     for e in items:
@@ -45,7 +52,7 @@ def parse(name, base, city, province, items):
         kw = dict(
             end=end, time="" if all_day else hhmm, description=desc, subtype=", ".join(cats)[:60],
             category=classify(cats, title, desc), province=province,
-            city=_text(venue.get("city")) or city, venue=_text(venue.get("venue")), address=_text(venue.get("address")),
+            city=_city(_text(venue.get("city")), city), venue=_text(venue.get("venue")), address=_text(venue.get("address")),
             lat=venue.get("geo_lat"), lon=venue.get("geo_lng"), url=e.get("url") or base, image=img.get("url") or "",
         )
         if cost:
