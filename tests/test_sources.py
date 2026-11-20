@@ -360,6 +360,12 @@ class TestJimmyJazz(unittest.TestCase):
         self.assertTrue(free["free"])
         self.assertEqual((rng["start"], rng["end"]), ("2026-12-08", "2026-12-09"))
 
+    def test_concert_hall_categories_ignore_band_biographies(self):
+        band, comic = self.parse(
+            _jj_post(8, "https://jimmyjazzgasteiz.com/p/", "Peiremans+", "Jueves 17 Diciembre", "<p>Con Haritz Beristain Txiki. Actuación – 21:00</p>"),
+            _jj_post(9, "https://jimmyjazzgasteiz.com/i/", "Ignatius Farray", "Domingo 22 Noviembre", "<p>Ignatius Farray es un cómico de Tenerife</p>"))
+        self.assertEqual((band["category"], comic["category"]), ("musica", "escena"))
+
 
 class TestSameVenueDedupe(unittest.TestCase):
     def ev(self, source, title, **kw):

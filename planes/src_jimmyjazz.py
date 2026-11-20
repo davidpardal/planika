@@ -16,7 +16,6 @@ import html
 import re
 from datetime import date, timedelta
 
-from .classify import classify
 from .util import event, http_json, iso, norm, today
 
 NAME = "Salas Jimmy Jazz y Kubik"
@@ -31,6 +30,7 @@ _DIAS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo
 _MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre",
           "noviembre", "diciembre"]
 _DATE = re.compile(r"(?:\b(%s)\s+)?\b(\d{1,2})(?:\s+(\d{1,2}))?\s+(?:de\s+)?(%s)\b" % ("|".join(_DIAS), "|".join(_MESES)))
+_ESCENA = re.compile(r"\b(comic[oa]s?|monolog\w*|stand up|humor\w*|danza|dantza|danzalava)\b")
 _SKIP_URL = re.compile(r"soundcloud|youtu|maps\.app|goo\.gl/maps|instagram|facebook|twitter|tiktok|spotify|"
                        r"/wp-content/|vitoria-gasteiz\.org|jimmyjazzgasteiz\.com/(?!web)|kubikvitoria\.com", re.I)
 
@@ -161,9 +161,9 @@ def parse(posts, t0=None):
         else:
             when_txt = "%s %s." % (t[0], _at(*t[1:])) if t else ""
         price, free = _price(text)
-        category = "musica" if dj else classify([], name, text[:300])
-        if category == "otros":
-            category = "musica"
+        # Son salas de conciertos: todo es música salvo humor y danza. No se clasifica con el texto libre de la
+        # biografía, que confunde («Haritz Beristain Txiki» no es un plan infantil).
+        category = "escena" if not dj and _ESCENA.search(norm(name + " " + text[:400])) else "musica"
         kind = "Sesión de club" if dj else {"musica": "Concierto", "escena": "Espectáculo"}.get(category, "Plan")
         desc = " ".join(x for x in ("%s en %s." % (kind, venue.replace("Sala ", "la sala ")), when_txt,
                                     "Entrada libre." if free else (price + "." if price else "")) if x)
