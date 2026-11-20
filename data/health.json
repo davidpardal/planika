@@ -772,8 +772,8 @@
    }
   ]
  },
- "updated_at": "2026-11-20T06:04",
+ "updated_at": "2026-11-20T06:15",
  "alerts": [
-  "Ayuntamiento de Vitoria-Gasteiz: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-19"
+  "Ayuntamiento de Vitoria-Gasteiz: 0 eventos (antes 8) · ConnectTimeout: HTTPSConnectionPool(host='www.vitoria-gasteiz.org', port=443): Max retries exceeded with url: /we001/was/rssAction.do?id"
  ]
 }
