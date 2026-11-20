@@ -92,6 +92,21 @@ h1, h2 { letter-spacing: -.02em; }
   box-shadow: var(--sh);
 }
 .field input::placeholder { color: #7a738c; }
+/* "Dónde": autocompletar de lugares */
+.combo { position: relative; }
+.combo input { width: 100%; padding-right: 40px; }
+.combo-x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border: 0; border-radius: 50%;
+  background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+.combo-x:hover { background: var(--yellow); }
+.suggest { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 8px); margin: 0; padding: 6px; list-style: none;
+  background: var(--white); border: var(--b); border-radius: var(--r-in); box-shadow: var(--sh-lg);
+  max-height: min(360px, 55vh); overflow-y: auto; overscroll-behavior: contain; }
+.suggest li { display: flex; align-items: baseline; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+.suggest li b { font-weight: 900; }
+.suggest li .k { margin-left: auto; flex: none; font-size: 12px; font-weight: 700; color: var(--ink-2); white-space: nowrap; }
+.suggest li[aria-selected="true"], .suggest li:hover { background: var(--yellow); }
+.suggest li.none { cursor: default; color: var(--ink-2); font-weight: 600; }
+.suggest li.none:hover { background: transparent; }
 .field input:focus, .field select:focus { outline: 3px solid var(--hot); outline-offset: 2px; }
 .check { display: inline-flex; align-items: center; gap: 8px; padding: 10px 4px; font-size: 14px; font-weight: 700; }
 .check input { width: 20px; height: 20px; accent-color: var(--hot); }
