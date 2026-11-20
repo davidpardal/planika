@@ -1,0 +1,267 @@
+{
+ "_info": "Fechas y horas oficiales de LaLiga EA Sports, comprobadas a mano. openfootball publica cada jornada en su domingo y sin hora; LaLiga fija día y hora unas semanas antes. Clave: 'local|visitante' con los nombres de openfootball (son únicos en la temporada). Se revisa cada lunes.",
+ "laliga": {
+  "Athletic Club|RCD Espanyol de Barcelona": {
+   "date": "2026-11-20",
+   "time": "21:00",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html",
+    "https://lagrada.org/horarios-jornada-13-laliga-2026-27-athletic-espanyol-san-mames/"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Deportivo Alavés|RC Deportivo La Coruña": {
+   "date": "2026-11-21",
+   "time": "14:00",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Rayo Vallecano de Madrid|Valencia CF": {
+   "date": "2026-11-21",
+   "time": "16:15",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Sevilla FC|Real Betis Balompié": {
+   "date": "2026-11-21",
+   "time": "18:30",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Real Madrid CF|RC Celta de Vigo": {
+   "date": "2026-11-21",
+   "time": "21:00",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html",
+    "https://www.laliga.com/clubes/real-madrid/proximos-partidos"
+   ],
+   "checked": "2026-11-20"
+  },
+  "FC Barcelona|Villarreal CF": {
+   "date": "2026-11-22",
+   "time": "14:00",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Real Racing Club de Santander|Real Sociedad de Fútbol": {
+   "date": "2026-11-22",
+   "time": "16:15",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "CA Osasuna|Málaga CF": {
+   "date": "2026-11-22",
+   "time": "18:30",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Getafe CF|Club Atlético de Madrid": {
+   "date": "2026-11-22",
+   "time": "21:00",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Levante UD|Elche CF": {
+   "date": "2026-11-23",
+   "time": "21:00",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261021/fechas-horarios-partidos-jornada-13-laliga_18_020499599.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Levante UD|Real Racing Club de Santander": {
+   "date": "2026-11-27",
+   "time": "21:00",
+   "refs": [
+    "https://www.laliga.com/noticias/horarios-de-la-decimocuarta-jornada-de-laliga-ea-sports-2026-27",
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Real Betis Balompié|Rayo Vallecano de Madrid": {
+   "date": "2026-11-28",
+   "time": "14:00",
+   "refs": [
+    "https://www.laliga.com/noticias/horarios-de-la-decimocuarta-jornada-de-laliga-ea-sports-2026-27",
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Málaga CF|Athletic Club": {
+   "date": "2026-11-28",
+   "time": "16:15",
+   "refs": [
+    "https://www.movistarplus.es/deportes/futbol/la-liga-ea-sports/calendario"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Elche CF|Club Atlético de Madrid": {
+   "date": "2026-11-28",
+   "time": "18:30",
+   "refs": [
+    "https://www.laliga.com/noticias/horarios-de-la-decimocuarta-jornada-de-laliga-ea-sports-2026-27",
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Real Madrid CF|Deportivo Alavés": {
+   "date": "2026-11-28",
+   "time": "21:00",
+   "refs": [
+    "https://www.laliga.com/noticias/horarios-de-la-decimocuarta-jornada-de-laliga-ea-sports-2026-27",
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html",
+    "https://www.laliga.com/clubes/real-madrid/proximos-partidos"
+   ],
+   "checked": "2026-11-20"
+  },
+  "RC Deportivo La Coruña|FC Barcelona": {
+   "date": "2026-11-29",
+   "time": "16:15",
+   "refs": [
+    "https://www.laliga.com/noticias/horarios-de-la-decimocuarta-jornada-de-laliga-ea-sports-2026-27",
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Real Sociedad de Fútbol|Sevilla FC": {
+   "date": "2026-11-29",
+   "time": "21:00",
+   "refs": [
+    "https://www.laliga.com/noticias/horarios-de-la-decimocuarta-jornada-de-laliga-ea-sports-2026-27",
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "RCD Espanyol de Barcelona|Getafe CF": {
+   "date": "2026-11-30",
+   "time": "21:00",
+   "refs": [
+    "https://www.laliga.com/noticias/horarios-de-la-decimocuarta-jornada-de-laliga-ea-sports-2026-27",
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Real Sociedad de Fútbol|Real Madrid CF": {
+   "date": "2026-12-02",
+   "time": "19:00",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html",
+    "https://www.laliga.com/clubes/real-madrid/proximos-partidos"
+   ],
+   "checked": "2026-11-20"
+  },
+  "FC Barcelona|Club Atlético de Madrid": {
+   "date": "2026-12-02",
+   "time": "21:30",
+   "refs": [
+    "https://www.eldesmarque.com/futbol/liga-1a-division/20261106/fechas-horarios-jornada-14-jornada-23-laliga_18_020644801.html"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Deportivo Alavés|RCD Espanyol de Barcelona": {
+   "date": "2026-12-04",
+   "time": "21:00",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Real Racing Club de Santander|RC Deportivo La Coruña": {
+   "date": "2026-12-05",
+   "time": "14:00",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Rayo Vallecano de Madrid|Levante UD": {
+   "date": "2026-12-05",
+   "time": "16:15",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Villarreal CF|Real Sociedad de Fútbol": {
+   "date": "2026-12-05",
+   "time": "18:30",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "FC Barcelona|RC Celta de Vigo": {
+   "date": "2026-12-05",
+   "time": "21:00",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "CA Osasuna|Elche CF": {
+   "date": "2026-12-06",
+   "time": "14:00",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Athletic Club|Real Madrid CF": {
+   "date": "2026-12-06",
+   "time": "16:15",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500",
+    "https://www.laliga.com/partido/temporada-2026-2027-laliga-ea-sports-athletic-club-real-madrid-15"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Getafe CF|Valencia CF": {
+   "date": "2026-12-06",
+   "time": "18:30",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Club Atlético de Madrid|Real Betis Balompié": {
+   "date": "2026-12-06",
+   "time": "21:00",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  },
+  "Sevilla FC|Málaga CF": {
+   "date": "2026-12-07",
+   "time": "21:00",
+   "refs": [
+    "https://lagrada.org/horarios-jornada-15-laliga-2026-27-alaves-espanyol-viernes-4-diciembre/",
+    "https://onefootball.com/en/news/laliga-confirms-official-kick-off-times-for-matchweek-15-43781500"
+   ],
+   "checked": "2026-11-20"
+  }
+ }
+}
