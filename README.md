@@ -109,6 +109,8 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Agendas turísticas (Visit Palma, Visit Elche) | Palma y Elche | API JSON de The Events Calendar (WordPress), sin clave |
 | Selección Planika (`data/destacados.json`) | grandes citas con fecha que aún no traen las agendas abiertas (encendidos de luces, ferias de Navidad…) | JSON mantenido a mano; cada entrada guarda sus fuentes (`refs`) y el día en que se comprobó |
 
+Cada fuente escribe las localidades a su manera («San Sebastián» y «Donostia / San Sebastián», «Pamplona» y «Pamplona/Iruña», «Vilanova I La Geltru»). `util.canon_cities` deja un solo nombre por localidad y provincia antes de unir duplicados: si es un municipio del INE (`data/municipios.json`) usa su grafía oficial, con el nombre doble («Alicante / Alacant») cuando las fuentes usan las dos formas; si no, unifica mayúsculas, tildes y signos con la forma más frecuente.
+
 Un mismo plan puede llegar de dos fuentes con títulos distintos (la web de la sala y la agenda de Euskadi). `fetch_events.dedupe_venue` los une si son de fuentes distintas, mismo día, misma localidad y sala, y las palabras del título más corto están casi todas en el otro; el que queda se completa con los datos del otro (hora, entradas, coordenadas). Los planes sin coordenadas en una sala que otra fuente ya sitúa en el mapa las toman de ahí (`fill_venue_coords`).
 
 Las visitas permanentes no salen de una agenda. Están en `data/curated.json` y `fetch_events.py` las mezcla en cada ejecución (también con `--rebuild`), así que sobreviven a la regeneración diaria. En la web aparecen como «Visita permanente»: entran en los filtros de provincia y en el mapa, quedan detrás de los planes con fecha y no marcan todos los días del calendario.
