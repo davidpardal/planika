@@ -127,6 +127,66 @@
       "url": "https://euroweeklynews.com/2026/11/14/spain-looks-to-christmas-for-a-little-light-after-a-difficult-year-as-vigo-officially-lights-up-its-streets/",
       "refs": ["https://euroweeklynews.com/2026/11/14/spain-looks-to-christmas-for-a-little-light-after-a-difficult-year-as-vigo-officially-lights-up-its-streets/"],
       "checked": "2026-11-18"
+    },
+    {
+      "id": "madrid-encendido-navidad-2026",
+      "title": "Encendido de las luces de Navidad de Madrid",
+      "start": "2026-11-21",
+      "end": "2026-11-21",
+      "time": "19:00",
+      "city": "Madrid",
+      "province": "Madrid",
+      "venue": "Plaza de Cibeles",
+      "description": "Acto de encendido en la plaza de Cibeles, con un espectáculo de drones, que da paso al alumbrado navideño en más de 250 puntos de los 21 distritos hasta el 6 de enero. Acceso libre.",
+      "category": "navidad",
+      "free": true,
+      "url": "https://www.articulo14.es/espana-por-la-igualdad/comunidad-de-madrid/el-encendido-de-las-luces-de-navidad-en-madrid-ya-tiene-fecha-cuando-y-a-que-hora-20261117.html",
+      "refs": ["https://www.articulo14.es/espana-por-la-igualdad/comunidad-de-madrid/el-encendido-de-las-luces-de-navidad-en-madrid-ya-tiene-fecha-cuando-y-a-que-hora-20261117.html", "https://vivirediciones.es/?p=1152550", "https://www.timeout.es/madrid/es/noticias/luces-de-navidad-2026-en-madrid-fechas-horarios-mapa-novedades-y-todo-lo-que-debes-saber-111826"],
+      "checked": "2026-11-20"
+    },
+    {
+      "id": "malaga-encendido-navidad-2026",
+      "title": "Encendido del alumbrado navideño de Málaga en calle Larios",
+      "start": "2026-11-27",
+      "end": "2026-11-27",
+      "city": "Málaga",
+      "province": "Málaga",
+      "venue": "Calle Larios",
+      "description": "Málaga estrena su Navidad con el encendido de la calle Larios, como cada último viernes de noviembre. La hora del acto todavía no se ha publicado.",
+      "category": "navidad",
+      "free": true,
+      "url": "https://www.andalucia.org/blog/post/luces-de-navidad-en-andaluca-fechas/",
+      "refs": ["https://www.andalucia.org/blog/post/luces-de-navidad-en-andaluca-fechas/", "https://www.idealista.com/en/news/lifestyle-in-spain/2025/11/06/821520-christmas-light-show-on-calle-larios-in-malaga-everything-you-need-to-know"],
+      "checked": "2026-11-20"
+    },
+    {
+      "id": "pamplona-encendido-navidad-2026",
+      "title": "Encendido de las luces de Navidad de Pamplona en San Saturnino",
+      "start": "2026-11-29",
+      "end": "2026-11-29",
+      "city": "Pamplona/Iruña",
+      "province": "Navarra",
+      "description": "Pamplona enciende su alumbrado navideño el día de San Saturnino, patrón de la ciudad. Desde ese día y hasta el 6 de enero, las luces se encienden de 17:45 a 23:00.",
+      "category": "navidad",
+      "free": true,
+      "url": "https://www.pamplona.es/en/node/78980",
+      "refs": ["https://www.pamplona.es/en/node/78980", "https://www.pamplona.es/en/node/78137"],
+      "checked": "2026-11-20"
+    },
+    {
+      "id": "gijon-mercado-artesano-puente-diciembre-2026",
+      "title": "Mercado Artesano y Ecológico de Gijón en el puente de diciembre",
+      "start": "2026-12-05",
+      "end": "2026-12-08",
+      "time": "11:00",
+      "city": "Gijón",
+      "province": "Asturias",
+      "venue": "Plaza Mayor",
+      "description": "Artesanía, productos ecológicos y pequeños productores asturianos en la Plaza Mayor durante el puente. De sábado a lunes, de 11:00 a 15:00 y de 17:00 a 21:00; el martes 8 cierra a las 20:00.",
+      "category": "gastro",
+      "url": "https://www.turismoasturias.es/es/agenda-de-asturias/fiestas/-/calendarsuite/event/mercado-artesano-y-ecologico-de-gijon/3778223/jr0cMeS144cd",
+      "refs": ["https://www.turismoasturias.es/es/agenda-de-asturias/fiestas/-/calendarsuite/event/mercado-artesano-y-ecologico-de-gijon/3778223/jr0cMeS144cd"],
+      "checked": "2026-11-20"
     }
   ]
 }
