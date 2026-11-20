@@ -476,7 +476,8 @@ def _p(links):
 
 
 def _render(site_dir, path, up, *, seo_title, h1, desc, items, crumbs, params, t0, updated,
-            intro="", cards=None, list_title=None, more="", links="", rss="", robots="index,follow,max-image-preview:large"):
+            intro="", cards=None, list_title=None, more="", links="", rss="", robots="index,follow,max-image-preview:large",
+            tail="", write=True):
     if rss and not os.path.exists(os.path.normpath(os.path.join(site_dir, os.path.dirname(path), rss))):
         rss = ""  # sin planes en los próximos 30 días no hay feed: no se enlaza
     page = _PAGE % dict(
@@ -489,9 +490,38 @@ def _render(site_dir, path, up, *, seo_title, h1, desc, items, crumbs, params, t
         crumbs=_crumbs_html(crumbs, up), intro=intro,
         list_title=list_title or "Próximos planes (%s)" % fmt_n(len(items)),
         cards=cards if cards is not None else _cards(items, up, t0), more=more, links=links)
-    with open(os.path.join(site_dir, path), "w", encoding="utf-8") as fh:
-        fh.write(page)
+    if tail:
+        page = page.replace("</body>", tail + "\n</body>", 1)
+    if write:
+        with open(os.path.join(site_dir, path), "w", encoding="utf-8") as fh:
+            fh.write(page)
     return page
+
+
+SWITCH_HOUR = "07:00"  # hora de Madrid a la que las páginas «hoy» y «fin de semana» pasan al día siguiente
+
+_NEXT_DAY_JS = """<script>(function(){var T=document.getElementById('next-day');if(!T||!window.Intl||!T.content)return;var o={};
+try{new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(function(x){o[x.type]=x.value;});}catch(e){return;}
+var now=o.year+'-'+o.month+'-'+o.day+'T'+o.hour+':'+o.minute,m=document.querySelector('main.wrap');if(now<T.getAttribute('data-at')||!m)return;
+if(now>=T.getAttribute('data-stale')){m.innerHTML='<p class="intro">Estamos actualizando esta página. Mientras tanto, tienes todos los planes al día en la <a href="./">app de Planika</a>.</p>';return;}
+var f=T.content;document.title=T.getAttribute('data-title');
+[['lead','p.lead'],['meta','p.meta']].forEach(function(k){var n=f.querySelector('[data-k="'+k[0]+'"]'),el=document.querySelector(k[1]);if(n&&el)el.outerHTML=n.innerHTML;});
+var mm=f.querySelector('[data-k="main"]');if(mm)m.innerHTML=mm.innerHTML;})();</script>"""
+
+
+def next_day_block(page, day):
+    """Guarda la versión de `day` (la página entera ya generada) dentro de un <template> que el navegador
+    activa solo a las 07:00 de ese día (hora de Madrid). Así la página «hoy» cambia de día a su hora
+    aunque la actualización diaria se retrase. Si la página tiene ya más de un día de retraso, avisa y
+    manda a la app, que filtra por fecha en el propio móvil."""
+    title = re.search(r"<title>(.*?)</title>", page, re.S).group(1)
+    lead = re.search(r'<p class="lead">.*?</p>', page, re.S).group(0)
+    meta = re.search(r'<p class="meta">.*?</p>', page, re.S).group(0)
+    main = re.search(r'<main class="wrap">(.*)</main>', page, re.S).group(1)
+    stale = iso(datetime.strptime(day, "%Y-%m-%d") + timedelta(days=1))
+    return ('<template id="next-day" data-at="%sT%s" data-stale="%sT%s" data-title="%s">'
+            '<div data-k="lead">%s</div><div data-k="meta">%s</div><div data-k="main">%s</div></template>\n%s'
+            % (day, SWITCH_HOUR, stale, SWITCH_HOUR, title.replace('"', "&quot;"), lead, meta, main, _NEXT_DAY_JS))
 
 
 _MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
@@ -775,18 +805,29 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
         done(fn, page)
 
     # ---- páginas nacionales por intención de búsqueda
-    t0d = datetime.strptime(t0, "%Y-%m-%d")
-    national = [
-        ("planes-hoy.html", "Qué hacer hoy en España (%d %s)" % (t0d.day, _MES_CORTO[t0d.month - 1]), "Planes para hoy en España",
-         [e for e in upcoming(events) if in_window(e, t0, t0)], "from=%s&to=%s" % (t0, t0), None, "hoy"),
-        ("planes-este-fin-de-semana.html", "Qué hacer este fin de semana en España (%s)" % wrange, "Planes este fin de semana en España",
-         [e for e in upcoming(events) if in_window(e, wa, wb)], "from=%s&to=%s" % (wa, wb), "fin-de-semana", "este fin de semana"),
+    def dated_pages(day):
+        """Las páginas que dependen del día: «hoy» y «este fin de semana»."""
+        d = datetime.strptime(day, "%Y-%m-%d").date()
+        f, s = weekend_window(d)
+        a, b = iso(f), iso(s)
+        return [
+            ("planes-hoy.html", "Qué hacer hoy en España (%d %s)" % (d.day, _MES_CORTO[d.month - 1]), "Planes para hoy en España",
+             [e for e in upcoming(events) if in_window(e, day, day)], "from=%s&to=%s" % (day, day), None, "hoy"),
+            ("planes-este-fin-de-semana.html", "Qué hacer este fin de semana en España (%s)" % _short_range(a, b),
+             "Planes este fin de semana en España",
+             [e for e in upcoming(events) if in_window(e, a, b)], "from=%s&to=%s" % (a, b), "fin-de-semana", "este fin de semana"),
+        ]
+
+    t1 = iso(datetime.strptime(t0, "%Y-%m-%d") + timedelta(days=1))
+    tomorrow = {x[0]: x for x in dated_pages(t1)}
+    national = dated_pages(t0) + [
         ("planes-gratis.html", "Planes gratis en España: actividades gratuitas", "Planes gratis en España",
          [e for e in upcoming(events) if e.get("free") and not is_permanent(e)], "free=1", "gratis", "gratis"),
     ]
     if len(festivals) >= 20:
         national.append(("festivales.html", "Festivales en España: próximas fechas", "Festivales en España", festivals, "q=festival", None, "de festivales"))
-    for fn, ttl, h1, items, params, sub, scope in national:
+
+    def national_page(fn, ttl, h1, items, params, sub, scope, day, tail="", write=True):
         byp = {}
         for e in items:
             byp[e["province_code"]] = byp.get(e["province_code"], 0) + 1
@@ -798,11 +839,18 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
             plinks.append('<a href="%s">%s</a> (%s)' % (target, html.escape(name), fmt_n(byp[code])))
         page = _render(site_dir, fn, "", seo_title=ttl, h1=h1,
                        desc="%s: %s planes %s en toda España, por provincia, con fechas, lugar y enlace oficial." % (h1, fmt_n(len(items)), scope),
-                       items=items, crumbs=[("Inicio", ""), (h1, fn)], params=params, t0=t0, updated=upd,
-                       intro=_intro(items, "%s en España" % scope, t0, soon=sub not in (None, "fin-de-semana") or fn == "festivales.html") if items else "<p class=\"intro\">Ahora mismo no hay planes con estas condiciones; prueba con las provincias o los tipos de plan.</p>",
+                       items=items, crumbs=[("Inicio", ""), (h1, fn)], params=params, t0=day, updated=upd, tail=tail, write=write,
+                       intro=_intro(items, "%s en España" % scope, day, soon=sub not in (None, "fin-de-semana") or fn == "festivales.html") if items else "<p class=\"intro\">Ahora mismo no hay planes con estas condiciones; prueba con las provincias o los tipos de plan.</p>",
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"./?%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(items)), html.escape(params))) if len(items) > FIRST_PAGE else "",
                        links=_p(["Por provincia: " + " · ".join(plinks)] if plinks else []) + _p(city_links("")) + _p([l for l in nat("") if fn not in l]) + _p(type_links("")))
-        done(fn, page)
+        return page
+
+    for fn, ttl, h1, items, params, sub, scope in national:
+        tail = ""
+        nxt = tomorrow.get(fn)
+        if nxt and nxt[4] != params:  # mañana cambia el día o el fin de semana: se prepara ya esa versión
+            tail = next_day_block(national_page(*nxt, day=t1, write=False), t1)
+        done(fn, national_page(fn, ttl, h1, items, params, sub, scope, t0, tail=tail))
 
     # ---- páginas fijas
     promo = _promo_page()
