@@ -258,3 +258,56 @@ class TestSportsDbCache(unittest.TestCase):
         src_sportsdb._daily("4408", "ACB", {}, budget, lambda *_: None)
         self.assertTrue(budget[1])
         self.assertEqual(budget[0], 7)  # una sola petición fallida y no se insiste
+
+
+class TestTribe(unittest.TestCase):
+    """Agendas turísticas con The Events Calendar (Visit Palma, Visit Elche)."""
+
+    def test_parse(self):
+        from planes import src_tribe
+        from planes.util import iso, today
+        from datetime import timedelta
+        d = iso(today() + timedelta(days=3))
+        items = [
+            {"id": 1, "title": "El Grinch &#8211; Musical", "start_date": d + " 18:00:00", "end_date": d + " 19:30:00",
+             "url": "https://visitpalma.com/es/evento/grinch/", "cost": "Gratis", "categories": [{"name": "Infantil"}],
+             "venue": {"venue": "Trui Teatre", "city": "Palma", "address": "Camí de Son Rapinya"}, "description": "<p>Musical familiar</p>"},
+            {"id": 2, "title": "NAVIDAD 2026 &#8211; PALMA", "start_date": d + " 00:00:00", "end_date": iso(today() + timedelta(days=40)) + " 23:59:59",
+             "all_day": True, "venue": [], "categories": [{"name": "Fiestas y tradiciones"}]},
+        ]
+        evs = {e["title"]: e for e in src_tribe.parse("Visit Palma", "https://visitpalma.com", "Palma", "Illes Balears", items)}
+        g = evs["El Grinch – Musical"]
+        self.assertEqual((g["time"], g["venue"], g["province"], g["source"]), ("18:00", "Trui Teatre", "Illes Balears", "Visit Palma"))
+        self.assertTrue(g["free"])
+        n = evs["NAVIDAD 2026 – PALMA"]
+        self.assertEqual((n["time"], n["city"], n["url"]), ("", "Palma", "https://visitpalma.com"))
+        self.assertGreater(n["end"], n["start"])
+
+    def test_registered(self):
+        import fetch_events
+        self.assertIn("tribe", fetch_events.SOURCES)
+        self.assertNotIn("lorca", fetch_events.SOURCES)
+
+
+class TestVitoriaRetry(unittest.TestCase):
+    def test_retries_then_parses(self):
+        from unittest import mock
+        calls = []
+
+        def flaky(*a, **k):
+            calls.append(1)
+            if len(calls) < 3:
+                raise TimeoutError("sin respuesta")
+            return "<rss></rss>"
+        with mock.patch.object(src_vitoria, "http_text", flaky), mock.patch.object(src_vitoria.time, "sleep", lambda s: None):
+            self.assertEqual(src_vitoria.fetch(lambda m: None), [])
+        self.assertEqual(len(calls), 3)
+
+    def test_gives_up(self):
+        from unittest import mock
+
+        def down(*a, **k):
+            raise TimeoutError("caída")
+        with mock.patch.object(src_vitoria, "http_text", down), mock.patch.object(src_vitoria.time, "sleep", lambda s: None):
+            with self.assertRaises(TimeoutError):
+                src_vitoria.fetch(lambda m: None)

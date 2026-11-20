@@ -6,6 +6,7 @@ El RSS repite cada actividad una vez por día; se agrupan por identificador en u
 """
 import html
 import re
+import time
 from datetime import timedelta
 from email.utils import parsedate_to_datetime
 from zoneinfo import ZoneInfo
@@ -52,7 +53,18 @@ def parse(text):
     return out
 
 
-def fetch(log):
-    out = parse(http_text(URL, encoding="utf-8"))
+def fetch(log, waits=(20, 60)):
+    """El RSS solo trae las actividades del día: si la web municipal no responde a la primera, se insiste
+    (con esperas largas) para no dejar Vitoria-Gasteiz sin planes hasta la siguiente actualización."""
+    for i, wait in enumerate(tuple(waits) + (None,)):
+        try:
+            text = http_text(URL, encoding="utf-8", timeout=(30, 90))
+            break
+        except Exception as exc:  # noqa: BLE001
+            if wait is None:
+                raise
+            log("%s: sin respuesta (%s), nuevo intento en %ds" % (NAME, exc.__class__.__name__, wait))
+            time.sleep(wait)
+    out = parse(text)
     log("%s: %d eventos" % (NAME, len(out)))
     return out

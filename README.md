@@ -96,7 +96,6 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Ayuntamiento de Cartagena | Cartagena (Murcia) | CSV |
 | Cabildo de Tenerife | eventos deportivos de la isla | JSON |
 | TheSportsDB | partidos de LaLiga 2, ACB, ASOBAL, Liga Femenina de baloncesto, Copa del Rey y Supercopa (ACB, ASOBAL y Liga F: consulta día a día los próximos 14 días; horas convertidas de UTC a Madrid) | API JSON (clave pública de pruebas; `THESPORTSDB_KEY` para una propia) |
-| Ayuntamiento de Lorca | Lorca (Murcia); su CSV lleva meses sin eventos nuevos | CSV |
 | Ayuntamiento de Zaragoza | Zaragoza ciudad (agenda de actividades completa) | API JSON paginada |
 | esMADRID (Madrid Destino) | Madrid ciudad: conciertos, teatro, exposiciones y grandes eventos | XML |
 | Diputació de Barcelona | provincia de Barcelona: turismo, parques naturales y teatros municipales | API JSON |
@@ -106,6 +105,7 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Agendas municipales (`planes/src_municipios.py`) | Mérida, Teruel, Ejea de los Caballeros, Siero, Puertollano, Diputación de Albacete, Elche, Orihuela, Villena y Torrent | API JSON de «The Events Calendar» (WordPress) |
 | Ticketmaster Discovery API | toda España, con entradas | API JSON (clave) |
 | Visitas permanentes (`data/curated.json`) | todas las provincias con poca agenda: museos, monumentos, espacios naturales y salas, sin fecha única | JSON mantenido a mano |
+| Agendas turísticas (Visit Palma, Visit Elche) | Palma y Elche | API JSON de The Events Calendar (WordPress), sin clave |
 | Selección Planika (`data/destacados.json`) | grandes citas con fecha que aún no traen las agendas abiertas (encendidos de luces, ferias de Navidad…) | JSON mantenido a mano; cada entrada guarda sus fuentes (`refs`) y el día en que se comprobó |
 
 Las visitas permanentes no salen de una agenda. Están en `data/curated.json` y `fetch_events.py` las mezcla en cada ejecución (también con `--rebuild`), así que sobreviven a la regeneración diaria. En la web aparecen como «Visita permanente»: entran en los filtros de provincia y en el mapa, quedan detrás de los planes con fecha y no marcan todos los días del calendario.

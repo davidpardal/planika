@@ -28,7 +28,7 @@ from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
 SOURCES = ["madrid", "esmadrid", "barcelona", "diba", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia",
-           "galicia", "zaragoza", "cartagena", "lorca", "murcia", "vitoria", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
+           "galicia", "zaragoza", "cartagena", "murcia", "vitoria", "tribe", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
            "ticketmaster", "destacados", "curated"]
 
 
