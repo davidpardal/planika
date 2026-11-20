@@ -177,7 +177,7 @@ _PAGE = """<!doctype html>
 %(cards)s
 %(more)s
 <nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2>%(links)s
-<p><a href="%(up)spromociona-tu-evento.html">¿Organizas un evento? Publícalo gratis en Planika</a> · <a href="%(up)sprivacidad.html">Privacidad y cookies</a> · <a href="%(up)saviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
+<p><a href="%(up)spromociona-tu-evento.html">¿Organizas un evento? Publícalo gratis en Planika</a> · <a href="%(up)sprivacidad.html">Privacidad y cookies</a> · <a href="%(up)sprivacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="%(up)saviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
 </main></body></html>
 """
 
@@ -225,7 +225,7 @@ _PROMO = """<!doctype html>
 %(faq)s
 <p class="meta" style="margin-top:26px"><a class="btn primary" href="%(form)s" target="_blank" rel="noopener">Publica tu evento gratis</a></p>
 <p class="src">Al enviar el formulario confirmas que tienes derecho a publicar el evento y su imagen. La exactitud de fechas, horarios y precios es responsabilidad del organizador.</p>
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="planes-este-fin-de-semana.html">Planes este fin de semana</a> · <a href="t/musica.html">Conciertos</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="planes-este-fin-de-semana.html">Planes este fin de semana</a> · <a href="t/musica.html">Conciertos</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
 </main></body></html>
 """
 
@@ -271,7 +271,7 @@ _SOURCES = """<!doctype html>
 <h2 style="margin:22px 0 10px">%(n)d fuentes, %(total)s planes</h2>
 <ul id="sources">%(items)s</ul>
 <p>Cada plan enlaza al organizador. Comprueba siempre fechas, horarios y precios en la fuente original.</p>
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="promociona-tu-evento.html">Publica tu evento</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a> · <a href="https://github.com/davidpardal/planika">Código en GitHub</a></p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="promociona-tu-evento.html">Publica tu evento</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a> · <a href="https://github.com/davidpardal/planika">Código en GitHub</a></p></nav>
 </main></body></html>
 """
 

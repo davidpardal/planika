@@ -60,7 +60,7 @@ _PAGE = """<!doctype html>
 <p class="meta"><a class="btn primary" href="./">Explorar Planika</a> &nbsp; Última actualización: %(updated)s</p></div></header>
 <main class="wrap legal" style="max-width:820px;line-height:1.6">
 %(body)s
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a> · <a href="fuentes.html">Fuentes de datos</a></p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a> · <a href="fuentes.html">Fuentes de datos</a></p></nav>
 </main></body></html>
 """
 
@@ -69,14 +69,14 @@ def privacy_page(cfg=None):
     cfg = cfg if cfg is not None else load_config()
     body = """
 <h2>Resumen</h2>
-<p>Planika no tiene cuentas de usuario ni muestra publicidad. Google Analytics 4 (GA4) se utiliza únicamente si aceptas las cookies de analítica. Si las rechazas, GA4 no se carga. Puedes cambiar tu decisión desde el botón «Privacidad» disponible en la web.</p>
+<p>Planika no tiene cuentas de usuario ni muestra publicidad. Google Analytics 4 (GA4) se utiliza únicamente si aceptas las cookies de analítica. Si las rechazas, GA4 no se carga. Puedes cambiar tu decisión desde el enlace «Configurar cookies» del pie de cada página.</p>
 
 <h2>Responsable</h2>
 %(holder)s
 
 <h2>Qué datos se tratan y para qué</h2>
 <h3>Visitas (analítica)</h3>
-<p>Usamos Google Analytics 4 (Google Ireland Limited) para obtener estadísticas de uso, como páginas consultadas, interacciones, información técnica del navegador y datos aproximados de ubicación. GA4 puede utilizar cookies y tecnologías similares y transmitir datos a Google. La analítica permanece desactivada hasta que das tu consentimiento mediante el panel de privacidad. Base jurídica: consentimiento (art. 6.1.a del RGPD y normativa aplicable sobre almacenamiento o acceso a información en el dispositivo). Si rechazas, la etiqueta de GA4 no se carga. Puedes retirar o cambiar el consentimiento en cualquier momento con el botón «Privacidad».</p>
+<p>Usamos Google Analytics 4 (Google Ireland Limited) para obtener estadísticas de uso, como páginas consultadas, interacciones, información técnica del navegador y datos aproximados de ubicación. GA4 puede utilizar cookies y tecnologías similares y transmitir datos a Google. La analítica permanece desactivada hasta que das tu consentimiento mediante el panel de privacidad. Base jurídica: consentimiento (art. 6.1.a del RGPD y normativa aplicable sobre almacenamiento o acceso a información en el dispositivo). Si rechazas, la etiqueta de GA4 no se carga. Puedes retirar o cambiar el consentimiento en cualquier momento con el enlace «Configurar cookies» del pie de cada página.</p>
 <h3>Favoritos</h3>
 <p>Cuando marcas un plan como favorito, Planika lo guarda en el almacenamiento local de tu navegador (clave <code>planika_favs</code>). Se queda en tu dispositivo, no se envía a ningún servidor y puedes borrarlo en cualquier momento limpiando los datos del sitio. Es un almacenamiento necesario para una función que tú pides, por lo que no requiere consentimiento.</p>
 <h3>Ubicación («Cerca de mí»)</h3>
@@ -86,8 +86,9 @@ def privacy_page(cfg=None):
 <h3>Servidores y contenidos de terceros</h3>
 <p>La web se aloja en GitHub Pages, que registra datos técnicos de conexión (como la dirección IP) para prestar el servicio. Las imágenes de algunos planes se cargan directamente desde los servidores de sus organizadores o fuentes, que pueden ver tu dirección IP al pedirlas. Los enlaces a webs de organizadores, entradas y Google Calendar llevan a sitios con sus propias políticas.</p>
 
-<h2>Cookies</h2>
-<p>GA4 solo se carga después de aceptar las cookies de analítica. Según la configuración y el navegador, Google Analytics puede instalar cookies como <code>_ga</code> y <code>_ga_*</code> para distinguir usuarios y sesiones. Si rechazas, la etiqueta no se carga. La elección se guarda en el almacenamiento local del navegador para recordar tu decisión; este almacenamiento se utiliza para conservar la preferencia. Puedes cambiarla o retirar el consentimiento desde el botón «Privacidad».</p>
+<h2 id="cookies">Cookies</h2>
+<p><a href="#cookies" data-privacy-settings><strong>Cambiar mis preferencias de cookies</strong></a></p>
+<p>GA4 solo se carga después de aceptar las cookies de analítica. Según la configuración y el navegador, Google Analytics puede instalar cookies como <code>_ga</code> y <code>_ga_*</code> para distinguir usuarios y sesiones. Si rechazas, la etiqueta no se carga. La elección se guarda en el almacenamiento local del navegador para recordar tu decisión; este almacenamiento se utiliza para conservar la preferencia. Puedes cambiarla o retirar el consentimiento desde el enlace «Configurar cookies» del pie de cada página.</p>
 
 <h2>Tus derechos</h2>
 <p>Puedes pedir acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad de tus datos escribiendo a %(contact)s. Si crees que no hemos tratado bien tus datos, puedes reclamar ante la <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos</a>.</p>
