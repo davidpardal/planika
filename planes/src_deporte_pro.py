@@ -5,12 +5,16 @@
 - Euroliga y EuroCup: API pública de euroleague.net (calendario y equipos), con pabellón y hora.
 """
 import html
+import json
+import os
 import re
 from datetime import datetime, timedelta
 
 from .util import event, http_json, http_text, iso, today
 
 NAME = "Deporte profesional (LaLiga, Euroliga, EuroCup)"
+# Fechas y horas oficiales comprobadas a mano: openfootball pone cada jornada en su domingo y sin hora.
+FIXES_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "horarios_partidos.json")
 HOME = "https://www.laliga.com/"
 LALIGA_URL = "https://raw.githubusercontent.com/openfootball/football.json/master/%s/es.1.json"
 EURO_URL = "https://api-live.euroleague.net/v1/%s?seasonCode=%s%d"
@@ -38,20 +42,33 @@ EURO_CLUBS = {  # código de club de euroleague.net -> (ciudad, provincia)
 }
 
 
-def parse_laliga(data, t0=None, season="2026/27"):
+def load_fixes(path=FIXES_PATH):
+    """{"local|visitante": {"date", "time"}} de LaLiga, de data/horarios_partidos.json ({} si no está)."""
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return json.load(fh).get("laliga") or {}
+    except (OSError, ValueError):
+        return {}
+
+
+def parse_laliga(data, t0=None, season="2026/27", fixes=None):
     t0 = t0 or iso(today())
+    fixes = fixes or {}
     out = []
     for m in data.get("matches") or []:
-        date = m.get("date") or ""
+        home, away = m.get("team1"), m.get("team2")
+        nominal = m.get("date") or ""
+        fix = fixes.get("%s|%s" % (home, away)) or {}
+        date = fix.get("date") or nominal  # día oficial si LaLiga ya lo fijó
         if date < t0 or (m.get("score") or {}).get("ft"):
             continue
-        home, away = m.get("team1"), m.get("team2")
         city, prov = LALIGA_CLUBS.get(home, ("", ""))
         if not city:
             continue
         rnd = re.sub(r"\D", "", m.get("round") or "")
-        ev = event(
-            NAME, "laliga-%s-%s-%s" % (date, home, away), "%s - %s" % (home, away), date, time=m.get("time") or "",
+        ev = event(  # el id sigue la fecha de openfootball: la ficha no cambia de dirección al fijarse el día
+            NAME, "laliga-%s-%s-%s" % (nominal, home, away), "%s - %s" % (home, away), date,
+            time=fix.get("time") or m.get("time") or "",
             description="LaLiga%s. Fútbol profesional en %s." % (", jornada " + rnd if rnd else "", city),
             subtype="LaLiga", category="deporte", city=city, province_code=prov, url=HOME,
         )
@@ -99,7 +116,8 @@ def fetch(log, days=180):
     y = today().year if today().month >= 7 else today().year - 1
     for season in ("%d-%02d" % (y, (y + 1) % 100),):
         try:
-            for ev in parse_laliga(http_json(LALIGA_URL % season, retries=2), t0):
+            fixes = load_fixes()
+            for ev in parse_laliga(http_json(LALIGA_URL % season, retries=2), t0, fixes=fixes):
                 out[ev["id"]] = ev
         except Exception as exc:  # noqa: BLE001
             log("%s: LaLiga %s (%s)" % (NAME, season, exc.__class__.__name__))

@@ -102,7 +102,7 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Ayuntamiento de Murcia | Murcia y pedanías, próximos eventos | RSS |
 | Ayuntamiento de Vitoria-Gasteiz | Agenda de actividades culturales (sin lugar ni descripción en el feed) | RSS |
 | Salas Jimmy Jazz y Kubik (`planes/src_jimmyjazz.py`) | Vitoria-Gasteiz: conciertos y sesiones de club de las dos salas, con puertas, precios y entradas; los conciertos que ya trae Open Data Euskadi se unen con ellos | API JSON de WordPress (entradas de la categoría «Agenda») |
-| Deporte profesional | Partidos en casa de equipos españoles: LaLiga (openfootball, dominio público), Euroliga y EuroCup (API pública de euroleague.net) | JSON / XML |
+| Deporte profesional | Partidos en casa de equipos españoles: LaLiga (openfootball, dominio público), Euroliga y EuroCup (API pública de euroleague.net). openfootball pone cada jornada de LaLiga en su domingo y sin hora: el día y la hora oficiales, cuando LaLiga los fija, salen de `data/horarios_partidos.json` (comprobado a mano cada lunes, con sus fuentes) | JSON / XML |
 | Agendas municipales (`planes/src_municipios.py`) | Mérida, Teruel, Ejea de los Caballeros, Siero, Puertollano, Diputación de Albacete, Elche, Orihuela, Villena y Torrent | API JSON de «The Events Calendar» (WordPress) |
 | Ticketmaster Discovery API | toda España, con entradas | API JSON (clave) |
 | Visitas permanentes (`data/curated.json`) | todas las provincias con poca agenda: museos, monumentos, espacios naturales y salas, sin fecha única | JSON mantenido a mano |
