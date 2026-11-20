@@ -1,35 +1,18 @@
 import requests, re, html, json
 H = {"User-Agent": "Mozilla/5.0 (compatible; PlanikaBot/1.0; +https://planikaapp.com)", "Accept": "*/*"}
 B = "https://jimmyjazzgasteiz.com"
-def get(u):
-    r = requests.get(u, headers=H, timeout=40)
-    print("\n###", u, r.status_code, len(r.content), r.headers.get("x-wp-total")); return r
-def strip(t): return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<(script|style).*?</\1>", " ", t, flags=re.S)))).strip()
-cats = get(B + "/wp-json/wp/v2/categories?per_page=100&_fields=id,name,slug,count").json()
-print(cats)
-ids = [c["id"] for c in cats if c["slug"] in ("agenda", "agenda-conciertos-vitoria-gasteiz", "agenda-djs-vitoria-gasteiz", "kubik")]
-r = get(B + "/wp-json/wp/v2/posts?per_page=5&categories=%s" % ",".join(map(str, ids)))
+def strip(t):
+    t = re.sub(r"\[/?et_pb[^\]]*\]", " ", t)
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", t))).strip()
+r = requests.get(B + "/aviso-legal/", headers=H, timeout=40)
+t = re.sub(r"<(script|style).*?</\1>", " ", r.text, flags=re.S)
+s = strip(t); i = s.find("Queda prohibido"); print("LEGAL:", s[i-200:i+2500])
+r = requests.get(B + "/wp-json/wp/v2/posts?per_page=100&categories=1336&_fields=id,link,title,excerpt,content,categories,featured_media", headers=H, timeout=60)
+print("total", r.headers.get("x-wp-total"), r.headers.get("x-wp-totalpages"))
 posts = r.json()
-for p in posts[:3]:
-    print("\n---", p["id"], p["date"], p["modified"], p["link"], p["categories"], p.get("tags"), p.get("lang"))
-    print("title:", p["title"]["rendered"])
-    print("keys:", sorted(p.keys()))
-    print("meta:", json.dumps(p.get("meta"))[:600])
-    print("acf:", json.dumps(p.get("acf"))[:600])
-    print("excerpt:", strip(p["excerpt"]["rendered"])[:300])
+for p in posts[:40]:
+    print("\n---", p["link"], p["categories"])
+    print("T:", html.unescape(p["title"]["rendered"]), "| EX:", strip(p["excerpt"]["rendered"]))
     c = p["content"]["rendered"]
-    print("content:", strip(c)[:1200])
-    print("links:", re.findall(r'href="([^"]+)"', c)[:8])
-r = get(posts[0]["link"])
-t = r.text
-i = t.find(posts[0]["title"]["rendered"][:15])
-print("page around title:", strip(t[max(0, i-3000):i+3000])[:2500])
-print("ld:", re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', t, re.S)[:2])
-r = get(B + "/aviso-legal/")
-m = re.search(r"<main.*?</main>|<article.*?</article>", r.text, re.S)
-print(strip(m.group(0) if m else r.text)[:3500])
-# portada: estructura de la lista de agenda
-r = get(B + "/")
-t = r.text
-i = t.find("Raimundo")
-print("home html around first item:", t[max(0, i-1500):i+1200])
+    print("TXT:", strip(c)[:500])
+    print("URLS:", sorted(set(u for u in re.findall(r'(?:url|href|button_url|link_option_url)=["»″\']+([^"«″\' ]+)', c) if "http" in u))[:6])
