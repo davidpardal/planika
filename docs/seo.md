@@ -11,6 +11,7 @@ Cómo se generan las páginas para buscadores y por qué. El código está en `p
 | Portada (app) | `/` | planes en España |
 | Hoy, fin de semana, gratis | `/planes-hoy.html`, `/planes-este-fin-de-semana.html`, `/planes-gratis.html` | qué hacer hoy / este finde / gratis |
 | Festivales | `/festivales.html` (solo con 20 o más) | festivales en España |
+| Puente de diciembre | `/puente-diciembre.html` (indexable del 1 de octubre al último día del puente, con 20 o más planes) | planes para el puente de diciembre |
 | Tipo de plan | `/t/<tipo>.html` | conciertos, teatro, exposiciones, planes con niños… en España |
 | Provincia | `/p/<provincia>.html` + `/p/<provincia>-pagina-N.html` | qué hacer en X (listado completo, 150 por página) |
 | Provincia: finde, gratis | `/p/<provincia>-fin-de-semana.html`, `-gratis.html` (3 o más planes) | planes este finde / gratis en X |
@@ -50,10 +51,34 @@ la ficha pasa a indexable sola.
 
 ## Eventos pasados
 
-La ficha existe mientras el plan está en la agenda (por fecha o en curso). Cuando termina, la URL deja de
-existir y GitHub Pages responde **404**, que es la señal correcta para Google; la página 404 propone buscar
-planes parecidos con las palabras del nombre y enlaza al fin de semana y a los planes gratis. No se redirige a
-hubs: una redirección masiva a una página distinta Google la trata como soft 404.
+La ficha existe mientras el plan está en la agenda (por fecha o en curso). Cuando sale de la agenda, su URL
+**se mantiene 60 días** con `noindex,follow`, fuera del sitemap y sin datos estructurados de evento
+(`static.write_gone_pages`):
+
+- **Ya pasó** (su fecha de fin es anterior a hoy): aviso, cuándo y dónde fue, y hasta 6 planes parecidos
+  próximos (misma ciudad y tipo; si no, misma provincia y tipo; si no, misma provincia), más enlaces a su ciudad,
+  provincia y tipo de plan.
+- **Ya no está en la agenda** (aún no había terminado): puede que se haya cancelado, cambiado de fecha o que la
+  fuente lo haya retirado; se pide comprobarlo en la web del organizador.
+- **Ha cambiado de dirección** (el mismo plan sigue en la agenda con otro id, o con el mismo nombre, día y
+  provincia): `meta refresh` inmediato y `canonical` a la ficha nueva. Algunas fuentes (Ajuntament de Barcelona,
+  Axenda de Cultura de Galicia) cambian el id de parte de sus planes de un día a otro.
+
+Pasados los 60 días, la URL deja de existir y GitHub Pages responde **404**, que es la señal correcta; la página
+404 propone buscar planes parecidos con las palabras del nombre. No se redirige a hubs: una redirección masiva a
+una página distinta Google la trata como soft 404.
+
+El estado (fichas publicadas y fecha en que cada una salió de la agenda) se guarda entre ejecuciones en
+`data/fichas_publicadas.json`, una ficha por línea para que el diff diario sea pequeño.
+
+## Puente de diciembre
+
+`/puente-diciembre.html` reúne los planes del puente de la Constitución y la Inmaculada. Las fechas se calculan
+cada año (`publish.puente_diciembre`): del 6 al 8 de diciembre, alargado hasta el fin de semana pegado (2026:
+sábado 5 – martes 8). Lleva resumen con datos, planes por día, planes gratis, Navidad en el puente (primero
+mercados, belenes, luces y cabalgatas) y una sección por provincia con 5 o más planes. Del 1 de octubre al
+último día del puente es indexable y se enlaza desde todos los hubs; el resto del año la URL sigue existiendo,
+con `noindex`, un aviso y enlaces a la agenda, para no perder lo ganado de un año a otro.
 
 ## Sitemaps
 

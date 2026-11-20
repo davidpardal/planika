@@ -520,3 +520,148 @@ def write_event_pages(site_dir, events, prov_slugs, cities=None, updated=""):
                                 title_place=title_place, updated=updated, indexable=indexable, title_full=title_full))
         pages.append(("e/" + fn, indexable, _event_digest(e, t0, indexable)))
     return pages
+
+
+# ---------------------------------------------------------------- fichas que desaparecen
+
+GONE_DAYS = 60  # días que sigue publicada (con aviso y noindex) la ficha de un plan que ya no está en la agenda
+
+_GONE_PAGE = """<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%(title)s (%(state)s) · Planika</title><meta name="description" content="%(desc)s">
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="%(canonical)s">%(refresh)s
+<meta name="theme-color" content="#ffd23f">
+<link rel="stylesheet" href="../styles.css"><link rel="icon" href="../icon.svg" type="image/svg+xml">
+%(analytics)s
+</head><body>
+<header class="hero evhero"><div class="wrap"><a class="evbrand" href="../">Planika</a>
+<p class="tagline">%(cat)s en %(province)s</p></div></header>
+<main class="wrap">
+<article class="card evpage"><div class="body">
+<div class="badges"><span class="badge">%(cat)s</span><span class="badge">%(badge)s</span></div>
+<h1>%(title)s</h1>
+<div class="when">📅 %(when)s</div>
+<div class="where">📍 %(where)s</div>
+<p class="desc">%(msg)s</p>
+<div class="actions">%(actions)s</div>
+</div></article>
+<nav class="foot evnav"><h2 class="sticker">%(rel_title)s</h2>%(related)s
+<p>%(links)s</p></nav>
+</main></body></html>
+"""
+
+
+def ficha_meta(e):
+    """Lo mínimo para rehacer la ficha de un plan cuando ya no esté en la agenda."""
+    m = {"id": e["id"], "t": e.get("title_es") or e["title"], "s": e["start"], "e": e["end"], "k": e["category"],
+         "pc": e["province_code"], "p": e.get("province") or "", "c": e.get("city") or "", "v": e.get("venue") or ""}
+    return {k: v for k, v in m.items() if v != ""}
+
+
+def _gone_when(m):
+    if m["s"] == m["e"]:
+        return fmt_day(m["s"])
+    return "del %s al %s" % (fmt_day(m["s"]), fmt_day(m["e"]))
+
+
+def gone_page(fn, m, t0, upcoming=(), prov_slug="", city=None, moved_to=None):
+    """Ficha de un plan que ya no está en la agenda: aviso, planes parecidos próximos y enlaces, con noindex.
+    Si el plan sigue en la agenda con otra dirección (cambió el título), redirige a su ficha nueva."""
+    from .util import norm
+    esc = html.escape
+    title = m["t"]
+    cat = "%s %s" % (CAT_ICON.get(m["k"], "✨"), CAT_NAME.get(m["k"], "Otros planes"))
+    where = " · ".join(x for x in (m.get("v"), m.get("c"), m.get("p") if m.get("p") != m.get("c") else "") if x) or "España"
+    canonical, refresh = "%s/e/%s" % (SITE_URL, fn), ""
+    if moved_to:
+        state, badge = "ha cambiado", "Ficha actualizada"
+        msg = "La ficha de este plan ha cambiado de dirección."
+        canonical = "%s/e/%s" % (SITE_URL, moved_to)
+        refresh = '\n<meta http-equiv="refresh" content="0; url=%s">' % esc(moved_to)
+        actions = '<a class="btn primary" href="%s">Ver la ficha actualizada</a>' % esc(moved_to)
+    elif m["e"] < t0:
+        state, badge = "ya pasó", "Ya pasó"
+        msg = "Este plan ya pasó. Abajo tienes planes parecidos en los próximos días."
+        actions = '<a class="btn primary" href="../">Buscar planes en Planika</a>'
+    else:
+        state, badge = "ya no está en la agenda", "Ya no está en la agenda"
+        msg = ("Este plan ya no aparece en la agenda de la que lo tomamos: puede que se haya cancelado, cambiado de fecha "
+               "o que la fuente lo haya retirado. Consulta la web del organizador antes de ir.")
+        actions = '<a class="btn primary" href="../">Buscar planes en Planika</a>'
+    # Parecidos: misma ciudad y tipo, luego misma provincia y tipo, luego misma provincia.
+    pool, seen = [], set()
+    ncity = norm(m.get("c") or "")
+    for test in (lambda e: e["category"] == m["k"] and norm(e.get("city") or "") == ncity and ncity,
+                 lambda e: e["category"] == m["k"], lambda e: True):
+        for e in upcoming:
+            if len(pool) >= 6:
+                break
+            if e["province_code"] == m["pc"] and e["id"] not in seen and test(e):
+                seen.add(e["id"])
+                pool.append(e)
+    related = ""
+    if pool:
+        related = "<ul>%s</ul>" % "".join('<li><a href="%s">%s</a> · %s%s</li>' % (
+            esc(event_file(r)), esc(r.get("title_es") or r["title"]), esc(_when(r, t0)),
+            (" · " + esc(r["city"])) if r.get("city") else "") for r in pool)
+    links = []
+    if city:
+        links.append('<a href="../c/%s.html">Planes en %s</a>' % (esc(city[1]), esc(city[0])))
+    if prov_slug:
+        links.append('<a href="../p/%s.html">Todos los planes en %s</a>' % (esc(prov_slug), esc(m.get("p") or "la provincia")))
+    links.append('<a href="../t/%s.html">%s en toda España</a>' % (esc(m["k"]), esc(cat)))
+    links.append('<a href="../">Buscar en Planika</a>')
+    return _GONE_PAGE % dict(
+        title=esc(title), state=state, badge=badge, msg=esc(msg), canonical=esc(canonical), refresh=refresh,
+        desc=esc(clip("%s. %s. %s" % (title, _gone_when(m), msg), 158)), analytics=BEACON, cat=esc(cat),
+        province=esc(m.get("p") or "España"), when=esc(_gone_when(m)), where=esc(where), actions=actions,
+        rel_title="Planes parecidos próximos" if pool else "Más planes", related=related, links=" · ".join(links))
+
+
+def write_gone_pages(site_dir, events, state_path, prov_slugs, cities=None, t0=None):
+    """Mantiene GONE_DAYS días las fichas de los planes que han salido de la agenda (ya pasaron, se cancelaron o
+    cambiaron de dirección), para que quien llegue desde Google o un enlace compartido no se encuentre un 404.
+    El estado (fichas publicadas y fecha en que desaparecieron) se guarda en state_path entre ejecuciones.
+    Devuelve el número de fichas de este tipo escritas."""
+    from datetime import timedelta
+    from .util import norm
+    t0 = t0 or iso(today())
+    cities = cities or {}
+    try:
+        with open(state_path, encoding="utf-8") as fh:
+            old = json.load(fh)
+    except (OSError, ValueError):
+        old = {}
+    current = {event_file(e): e for e in events}
+    by_id = {e["id"]: fn for fn, e in current.items()}
+    # Mismo plan con otro id (algunas fuentes lo cambian de un día a otro, o se unió con su duplicado de otra fuente):
+    # mismo nombre, mismo día y misma provincia.
+    by_key = {}
+    for fn, e in current.items():
+        by_key.setdefault((norm(e.get("title_es") or e["title"]), e["start"], e["province_code"]), fn)
+    limit = iso(datetime.strptime(t0, "%Y-%m-%d") - timedelta(days=GONE_DAYS))
+    upcoming = sorted((e for e in events if not is_permanent(e) and e["end"] >= t0),
+                      key=lambda e: (max(e["start"], t0), e.get("time") or "99"))
+    state = {fn: ficha_meta(e) for fn, e in current.items()}
+    out_dir = os.path.join(site_dir, "e")
+    n = 0
+    for fn, m in old.items():
+        if fn in current or not (fn.endswith(".html") and _ID_RE.match(fn[:-5])):
+            continue
+        gone = m.get("g") or t0
+        if gone < limit:
+            continue  # pasado el plazo, la dirección deja de existir (404)
+        m = dict(m, g=gone)
+        state[fn] = m
+        moved = by_id.get(m.get("id")) or by_key.get((norm(m.get("t") or ""), m.get("s"), m.get("pc")))
+        city = cities.get((m.get("pc"), norm(m.get("c") or "")))
+        with open(os.path.join(out_dir, fn), "w", encoding="utf-8") as fh:
+            fh.write(gone_page(fn, m, t0, upcoming, prov_slugs.get(m.get("pc"), ""), city, moved))
+        n += 1
+    tmp = state_path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:  # una ficha por línea: el diff diario en git es pequeño
+        fh.write("{\n" + ",\n".join("%s:%s" % (json.dumps(k, ensure_ascii=False), json.dumps(state[k], ensure_ascii=False, sort_keys=True))
+                                     for k in sorted(state)) + "\n}\n")
+    os.replace(tmp, state_path)
+    return n

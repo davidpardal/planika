@@ -364,6 +364,41 @@ def season_year(t0):
     return y - 1 if m == 1 else y
 
 
+# ---------------------------------------------------------------- puente de diciembre
+
+_DIAS_LARGOS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+PUENTE_DESDE = "10-01"  # la página del puente se indexa desde el 1 de octubre hasta su último día
+PUENTE_MIN = 20         # con menos planes publicados, la página no se indexa ni se enlaza
+
+
+def puente_diciembre(year):
+    """(primer día, último día) del puente de la Constitución (6 dic) y la Inmaculada (8 dic) de `year`.
+    Se alarga hasta el fin de semana pegado: si el 6 cae en domingo o lunes, empieza el sábado; si el 8 cae
+    en viernes o sábado, acaba el domingo. 2026: sábado 5 – martes 8."""
+    from datetime import date
+    a, b = date(year, 12, 6), date(year, 12, 8)
+    a -= timedelta(days={6: 1, 0: 2}.get(a.weekday(), 0))
+    b += timedelta(days={4: 2, 5: 1}.get(b.weekday(), 0))
+    return a, b
+
+
+def puente_estado(t0):
+    """(año, primer día, último día, en temporada). Fuera de temporada, el año es el del último puente ya pasado."""
+    y = int(t0[:4])
+    a, b = puente_diciembre(y)
+    if "%d-%s" % (y, PUENTE_DESDE) <= t0 <= iso(b):
+        return y, a, b, True
+    if t0 < "%d-%s" % (y, PUENTE_DESDE):
+        y -= 1
+        a, b = puente_diciembre(y)
+    return y, a, b, False
+
+
+def puente_rango(a, b):
+    """«del sábado 5 al martes 8 de diciembre»."""
+    return "del %s %d al %s %d de diciembre" % (_DIAS_LARGOS[a.weekday()], a.day, _DIAS_LARGOS[b.weekday()], b.day)
+
+
 def in_cat(e, key):
     """¿Va el plan en la página del tipo `key`? Navidad incluye los planes con tema navideño de cualquier tipo."""
     return e["category"] == key or (key == "navidad" and bool(e.get("xmas")))
@@ -593,9 +628,14 @@ def _upd_text(updated_at):
 
 # ---------------------------------------------------------------- todas las páginas
 
-def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
+LAST_RUN = {"gone": 0}  # cifras de la última generación, para el registro de fetch_events.py
+
+
+def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, fichas_path=None):
     """Genera hubs, fichas, sitemaps y robots.txt. state_path: archivo donde se guarda la huella de cada URL
-    para que el lastmod del sitemap solo cambie cuando cambia la página (None: sin memoria entre ejecuciones)."""
+    para que el lastmod del sitemap solo cambie cuando cambia la página (None: sin memoria entre ejecuciones).
+    fichas_path: archivo con las fichas publicadas, para mantener con aviso las de planes que salen de la agenda
+    (None: no se mantienen)."""
     t0 = iso(today())
     upd = _upd_text(updated_at)
     entries = [("", "paginas", seo.digest((updated_at or t0)[:10]))]  # la portada cambia con cada actualización de datos
@@ -657,6 +697,13 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
             extras[(code, "gratis")] = fr
     nat_links = ['<a href="%splanes-hoy.html">Qué hacer hoy</a>', '<a href="%splanes-este-fin-de-semana.html">Planes este fin de semana</a>',
                  '<a href="%splanes-gratis.html">Planes gratis</a>']
+    # Puente de diciembre: página propia desde octubre hasta el último día del puente, enlazada desde todos los hubs.
+    p_year, p_a, p_b, p_season = puente_estado(t0)
+    pa, pb = iso(p_a), iso(p_b)
+    puente_items = [e for e in upcoming(events) if in_window(e, pa, pb)] if p_season else []
+    puente_on = len(puente_items) >= PUENTE_MIN
+    if puente_on:
+        nat_links.insert(2, '<a href="%spuente-diciembre.html">Puente de diciembre</a>')
     festivals = [e for e in upcoming(events) if not is_permanent(e) and FESTIVAL_RX.search(norm(e.get("title_es") or e["title"]))]
     if len(festivals) >= 20:
         nat_links.append('<a href="%sfestivales.html">Festivales</a>')
@@ -914,6 +961,69 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
             tail = next_day_block(national_page(*nxt, day=t1, write=False), t1)
         done(fn, national_page(fn, ttl, h1, items, params, sub, scope, t0, tail=tail))
 
+    # ---- puente de diciembre: la URL es siempre la misma (sin año) para que gane fuerza de un año a otro.
+    # Fuera de temporada se queda como página noindex que manda a la agenda, en vez de dar un 404.
+    fn = "puente-diciembre.html"
+    rango = puente_rango(p_a, p_b)
+    params = "from=%s&to=%s" % (pa, pb)
+    if puente_on:
+        items = puente_items
+        days, d = [], p_a
+        while d <= p_b:
+            di = iso(d)
+            n = sum(1 for e in items if in_window(e, di, di))
+            days.append('<a href="./?from=%s&amp;to=%s">%s %d</a> (%s)' % (di, di, _DIAS_LARGOS[d.weekday()].capitalize(), d.day, fmt_n(n)))
+            d += timedelta(days=1)
+        intro = _intro(items, rango, t0, soon=False)
+        intro += '<nav class="pages" aria-label="Días del puente"><p>Por día: %s</p></nav>' % " · ".join(days)
+        free = [e for e in items if e.get("free")]
+        if free:
+            intro += ('<p class="hint"><a href="./?%s&amp;free=1">Ver los %s planes gratis del puente en la app</a></p>'
+                      % (html.escape(params), fmt_n(len(free))))
+        xmas = [e for e in items if in_cat(e, "navidad")]
+        # Primero lo más buscado (mercados, belenes, luces, cabalgatas) y después talleres y demás.
+        xmas.sort(key=lambda e: 0 if any(rx.search(norm(e.get("title_es") or e["title"])) for _, _, rx, _, _ in XMAS_SECTIONS) else 1)
+        if len(xmas) >= 3:
+            intro += ('<section id="navidad"><h2 style="margin:26px 0 10px">Navidad en el puente (%s)</h2><div class="list">%s</div>'
+                      '<p class="hint"><a href="t/navidad.html">Todos los planes de Navidad: mercados, belenes, luces y cabalgatas</a></p></section>'
+                      % (fmt_n(len(xmas)), "".join(_card(e, "", t0) for e in xmas[:6])))
+        byp = {}
+        for e in items:
+            byp.setdefault(e["province_code"], []).append(e)
+        order = sorted(byp, key=lambda c: (-len(byp[c]), prov_name.get(c, "")))
+        secs, rest = [], []
+        for code in order:
+            its, name = byp[code], prov_name.get(code, "España")
+            if len(its) < 5:
+                rest.append('<a href="./?prov=%s&amp;%s">%s</a> (%d)' % (code, html.escape(params), html.escape(name), len(its)))
+                continue
+            secs.append('<section id="%s"><h3 style="margin:22px 0 8px">Puente de diciembre en %s (%s)</h3>%s'
+                        '<p class="hint"><a href="./?prov=%s&amp;%s">Ver los %s planes del puente en %s en la app</a> · '
+                        '<a href="p/%s.html">Toda la agenda de %s</a></p></section>'
+                        % (prov_slug[code], html.escape(name), fmt_n(len(its)), _compact(its[:8], "", t0), code, html.escape(params),
+                           fmt_n(len(its)), html.escape(name), prov_slug[code], html.escape(name)))
+        if rest:
+            secs.append("<p>Otras provincias: %s</p>" % " · ".join(rest))
+        page = _render(site_dir, fn, "", seo_title="Puente de diciembre %d: qué hacer del %d al %d de diciembre" % (p_year, p_a.day, p_b.day),
+                       h1="Planes para el puente de diciembre %d" % p_year,
+                       desc="Qué hacer en el puente de diciembre de %d, %s: %s planes en toda España por provincia%s, con fechas, lugar y enlace oficial."
+                            % (p_year, rango, fmt_n(len(items)), (" (%s gratis)" % fmt_n(len(free))) if free else ""),
+                       items=items, crumbs=[("Inicio", ""), ("Puente de diciembre", fn)], params=params, t0=t0, updated=upd,
+                       intro=intro, cards="".join(secs), list_title="Planes del puente por provincia",
+                       links=_p([l for l in nat("") if fn not in l]) + _p(type_links("")))
+        done(fn, page)
+    else:
+        if p_season:
+            msg = ("Todavía hay pocos planes publicados para el puente de diciembre de %d (%s). Los iremos añadiendo cada día; "
+                   "mientras tanto, mira qué hacer este fin de semana." % (p_year, rango))
+        else:
+            msg = ("El puente de diciembre de %d ya pasó. Publicaremos los planes del próximo puente a partir de octubre; "
+                   "mientras tanto, mira qué hacer este fin de semana." % p_year)
+        _render(site_dir, fn, "", seo_title="Puente de diciembre: planes y agenda", h1="Puente de diciembre", desc=msg,
+                items=[], crumbs=[("Inicio", ""), ("Puente de diciembre", fn)], params="", t0=t0, updated=upd,
+                robots="noindex,follow", intro="", cards=_p(nat("") + ['<a href="t/navidad.html">Planes de Navidad</a>']),
+                list_title="Planes para hoy y los próximos días", links=_p(type_links("")))
+
     # ---- páginas fijas
     promo = _promo_page()
     with open(os.path.join(site_dir, "promociona-tu-evento.html"), "w", encoding="utf-8") as fh:
@@ -930,6 +1040,8 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None):
 
     # ---- fichas: todas se publican; al sitemap solo van las indexables
     event_pages = static.write_event_pages(site_dir, events, prov_slug, cities, upd)
+    if fichas_path:  # las fichas de planes que ya no están: noindex y fuera del sitemap
+        LAST_RUN["gone"] = static.write_gone_pages(site_dir, events, fichas_path, prov_slug, cities, t0)
     for path, indexable, h in event_pages:
         if indexable:
             entries.append((path, "fichas", h))
