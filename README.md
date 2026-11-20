@@ -38,6 +38,7 @@ Además de `site/data/events.js`, cada ejecución genera:
 
 - `site/feeds/`: RSS general, por provincia y por tipo de plan (próximos 30 días), para suscribirse desde cualquier lector.
 - Páginas estáticas para buscadores: `site/p/` (provincias, con su listado completo paginado, fin de semana, gratis y provincia × tipo), `site/c/` (ciudades con mucha agenda y sin provincia del mismo nombre: Bilbao, Donostia…), `site/t/` (tipos de plan), `planes-hoy.html`, `planes-este-fin-de-semana.html`, `planes-gratis.html` y `festivales.html`, y una ficha por plan en `site/e/`.
+  `planes-hoy.html` y `planes-este-fin-de-semana.html` llevan ya preparada la versión del día siguiente (en un `<template>`), y el navegador la activa a las 07:00 hora de Madrid (`publish.SWITCH_HOUR`): la página cambia de día a su hora aunque la actualización diaria de GitHub se retrase. Si se queda más de un día sin actualizar, avisa y manda a la app.
 - `site/sitemap.xml` (índice) con `sitemap-paginas.xml` y `sitemap-fichas.xml`, y `site/robots.txt`. El `lastmod` solo cambia cuando cambia la página (`data/sitemap_state.json`). Detalles en [docs/seo.md](docs/seo.md); `python3 tools/seo_check.py site` revisa el sitio generado.
 - `data/health.json`: histórico de eventos por fuente y alertas cuando una fuente falla o cae mucho. En GitHub Actions, las alertas abren automáticamente un *issue*.
 

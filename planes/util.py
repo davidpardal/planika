@@ -173,7 +173,17 @@ def parse_time(s):
     return ""
 
 
+try:
+    from zoneinfo import ZoneInfo
+    _MADRID = ZoneInfo("Europe/Madrid")
+except Exception:  # sin base de zonas horarias: hora del servidor
+    _MADRID = None
+
+
 def today():
+    """Fecha de hoy en España peninsular (los servidores de GitHub van en UTC)."""
+    if _MADRID is not None:
+        return datetime.now(_MADRID).date()
     return date.today()
 
 

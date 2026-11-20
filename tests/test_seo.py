@@ -181,6 +181,26 @@ class TestArchitecture(unittest.TestCase):
             self.assertIn('href="../c/bilbao.html"', ficha)  # miga de pan a la ciudad
             self.assertIn('<span class="upd">Agenda actualizada el 18 nov 2026. </span>', ficha)
 
+    def test_today_page_switches_to_next_day_at_seven(self):
+        """«Hoy» lleva ya preparada la versión de mañana, que el navegador activa a las 07:00 de Madrid."""
+        from datetime import timedelta
+        t0 = util.today()
+        t1 = util.iso(t0 + timedelta(days=1))
+        evs = [rich(1), dict(rich(2), id="m2", start=t1, end=t1, title="Concierto de mañana")]
+        with tempfile.TemporaryDirectory() as tmp:
+            build(tmp, evs)
+            page = read(tmp, "planes-hoy.html")
+            self.assertEqual(page.count('id="next-day"'), 1)
+            self.assertIn('data-at="%sT07:00"' % t1, page)
+            tpl = page.split('<template id="next-day"')[1].split("</template>")[0]
+            self.assertIn("from=%s&amp;to=%s" % (t1, t1), tpl)  # el botón de la app pasa a mañana
+            self.assertIn("Concierto de mañana", tpl)
+            visible = page.split('<template id="next-day"')[0]
+            self.assertNotIn("Concierto de mañana", visible.split('<main class="wrap">')[1])
+            self.assertIn("hourCycle:'h23'", page)
+            errors, _ = seo_check.check(tmp, SITE)
+            self.assertEqual(errors, [])
+
     def test_stale_hub_pages_are_removed(self):
         with tempfile.TemporaryDirectory() as tmp:
             os.makedirs(os.path.join(tmp, "p"))
