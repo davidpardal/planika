@@ -27,7 +27,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="alternate" type="application/rss+xml" title="Planika · próximos planes" href="feeds/todos.xml">
-<link rel="stylesheet" href="styles.css?v=893c3e8152">
+<link rel="stylesheet" href="styles.css?v=4213b1c1f5">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://planikaapp.com/#web","name":"Planika","url":"https://planikaapp.com/","inLanguage":"es","description":"Agenda de planes de ocio en toda España: conciertos, teatro, exposiciones, deporte, ferias y fiestas por provincia, con calendario, entradas y un clic para guardarlos en tu agenda.","publisher":{"@id":"https://planikaapp.com/#org"}},{"@type":"Organization","@id":"https://planikaapp.com/#org","name":"Planika","url":"https://planikaapp.com/","logo":"https://planikaapp.com/icon.svg","sameAs":["https://www.instagram.com/planikaapp/"]}]}</script>
 <!-- Analítica respetuosa, sin cookies: Cloudflare Web Analytics. El token es público por diseño. -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-E4DXWFYPH1"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-E4DXWFYPH1");</script>
@@ -54,15 +54,20 @@
           <span>Buscar</span>
           <input type="search" id="q" placeholder="Artista, obra, lugar, ciudad…" autocomplete="off">
         </label>
-        <label class="field where">
-          <span>Dónde</span>
-          <select id="where"><option value="">Toda España</option></select>
-        </label>
+        <div class="field where">
+          <label for="where">Dónde</label>
+          <div class="combo">
+            <input type="text" id="where" placeholder="Toda España · escribe un lugar" autocomplete="off" autocapitalize="words" spellcheck="false"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="whereList">
+            <button type="button" class="combo-x" id="whereClear" aria-label="Quitar el lugar (toda España)" hidden>✕</button>
+            <ul class="suggest" id="whereList" role="listbox" aria-label="Lugares con planes" hidden></ul>
+          </div>
+        </div>
         <label class="field where-city" id="cityField" hidden>
           <span>Ciudad</span>
           <select id="city"><option value="">Todas</option></select>
         </label>
-        <!-- La app sigue filtrando con estos dos selectores; "Dónde" los maneja. -->
+        <!-- La app sigue filtrando con estos dos selectores; "Dónde" (autocompletar) los maneja. -->
         <select id="ccaa" hidden aria-hidden="true" tabindex="-1"><option value="">Todas</option></select>
         <select id="prov" hidden aria-hidden="true" tabindex="-1"><option value="">Todas</option></select>
       </div>
@@ -172,6 +177,6 @@
 <div id="toast" class="toast" hidden></div>
 <script defer src="data/core.js?v=cafd24d2a6"></script>
 <script defer src="data/d/0.js?v=711f765f71"></script>
-<script defer src="app.js?v=25ccaaf04c"></script>
+<script defer src="app.js?v=2c61f671f2"></script>
 </body>
 </html>
