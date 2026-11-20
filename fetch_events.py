@@ -28,7 +28,7 @@ from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
 SOURCES = ["madrid", "esmadrid", "barcelona", "diba", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia",
-           "galicia", "zaragoza", "cartagena", "murcia", "vitoria", "tribe", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
+           "galicia", "zaragoza", "cartagena", "murcia", "vitoria", "jimmyjazz", "tribe", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
            "ticketmaster", "destacados", "curated"]
 
 
@@ -76,6 +76,71 @@ def dedupe(events):
         if cur is None or score > cur[0]:
             best[key] = (score, ev)
     return [v[1] for v in best.values()]
+
+
+# Palabras que no distinguen un plan de otro al comparar títulos de fuentes distintas
+_TITLE_STOP = set("""entradas entrada sala en de del la el los las y con a al por para gira tour concierto
+    presenta presentacion fin nuevo nueva show ciclo zikloa cicle vol enero febrero marzo abril mayo junio julio agosto septiembre
+    octubre noviembre diciembre""".split())
+_FILL = ("lat", "lon", "image", "description", "tickets_url", "price", "time", "address", "url")
+
+
+def _title_words(e):
+    venue = set(norm(e.get("venue")).split()) | set(norm(e.get("city")).split())
+    return {w for w in norm(e["title"]).split() if len(w) > 1 and not w.isdigit() and w not in _TITLE_STOP and w not in venue}
+
+
+def _richness(e):
+    return sum(1 for k in ("tickets_url", "image", "time", "venue", "description", "price", "lat") if e.get(k))
+
+
+def dedupe_venue(events):
+    """Une el mismo plan publicado por dos fuentes con títulos distintos (la web de la sala y la agenda de
+    Euskadi: «Bengo & Tatta» y «BENGO + TATTA (Jimmy Jazz Gasteiz)»): mismo día, provincia, localidad y
+    sala, y casi las mismas palabras. Solo entre fuentes distintas: dentro de una fuente, dos planes
+    parecidos el mismo día en la misma sala son planes distintos (dos niveles de un mismo taller).
+    Se queda el más completo y se rellenan sus huecos con el otro. Devuelve (planes, número unido)."""
+    from itertools import combinations
+    groups = {}
+    for i, e in enumerate(events):
+        v = norm(e.get("venue"))
+        if v:
+            groups.setdefault((e["start"], e["province_code"], norm(e.get("city")), v), []).append(i)
+    drop = set()
+    for idxs in groups.values():
+        for a, b in combinations(idxs, 2):
+            ea, eb = events[a], events[b]
+            if a in drop or b in drop or ea.get("source") == eb.get("source"):
+                continue
+            wa, wb = _title_words(ea), _title_words(eb)
+            if not wa or not wb:
+                continue
+            common = len(wa & wb)
+            # Las palabras del título más corto están casi todas en el otro (el largo suele añadir teloneros o gira)
+            if common / min(len(wa), len(wb)) >= 0.75:
+                keep, lose = (a, b) if _richness(ea) >= _richness(eb) else (b, a)
+                for k in _FILL:
+                    if not events[keep].get(k) and events[lose].get(k):
+                        events[keep][k] = events[lose][k]
+                drop.add(lose)
+    return [e for i, e in enumerate(events) if i not in drop], len(drop)
+
+
+def fill_venue_coords(events):
+    """Planes sin coordenadas en una sala que otra fuente ya sitúa en el mapa (misma provincia, localidad y
+    nombre de sala): se toman de ahí. Devuelve cuántos se han completado."""
+    known = {}
+    for e in events:
+        if e.get("lat") is not None and e.get("lon") is not None and e.get("venue"):
+            known.setdefault((e["province_code"], norm(e.get("city")), norm(e["venue"])), (e["lat"], e["lon"]))
+    n = 0
+    for e in events:
+        if e.get("lat") is None and e.get("venue"):
+            c = known.get((e["province_code"], norm(e.get("city")), norm(e["venue"])))
+            if c:
+                e["lat"], e["lon"] = c
+                n += 1
+    return n
 
 
 def write_site(args, site_dir, payload):
@@ -180,6 +245,10 @@ def main():
 
     before = len(all_events)
     all_events = dedupe(all_events)
+    all_events, same_venue = dedupe_venue(all_events)
+    located = fill_venue_coords(all_events)
+    if same_venue or located:
+        log("Misma sala y día en dos fuentes: %d unidos; %d planes situados en el mapa por su sala" % (same_venue, located))
     all_events, merged = publish.group_sessions(all_events)
     all_events = static.unique_ids(all_events)
     all_events.sort(key=lambda e: (e["start"], e["time"] or "99", e["title"]))

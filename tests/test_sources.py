@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from planes import src_barcelona, src_deporte_pro, src_sportsdb, src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
+from planes import src_barcelona, src_deporte_pro, src_jimmyjazz, src_sportsdb, src_diba, src_esmadrid, src_municipios, src_murcia, src_vitoria, src_zaragoza  # noqa: E402
 
 
 class TestBarcelonaTimetable(unittest.TestCase):
@@ -286,6 +286,7 @@ class TestTribe(unittest.TestCase):
     def test_registered(self):
         import fetch_events
         self.assertIn("tribe", fetch_events.SOURCES)
+        self.assertIn("jimmyjazz", fetch_events.SOURCES)
         self.assertNotIn("lorca", fetch_events.SOURCES)
 
 
@@ -311,3 +312,83 @@ class TestVitoriaRetry(unittest.TestCase):
         with mock.patch.object(src_vitoria, "http_text", down), mock.patch.object(src_vitoria.time, "sleep", lambda s: None):
             with self.assertRaises(TimeoutError):
                 src_vitoria.fetch(lambda m: None)
+
+
+def _jj_post(i, link, title, excerpt, content="", cats=(1336, 30)):
+    """Entrada de la API de WordPress de Jimmy Jazz, recortada (título, extracto con la fecha, contenido Divi)."""
+    return {"id": i, "link": link, "title": {"rendered": title}, "excerpt": {"rendered": "<p>%s</p>" % excerpt},
+            "content": {"rendered": content}, "categories": list(cats)}
+
+
+class TestJimmyJazz(unittest.TestCase):
+    from datetime import date
+    T0 = date(2026, 11, 20)
+
+    def parse(self, *posts):
+        return src_jimmyjazz.parse(list(posts), self.T0)
+
+    def test_concert_with_support_act_doors_prices_and_tickets(self):
+        e, = self.parse(_jj_post(
+            1, "https://jimmyjazzgasteiz.com/raimundo/", "Raimundo el Canastero", "<h4>+ Broken Brothers Brass Band</h4> Viernes 20 Noviembre",
+            '[et_pb_image src=»https://jimmyjazzgasteiz.com/wp-content/uploads/2026/05/R.jpg»][/et_pb_image]<p>Viernes 20 noviembre '
+            'Puertas – 20:30 Anticipada: 15 € Taquilla: 18 €</p>[et_pb_button button_url=»https://l.eus/JJG-ReC-2026&#8243;]'))
+        self.assertEqual((e["title"], e["start"], e["time"]), ("Raimundo el Canastero + Broken Brothers Brass Band", "2026-11-20", "20:30"))
+        self.assertEqual((e["venue"], e["city"], e["province_code"]), ("Sala Jimmy Jazz", "Vitoria-Gasteiz", "01"))
+        self.assertEqual(e["price"], "Anticipada 15 €, taquilla 18 €")
+        self.assertEqual(e["tickets_url"], "https://l.eus/JJG-ReC-2026")
+        self.assertTrue(e["image"].endswith("/R.jpg"))
+        self.assertEqual(e["category"], "musica")
+
+    def test_year_comes_from_the_weekday_and_impossible_dates_are_dropped(self):
+        evs = self.parse(_jj_post(2, "https://jimmyjazzgasteiz.com/a/", "Tanxugueiras", "Sábado 6 Febrero"),
+                         _jj_post(3, "https://jimmyjazzgasteiz.com/b/", "Fecha imposible", "Lunes 20 Noviembre"))
+        self.assertEqual([(e["title"], e["start"]) for e in evs], [("Tanxugueiras", "2027-02-06")])
+
+    def test_club_night_keeps_the_announced_day_without_a_misleading_hour(self):
+        e, = self.parse(_jj_post(4, "https://jimmyjazzgasteiz.com/apetak/", "Apetak", "&gt; I-F &gt; I-REAL Sábado 21 Noviembre",
+                                 "<p>Puertas – 1:00 Anticipada: 12 € Taquilla: 15 €</p> https://soundcloud.com/x", cats=(1336, 5)))
+        self.assertEqual((e["title"], e["start"], e["time"], e["subtype"]), ("Apetak: I-F, I-REAL", "2026-11-21", "", "Sesión DJ"))
+        self.assertIn("Noche del sábado 21 al domingo 22, puertas a la 1:00", e["description"])
+        self.assertEqual(e["tickets_url"], "")  # un enlace de SoundCloud no es la venta de entradas
+
+    def test_kubik_free_entry_and_date_range(self):
+        kubik, free, rng = self.parse(
+            _jj_post(5, "https://kubikvitoria.com/beste-bat/", "Beste Bat (Kubik)", "– KOMANDO KOMBATE – BULKADA Viernes 20 Noviembre"),
+            _jj_post(6, "https://jimmyjazzgasteiz.com/bernaola/", "Bernaola Zikloa", "STONE Domingo 29 Noviembre", "<p>Puertas – 19:30 Entrada libre</p>"),
+            _jj_post(7, "https://jimmyjazzgasteiz.com/gazte/", "Gazte Talent", "8 – 9 Diciembre", "<p>Puertas – 18:30</p>"))
+        self.assertEqual((kubik["title"], kubik["venue"]), ("Beste Bat: KOMANDO KOMBATE, BULKADA", "Sala Kubik"))
+        self.assertTrue(free["free"])
+        self.assertEqual((rng["start"], rng["end"]), ("2026-12-08", "2026-12-09"))
+
+
+class TestSameVenueDedupe(unittest.TestCase):
+    def ev(self, source, title, **kw):
+        from planes import util
+        base = dict(province_code="01", city="Vitoria-Gasteiz", venue="Sala Jimmy Jazz")
+        base.update(kw)
+        return util.event(source, title, title, "2026-11-28", **base)
+
+    def test_same_plan_from_two_sources_is_merged_and_completed(self):
+        import fetch_events
+        a = self.ev("Open Data Euskadi", "BENGO + TATTA (Jimmy Jazz Gasteiz)", lat=42.85, lon=-2.67, image="https://x/i.jpg")
+        b = self.ev("Salas Jimmy Jazz y Kubik", "Bengo & Tatta", time="20:30", tickets_url="https://l.eus/x", price="Anticipada 15 €")
+        dj = self.ev("Salas Jimmy Jazz y Kubik", "Dario Nuñez: PINTILLO, RESTECH")
+        out, n = fetch_events.dedupe_venue([a, b, dj])
+        self.assertEqual(n, 1)
+        self.assertEqual(len(out), 2)
+        merged = next(e for e in out if "tatta" in e["title"].lower())
+        self.assertEqual((merged["time"], merged["tickets_url"], merged["lat"]), ("20:30", "https://l.eus/x", 42.85))
+
+    def test_similar_plans_from_one_source_are_kept(self):
+        import fetch_events
+        x = self.ev("Ajuntament", "Taller de costura: iniciació", venue="Centre Cívic")
+        y = self.ev("Ajuntament", "Taller de costura: avançat", venue="Centre Cívic")
+        self.assertEqual(fetch_events.dedupe_venue([x, y])[1], 0)
+
+    def test_coordinates_from_another_plan_in_the_same_venue(self):
+        import fetch_events
+        a = self.ev("Open Data Euskadi", "Saurom", lat=42.85, lon=-2.67)
+        b = self.ev("Salas Jimmy Jazz y Kubik", "Apetak: QUELZA")
+        self.assertEqual(fetch_events.fill_venue_coords([a, b]), 1)
+        self.assertEqual((b["lat"], b["lon"]), (42.85, -2.67))
+

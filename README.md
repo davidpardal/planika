@@ -101,12 +101,15 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Diputació de Barcelona | provincia de Barcelona: turismo, parques naturales y teatros municipales | API JSON |
 | Ayuntamiento de Murcia | Murcia y pedanías, próximos eventos | RSS |
 | Ayuntamiento de Vitoria-Gasteiz | Agenda de actividades culturales (sin lugar ni descripción en el feed) | RSS |
+| Salas Jimmy Jazz y Kubik (`planes/src_jimmyjazz.py`) | Vitoria-Gasteiz: conciertos y sesiones de club de las dos salas, con puertas, precios y entradas; los conciertos que ya trae Open Data Euskadi se unen con ellos | API JSON de WordPress (entradas de la categoría «Agenda») |
 | Deporte profesional | Partidos en casa de equipos españoles: LaLiga (openfootball, dominio público), Euroliga y EuroCup (API pública de euroleague.net) | JSON / XML |
 | Agendas municipales (`planes/src_municipios.py`) | Mérida, Teruel, Ejea de los Caballeros, Siero, Puertollano, Diputación de Albacete, Elche, Orihuela, Villena y Torrent | API JSON de «The Events Calendar» (WordPress) |
 | Ticketmaster Discovery API | toda España, con entradas | API JSON (clave) |
 | Visitas permanentes (`data/curated.json`) | todas las provincias con poca agenda: museos, monumentos, espacios naturales y salas, sin fecha única | JSON mantenido a mano |
 | Agendas turísticas (Visit Palma, Visit Elche) | Palma y Elche | API JSON de The Events Calendar (WordPress), sin clave |
 | Selección Planika (`data/destacados.json`) | grandes citas con fecha que aún no traen las agendas abiertas (encendidos de luces, ferias de Navidad…) | JSON mantenido a mano; cada entrada guarda sus fuentes (`refs`) y el día en que se comprobó |
+
+Un mismo plan puede llegar de dos fuentes con títulos distintos (la web de la sala y la agenda de Euskadi). `fetch_events.dedupe_venue` los une si son de fuentes distintas, mismo día, misma localidad y sala, y las palabras del título más corto están casi todas en el otro; el que queda se completa con los datos del otro (hora, entradas, coordenadas). Los planes sin coordenadas en una sala que otra fuente ya sitúa en el mapa las toman de ahí (`fill_venue_coords`).
 
 Las visitas permanentes no salen de una agenda. Están en `data/curated.json` y `fetch_events.py` las mezcla en cada ejecución (también con `--rebuild`), así que sobreviven a la regeneración diaria. En la web aparecen como «Visita permanente»: entran en los filtros de provincia y en el mapa, quedan detrás de los planes con fecha y no marcan todos los días del calendario.
 
