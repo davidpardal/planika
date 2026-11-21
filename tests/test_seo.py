@@ -388,6 +388,19 @@ class TestGoneFichas(unittest.TestCase):
                 self.assertFalse(os.path.exists(os.path.join(tmp, "e", fb)))
                 self.assertNotIn(fb, json.loads(read(tmp, "fichas.json")))
 
+    def test_same_name_same_day_is_not_redirected(self):
+        a1 = dict(rich(1), title="Taller de pilates", start="2026-11-25", end="2026-11-25")
+        a2 = dict(rich(2), title="Taller de pilates", start="2026-11-25", end="2026-11-25")
+        a3 = dict(rich(3), title="Taller de pilates", start="2026-11-25", end="2026-11-25")
+        with tempfile.TemporaryDirectory() as tmp:
+            with _Day("2026-11-20"):
+                self._build(tmp, [a1, a2])
+            with _Day("2026-11-21"):
+                self._build(tmp, [a2, a3])  # a1 desaparece; a3 es otro taller con el mismo nombre
+                page = read(tmp, "e", static.event_file(a1))
+                self.assertNotIn('http-equiv="refresh"', page)
+                self.assertIn("ya no aparece en la agenda", page)
+
     def test_bad_state_names_are_ignored(self):
         with tempfile.TemporaryDirectory() as tmp:
             with open(os.path.join(tmp, "fichas.json"), "w") as fh:

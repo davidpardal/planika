@@ -637,9 +637,23 @@ def write_gone_pages(site_dir, events, state_path, prov_slugs, cities=None, t0=N
     by_id = {e["id"]: fn for fn, e in current.items()}
     # Mismo plan con otro id (algunas fuentes lo cambian de un día a otro, o se unió con su duplicado de otra fuente):
     # mismo nombre, mismo día y misma provincia.
-    by_key = {}
+    # Solo si la clave es única a ambos lados: hay muchos planes distintos con el mismo nombre el mismo día
+    # (p. ej. los «Taller de pilates» de cada centro cívico de Barcelona) y no se debe mandar a otro.
+    by_key, dup = {}, set()
     for fn, e in current.items():
-        by_key.setdefault((norm(e.get("title_es") or e["title"]), e["start"], e["province_code"]), fn)
+        k = (norm(e.get("title_es") or e["title"]), e["start"], e["province_code"])
+        if k in by_key:
+            dup.add(k)
+        by_key[k] = fn
+    old_keys = {}
+    for m in old.values():
+        k = (norm(m.get("t") or ""), m.get("s"), m.get("pc"))
+        old_keys[k] = old_keys.get(k, 0) + 1
+    for k, c in old_keys.items():
+        if c > 1:
+            dup.add(k)
+    for k in dup:
+        by_key.pop(k, None)
     limit = iso(datetime.strptime(t0, "%Y-%m-%d") - timedelta(days=GONE_DAYS))
     upcoming = sorted((e for e in events if not is_permanent(e) and e["end"] >= t0),
                       key=lambda e: (max(e["start"], t0), e.get("time") or "99"))
