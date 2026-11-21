@@ -23,7 +23,7 @@ sys.path.insert(0, ROOT)
 # es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
 EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
 
-from planes import classify, llm, publish, seo, static, util  # noqa: E402
+from planes import classify, llm, publish, salas, seo, static, util  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
@@ -196,12 +196,14 @@ def main():
                             "seconds": 0, "error": "", "stale_from": ""})
         n_curated = counts["curated"]
         util.canon_cities(payload["events"])
+        moved = salas.apply(payload["events"])
         payload["sources"] = sources
         payload["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
         with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
         write_site(args, site_dir, payload)
-        log("Rebuild: %d planes, %d visitas permanentes, %d citas comprobadas" % (len(payload["events"]), n_curated, counts["destacados"]))
+        log("Rebuild: %d planes, %d visitas permanentes, %d citas comprobadas, %d planes situados en su sala"
+            % (len(payload["events"]), n_curated, counts["destacados"], moved))
         return
 
     load_dotenv(os.path.join(ROOT, ".env"))
@@ -253,9 +255,17 @@ def main():
     before = len(all_events)
     all_events = dedupe(all_events)
     all_events, same_venue = dedupe_venue(all_events)
+    # Salas: las agendas que dan el centro del municipio (Euskadi y Navarra) pasan al punto de la sala
+    geo_budget = float(os.environ.get("PLANIKA_GEO_BUDGET") or 0)
+    sala_cache = salas.load()
+    if geo_budget > 0:
+        found, missed, left = salas.geocode(all_events, log, cache=sala_cache, budget=geo_budget)
+        log("Salas buscadas en OpenStreetMap: %d encontradas, %d sin resultado, %d pendientes" % (found, missed, left))
+    moved = salas.apply(all_events, sala_cache)
     located = fill_venue_coords(all_events)
-    if same_venue or located:
-        log("Misma sala y día en dos fuentes: %d unidos; %d planes situados en el mapa por su sala" % (same_venue, located))
+    if same_venue or located or moved:
+        log("Misma sala y día en dos fuentes: %d unidos; %d planes situados en su sala; %d situados en el mapa por otra fuente"
+            % (same_venue, moved, located))
     all_events, merged = publish.group_sessions(all_events)
     all_events = static.unique_ids(all_events)
     all_events.sort(key=lambda e: (e["start"], e["time"] or "99", e["title"]))

@@ -271,6 +271,7 @@ _SOURCES = """<!doctype html>
 <h2 style="margin:22px 0 10px">%(n)d fuentes, %(total)s planes</h2>
 <ul id="sources">%(items)s</ul>
 <p>Cada plan enlaza al organizador. Comprueba siempre fechas, horarios y precios en la fuente original.</p>
+<p>Mapas y ubicación de las salas: datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">colaboradores de OpenStreetMap</a> (licencia ODbL).</p>
 <nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="promociona-tu-evento.html">Publica tu evento</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a> · <a href="https://github.com/davidpardal/planika">Código en GitHub</a></p></nav>
 </main></body></html>
 """
