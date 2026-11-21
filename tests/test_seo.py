@@ -259,6 +259,28 @@ class TestArchitecture(unittest.TestCase):
             errors, _ = seo_check.check(tmp, SITE)
             self.assertEqual(errors, [])
 
+    def test_analytics_only_through_consent(self):
+        """Ninguna página carga Google Analytics por su cuenta: solo consent.js, y solo si se acepta.
+        Todas llevan en el pie el enlace para cambiar la decisión."""
+        with tempfile.TemporaryDirectory() as tmp:
+            build(tmp, [rich(1), rich(2, free=True)])
+            from planes import legal
+            legal.write_legal_pages(tmp)
+            pages = [os.path.join(dp, f) for dp, _, fs in os.walk(tmp) for f in fs
+                     if f.endswith(".html") and os.path.join(dp, f) != os.path.join(tmp, "index.html")]  # la portada de prueba es un esqueleto
+            self.assertGreater(len(pages), 5)
+            for p in pages:
+                page = read(p)
+                self.assertNotIn("googletagmanager", page, p)
+                self.assertIn('src="/consent.js"', page, p)
+                self.assertIn("data-privacy-settings", page, p)
+        js = read(ROOT, "site", "consent.js")
+        self.assertIn('if (v === "accepted") loadGA();', js)  # sin decisión guardada: se muestra el panel, no se carga GA
+        self.assertIn('data-choice="rejected"', js)
+        index = read(ROOT, "site", "index.html")
+        self.assertNotIn("googletagmanager", index)
+        self.assertIn("data-privacy-settings", index)
+
     def test_stale_hub_pages_are_removed(self):
         with tempfile.TemporaryDirectory() as tmp:
             os.makedirs(os.path.join(tmp, "p"))
