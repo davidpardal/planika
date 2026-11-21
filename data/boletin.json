@@ -1,0 +1,6 @@
+{
+ "_info": "Boletín «Planes del finde». form_url: enlace al formulario de alta del servicio de envío (vacío: no se muestra el botón). unsubscribe_tag: etiqueta de baja del servicio, va en site/boletin/email.html. Ver docs/boletin.md.",
+ "servicio": "brevo",
+ "form_url": "",
+ "unsubscribe_tag": "{{ unsubscribe }}"
+}

@@ -1,0 +1,30 @@
+name: Boletín «Planes del finde»
+
+# Los jueves por la mañana, después de la actualización diaria: crea en Brevo la campaña con la
+# edición de esta semana (site/boletin/email.html). Sin el secreto BREVO_API_KEY no hace nada.
+# Por defecto la deja en borrador; con la variable BOLETIN_ENVIO=auto la envía sola.
+on:
+  schedule:
+    - cron: "12 8 * * 4"   # jueves 08:12 UTC (09:12 en Madrid en invierno)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  campana:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q requests
+      - name: Crear la campaña en Brevo
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_LIST_ID: ${{ vars.BREVO_LIST_ID }}
+          BREVO_SENDER_EMAIL: ${{ vars.BREVO_SENDER_EMAIL }}
+          BREVO_SENDER_NAME: ${{ vars.BREVO_SENDER_NAME }}
+          BOLETIN_ENVIO: ${{ vars.BOLETIN_ENVIO }}
+        run: python3 tools/boletin_brevo.py

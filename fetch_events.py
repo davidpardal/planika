@@ -23,7 +23,7 @@ sys.path.insert(0, ROOT)
 # es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
 EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
 
-from planes import classify, llm, partidos, publish, salas, seo, static, util  # noqa: E402
+from planes import boletin, classify, llm, partidos, publish, salas, seo, static, util  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
@@ -159,6 +159,10 @@ def write_site(args, site_dir, payload):
                                     state_path=os.path.join(ROOT, "data", "sitemap_state.json"),
                                     fichas_path=os.path.join(ROOT, "data", "fichas_publicadas.json"))
         publish.prerender_index(site_dir, events)  # primeros planes en HTML estático en la portada
+        ed = boletin.write(site_dir, events, today())  # boletín «Planes del finde» (web, email y feed)
+        if ed:
+            log("Boletín del finde %s: %d planes, %d en la selección" % (boletin.iso(ed["fri"]), ed["total"],
+                len(ed["top"]) + len(ed["free"]) + len(ed["kids"]) + sum(len(c[4]) for c in ed["cities"])))
         static.stamp_index(site_dir)  # versiones en las URL de estilos, datos y app de la portada
         indexables = sum(1 for e in events if seo.is_indexable(e))
         log("Generados %d feeds RSS y %d páginas estáticas (%d fichas indexables de %d); %d fichas de planes que ya no están, con aviso"
