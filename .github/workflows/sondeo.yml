@@ -14,4 +14,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q -r requirements.txt
-      - run: python3 tools/sondeo/dump.py
+      - run: python3 tools/sondeo/nominatim_diag.py
