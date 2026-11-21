@@ -163,26 +163,63 @@ def reel_cerca(browser):
     r.glide(page.evaluate("window.scrollY") + 400, 1.1, "Ordenados por distancia")
     mapb = page.locator('#view [data-view="map"]')
     r.glide_to(mapb, 200, 0.8, "4 · O míralos en el mapa")
-    r.tap(mapb, "4 · O míralos en el mapa", wait=4500, hold=1.2)
-    mk = page.locator("#map .leaflet-marker-icon:not(.marker-cluster)").first
-    if mk.count():
-        r.tap(mk, "4 · O míralos en el mapa", wait=900, hold=1.0)
+    r.tap(mapb, "4 · O míralos en el mapa", wait=4500, hold=0.6)
+    r.glide_to(page.locator("#map"), 120, 0.8, "4 · O míralos en el mapa")
+    page.wait_for_timeout(1500)
+    r.shot(0.8, "4 · O míralos en el mapa")
+    # Los planes cercanos salen agrupados: se toca el grupo más grande hasta ver chinchetas sueltas.
+    for _ in range(3):
+        if page.locator("#map .leaflet-marker-icon:not(.marker-cluster)").count():
+            break
+        cl = page.locator("#map .marker-cluster")
+        if not cl.count():
+            break
+        best, bn = 0, -1
+        for k in range(cl.count()):
+            try:
+                n = int((cl.nth(k).inner_text() or "0").strip() or 0)
+            except ValueError:
+                n = 0
+            if n > bn:
+                best, bn = k, n
+        r.tap(cl.nth(best), "4 · O míralos en el mapa", wait=1600, hold=0.7)
+    mk = page.locator("#map .leaflet-marker-icon:not(.marker-cluster)")
+    target = None
+    for k in range(mk.count()):
+        b = mk.nth(k).bounding_box()
+        if b and 40 < b["y"] < VH - 60 and 30 < b["x"] < VW - 30:
+            target = mk.nth(k)
+            break
+    if target is not None:
+        r.tap(target, "5 · Toca uno y mira el plan", wait=900, hold=1.0)
         op = page.locator("#map .leaflet-popup [data-open]").first
         if op.count():
-            r.tap(op, "5 · Y toda la info del plan", wait=1600, hold=1.6)
+            r.tap(op, "5 · Toca uno y mira el plan", wait=1800, hold=1.8)
     ctx.close()
 
 
 def main():
+    import shutil
     os.makedirs(OUT, exist_ok=True)
+    only = [x for x in os.environ.get("REELS", "buscar,guardar,cerca").split(",") if x]
+    fns = {"buscar": reel_buscar, "guardar": reel_guardar, "cerca": reel_cerca}
+    old = []
+    try:  # se conservan las capturas de los reels que no se repiten
+        with open(os.path.join(OUT, "timeline.json"), encoding="utf-8") as fh:
+            old = [f for f in json.load(fh)["frames"] if f["reel"] not in only]
+    except (OSError, ValueError, KeyError):
+        pass
+    for name in only:
+        shutil.rmtree(os.path.join(OUT, name), ignore_errors=True)
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        for fn in (reel_buscar, reel_guardar, reel_cerca):
+        for name in only:
             try:
-                fn(browser)
+                fns[name](browser)
             except Exception:
                 traceback.print_exc()
         browser.close()
+    FRAMES[:0] = old
     with open(os.path.join(OUT, "timeline.json"), "w", encoding="utf-8") as fh:
         json.dump({"vw": VW, "vh": VH, "frames": FRAMES}, fh, ensure_ascii=False, indent=0)
     for name in ("buscar", "guardar", "cerca"):

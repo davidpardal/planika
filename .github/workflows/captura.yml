@@ -16,13 +16,17 @@ jobs:
           python-version: "3.12"
       - run: sudo apt-get install -y -q fonts-roboto fonts-noto-color-emoji >/dev/null
       - run: pip install -q playwright && python -m playwright install --with-deps chromium >/dev/null
+      - name: Capturas anteriores
+        run: git clone -q --depth 1 -b capturas "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" capturas || mkdir capturas
       - run: python3 tools/sondeo/captura.py
+        env:
+          REELS: cerca
       - name: Subir las capturas a la rama capturas
         run: |
           cd capturas
-          git init -q -b capturas
+          [ -d .git ] || git init -q -b capturas
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add -A
           git commit -q -m "Capturas $(date -u +%FT%TZ)"
-          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" capturas
+          git push -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:capturas
