@@ -187,6 +187,22 @@
       "url": "https://www.turismoasturias.es/es/agenda-de-asturias/fiestas/-/calendarsuite/event/mercado-artesano-y-ecologico-de-gijon/3778223/jr0cMeS144cd",
       "refs": ["https://www.turismoasturias.es/es/agenda-de-asturias/fiestas/-/calendarsuite/event/mercado-artesano-y-ecologico-de-gijon/3778223/jr0cMeS144cd"],
       "checked": "2026-11-20"
+    },
+    {
+      "id": "pamplona-bulego-acustico-2026-11-21",
+      "title": "Bulego en acústico: presentación de «amore»",
+      "start": "2026-11-21",
+      "end": "2026-11-21",
+      "time": "21:30",
+      "city": "Pamplona / Iruña",
+      "province": "Navarra",
+      "venue": "Txalaparta",
+      "description": "Bulego cierra en Pamplona su recorrido de un día por los siete territorios de Euskal Herria: siete conciertos acústicos en salas pequeñas para presentar «amore», su tercer disco, que sale en enero de 2027. Entrada gratuita hasta completar el aforo.",
+      "category": "musica",
+      "free": true,
+      "url": "https://orain.eus/es/cultura/musica/2026/11/16/bulego-realizara-el-sabado-siete-actuaciones-acusticas-en-los-siete-territorios-euskal-herria/",
+      "refs": ["https://orain.eus/es/cultura/musica/2026/11/16/bulego-realizara-el-sabado-siete-actuaciones-acusticas-en-los-siete-territorios-euskal-herria/"],
+      "checked": "2026-11-21"
     }
   ]
 }
