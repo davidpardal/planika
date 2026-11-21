@@ -461,6 +461,31 @@ def _card(e, up="../", t0=None):
         ("<div class=\"src\">Fuente: %s</div>" % html.escape(e["source"])) if e.get("source") else "")
 
 
+def prerender_index(site_dir, events, t0=None, n=24):
+    """Pinta en la portada (index.html) los primeros planes de la lista y el recuento, en HTML estático.
+    Sin esto la portada llega vacía hasta que se descargan los datos (core.js, varios MB): los buscadores
+    ven una página sin planes y en el móvil el contenido tarda en aparecer. La app sustituye esta lista
+    por la suya en cuanto carga. Los eventos llegan ya en el orden por defecto (static.default_order)."""
+    t0 = t0 or iso(today())
+    path = os.path.join(site_dir, "index.html")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            page = fh.read()
+    except OSError:
+        return False
+    items = [e for e in events if not is_permanent(e) and e["end"] >= t0]
+    cards = "".join(_card(e, "", t0).replace('<article class="card">', '<article class="card pop%d">' % (i % 4), 1)
+                    for i, e in enumerate(items[:n]))
+    out = re.sub(r'(<section id="list" class="list" aria-live="polite">).*?(</section>)',
+                 lambda m: m.group(1) + cards + m.group(2), page, count=1, flags=re.S)
+    out = re.sub(r'(<h2 class="count" id="count" aria-live="polite">).*?(</h2>)',
+                 lambda m: m.group(1) + "%s planes" % fmt_n(len(items)) + m.group(2), out, count=1, flags=re.S)
+    if out != page:
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(out)
+    return out != page
+
+
 def _cards(items, up, t0=None):
     return "<div class=\"list\">%s</div>" % "".join(_card(e, up, t0) for e in items[:FIRST_PAGE])
 

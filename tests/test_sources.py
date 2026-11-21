@@ -349,6 +349,25 @@ def _jj_post(i, link, title, excerpt, content="", cats=(1336, 30)):
             "content": {"rendered": content}, "categories": list(cats)}
 
 
+class TestGaliciaIds(unittest.TestCase):
+    def test_same_id_from_calendar_and_rss(self):
+        from planes import src_galicia
+        ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:abc-123@cultura.gal\nSUMMARY:Sistema Lupo\nDTSTART:20261128T110000\n"
+               "DTEND:20261128T120000\nLOCATION:Biblioteca - A Coruña - A Coruña\nURL:https://www.cultura.gal/gl/sistema-lupo\n"
+               "END:VEVENT\nEND:VCALENDAR\n")
+        rss = ("<rss><channel><item><title>Sistema Lupo</title><link>https://www.cultura.gal/gl/evento/1/2/3</link>"
+               "<pubDate>Sat, 28 Nov 2026 11:00:00 +0100</pubDate><description><![CDATA[<div class=\"info\">x<br>Biblioteca - A Coruña - A Coruña</div>]]>"
+               "</description></item></channel></rss>")
+        from unittest import mock
+        with mock.patch.object(src_galicia, "http_text", side_effect=[ics]):
+            a = src_galicia.fetch(lambda *x: None)
+        with mock.patch.object(src_galicia, "http_text", side_effect=[OSError(), OSError(), rss]):
+            b = src_galicia.fetch(lambda *x: None)
+        self.assertEqual(len(a), 1)
+        self.assertEqual(len(b), 1)
+        self.assertEqual(a[0]["id"], b[0]["id"])
+
+
 class TestJimmyJazz(unittest.TestCase):
     from datetime import date
     T0 = date(2026, 11, 20)
