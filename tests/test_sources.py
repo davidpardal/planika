@@ -205,6 +205,35 @@ class TestDeportePro(unittest.TestCase):
                          ("Real Madrid CF - FC Barcelona", "2026-11-22", "21:00", "Madrid", "deporte"))
         self.assertEqual((evs[1]["province"], evs[1]["time"]), ("Álava", ""))
 
+    def test_laliga_official_fixes(self):
+        data = {"matches": [
+            {"round": "Matchday 13", "date": "2026-11-22", "team1": "Athletic Club", "team2": "RCD Espanyol de Barcelona"},
+            {"round": "Matchday 13", "date": "2026-11-22", "team1": "Real Madrid CF", "team2": "RC Celta de Vigo"},
+            {"round": "Matchday 23", "date": "2027-02-07", "team1": "Real Sociedad de Fútbol", "team2": "Real Madrid CF"},
+        ]}
+        fixes = {"Real Madrid CF|RC Celta de Vigo": {"date": "2026-11-21", "time": "21:00"},
+                 "Real Sociedad de Fútbol|Real Madrid CF": {"date": "2026-12-02", "time": "19:00"},
+                 "Athletic Club|RCD Espanyol de Barcelona": {"date": "2026-11-20", "time": "21:00"}}
+        evs = {e["title"]: e for e in src_deporte_pro.parse_laliga(data, "2026-11-21", fixes=fixes)}
+        self.assertNotIn("Athletic Club - RCD Espanyol de Barcelona", evs)  # ya jugado según el día oficial
+        rm = evs["Real Madrid CF - RC Celta de Vigo"]
+        self.assertEqual((rm["start"], rm["time"]), ("2026-11-21", "21:00"))
+        rs = evs["Real Sociedad de Fútbol - Real Madrid CF"]  # adelantado por la Supercopa
+        self.assertEqual((rs["start"], rs["time"]), ("2026-12-02", "19:00"))
+        plain = src_deporte_pro.parse_laliga(data, "2026-11-21")
+        self.assertEqual({e["id"] for e in plain if "Celta" in e["title"]}, {rm["id"]})  # el id no cambia
+
+    def test_laliga_fixes_file(self):
+        fixes = src_deporte_pro.load_fixes()
+        names = set(src_deporte_pro.LALIGA_CLUBS)
+        for key, fix in fixes.items():
+            home, away = key.split("|")
+            self.assertIn(home, names, key)
+            self.assertIn(away, names, key)
+            self.assertRegex(fix["date"], r"^\d{4}-\d{2}-\d{2}$")
+            self.assertRegex(fix.get("time", ""), r"^(\d{2}:\d{2})?$")
+            self.assertTrue(fix.get("refs"), key)
+
     def test_euroleague(self):
         item = ("<item><gameday>7</gameday><arenaname>BUESA ARENA</arenaname><date>%s</date><startime>20:30</startime>"
                 "<gamecode>E2026_70</gamecode><hometeam>KOSNER BASKONIA</hometeam><homecode>%s</homecode>"

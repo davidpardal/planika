@@ -23,7 +23,7 @@ sys.path.insert(0, ROOT)
 # es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
 EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
 
-from planes import classify, llm, publish, seo, static  # noqa: E402
+from planes import classify, llm, publish, seo, static, util  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
@@ -194,6 +194,7 @@ def main():
             sources.append({"key": key, "name": mod.NAME, "home": mod.HOME, "count": counts[key],
                             "seconds": 0, "error": "", "stale_from": ""})
         n_curated = counts["curated"]
+        util.canon_cities(payload["events"])
         payload["sources"] = sources
         payload["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
         with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
@@ -245,6 +246,9 @@ def main():
                             "seconds": round(time.time() - started, 1), "error": error, "stale_from": stale})
         log("  -> %d dentro del horizonte (%.1fs)" % (len(kept), time.time() - started))
 
+    renamed = util.canon_cities(all_events)
+    if renamed:
+        log("Nombres de localidad unificados: %d planes" % renamed)
     before = len(all_events)
     all_events = dedupe(all_events)
     all_events, same_venue = dedupe_venue(all_events)

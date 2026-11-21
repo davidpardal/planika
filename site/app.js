@@ -196,19 +196,99 @@
       .forEach(function (p) { var o = document.createElement('option'); o.value = p.code; o.textContent = p.name + ' (' + pc[p.code] + ')'; sel.appendChild(o); });
     sel.value = cur; if (sel.value !== cur) { state.prov = ''; }
   }
-  // "Dónde": un solo desplegable con las provincias agrupadas por comunidad (valores "c:<comunidad>" y "p:<código>").
+  // "Dónde": se escribe y se sugieren los lugares con planes que empiezan por lo escrito (comunidades, provincias y
+  // localidades), sin distinguir mayúsculas ni tildes. También vale el otro nombre oficial (Gasteiz, Iruña, Alacant…)
+  // o el nombre sin artículo ni «Comunidad de» (Coruña, Rioja, Valenciana…), pero esos van detrás.
+  var PLACES = [];
+  var STRIP = /^(a|o|el|la|las|los|les|l'|comunidad foral de|comunidad de|comunitat|region de|principado de|illes|islas|ciudad autonoma de|ciudad de) +/;
+  // Otros nombres de uso corriente (castellano o lengua cooficial) de las provincias y comunidades.
+  var ALIAS = { 'alava': ['araba'], 'alicante': ['alacant'], 'illes balears': ['baleares', 'islas baleares'], 'castellon': ['castello'],
+    'a coruna': ['la coruna'], 'girona': ['gerona'], 'gipuzkoa': ['guipuzcoa'], 'lleida': ['lerida'], 'navarra': ['nafarroa'],
+    'ourense': ['orense'], 'bizkaia': ['vizcaya'], 'pais vasco': ['euskadi'], 'cataluna': ['catalunya'],
+    'comunitat valenciana': ['comunidad valenciana'], 'galicia': ['galiza'], 'donostia / san sebastian': ['san sebastian'] };
+  function placeKeys(name) {
+    var n = norm(name), keys = [n].concat(ALIAS[n] || []);
+    n.split(/\s*[\/\-]\s*/).slice(1).forEach(function (k) { if (k) keys.push(k); });
+    var b = n.replace(STRIP, ''); if (b !== n) keys.push(b);
+    return keys;
+  }
   function fillWhere(ccaas) {
-    var pc = provCounts(); var sel = $('where');
-    Object.keys(ccaas).sort(function (a, b) { return a.localeCompare(b, 'es'); }).forEach(function (c) {
-      var provs = DATA.provinces.filter(function (p) { return p.ccaa === c && pc[p.code]; })
-        .sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
-      if (!provs.length) return;
-      var g = document.createElement('optgroup'); g.label = c;
-      if (provs.length > 1) { var o = document.createElement('option'); o.value = 'c:' + c; o.textContent = c + ', toda la comunidad (' + ccaas[c].toLocaleString('es-ES') + ')'; g.appendChild(o); }
-      provs.forEach(function (p) { var o = document.createElement('option'); o.value = 'p:' + p.code; o.textContent = p.name + ' (' + pc[p.code].toLocaleString('es-ES') + ')'; g.appendChild(o); });
-      sel.appendChild(g);
+    var pc = provCounts(); var list = [];
+    Object.keys(ccaas).forEach(function (c) {
+      var provs = DATA.provinces.filter(function (p) { return p.ccaa === c && pc[p.code]; });
+      if (provs.length > 1) list.push({ t: 'c', v: c, name: c, kind: 'Comunidad', n: ccaas[c] });
     });
+    DATA.provinces.forEach(function (p) { if (pc[p.code]) list.push({ t: 'p', v: p.code, name: p.name, kind: 'Provincia', n: pc[p.code] }); });
+    var cities = {};
+    EVENTS.forEach(function (e) {
+      if (!e.city || !e.province_code) return;
+      var k = e.province_code + '|' + norm(e.city);
+      var c = cities[k] || (cities[k] = { n: 0, names: {}, prov: e.province_code });
+      c.n++; c.names[e.city] = (c.names[e.city] || 0) + 1;
+    });
+    Object.keys(cities).forEach(function (k) {
+      var c = cities[k];
+      var name = Object.keys(c.names).sort(function (a, b) { return c.names[b] - c.names[a]; })[0];
+      list.push({ t: 'l', v: name, prov: c.prov, name: name, kind: 'en ' + ((PROV[c.prov] || {}).name || ''), n: c.n });
+    });
+    list.forEach(function (p) { p.keys = placeKeys(p.name); });
+    PLACES = list.sort(function (a, b) { return b.n - a.n || a.name.localeCompare(b.name, 'es'); });
     syncWhere();
+  }
+  function matchPlaces(text) {
+    var q = norm(text).trim();
+    if (!q) return null;
+    var exact = [], first = [], other = [];
+    PLACES.forEach(function (p) {
+      if (p.keys[0] === q) exact.push(p);
+      else if (p.keys[0].indexOf(q) === 0) first.push(p);
+      else if (p.keys.some(function (k, i) { return i && k.indexOf(q) === 0; })) other.push(p);
+    });
+    return exact.concat(first, other);  // dentro de cada grupo, primero los que tienen más planes
+  }
+  function placeLabel() {
+    if (state.city) return state.city;
+    if (state.prov) return (PROV[state.prov] || {}).name || '';
+    return state.ccaa || '';
+  }
+  function syncWhere() { $('where').value = placeLabel(); $('whereClear').hidden = !$('where').value; }
+  var SUGG = [], ACTIVE = -1;
+  function boldPrefix(name, text) {
+    var q = norm(text).trim(), n = norm(name);
+    return n.indexOf(q) === 0 && q ? '<b>' + esc(name.slice(0, q.length)) + '</b>' + esc(name.slice(q.length)) : esc(name);
+  }
+  function showPlaces(text) {
+    var ul = $('whereList'), m = matchPlaces(text);
+    // Sin texto: «Toda España» y los lugares con más planes.
+    SUGG = m === null ? [{ t: 'all', name: 'Toda España', kind: 'Sin filtro de lugar', n: EVENTS.length }]
+      .concat(PLACES.filter(function (p) { return p.t !== 'c'; }).slice(0, 8)) : m;
+    ACTIVE = m && m.length ? 0 : -1;
+    ul.innerHTML = SUGG.length ? SUGG.map(function (p, i) {
+      return '<li role="option" id="wh' + i + '" data-i="' + i + '" aria-selected="' + (i === ACTIVE) + '">' +
+        '<span>' + boldPrefix(p.name, text) + '</span><span class="k">' + esc(p.kind) + ' · ' + p.n.toLocaleString('es-ES') + '</span></li>';
+    }).join('') : '<li class="none">Ningún lugar con planes empieza por «' + esc(text.trim()) + '»</li>';
+    ul.hidden = false; $('where').setAttribute('aria-expanded', 'true');
+    $('where').setAttribute('aria-activedescendant', ACTIVE >= 0 ? 'wh' + ACTIVE : '');
+    ul.scrollTop = 0;
+  }
+  function closePlaces() {
+    $('whereList').hidden = true; $('where').setAttribute('aria-expanded', 'false'); $('where').removeAttribute('aria-activedescendant');
+    SUGG = []; ACTIVE = -1;
+  }
+  function moveActive(d) {
+    if (!SUGG.length) return;
+    ACTIVE = (ACTIVE + d + SUGG.length) % SUGG.length;
+    $('whereList').querySelectorAll('li[role="option"]').forEach(function (li, i) { li.setAttribute('aria-selected', i === ACTIVE ? 'true' : 'false'); });
+    var li = $('wh' + ACTIVE); if (li) li.scrollIntoView({ block: 'nearest' });
+    $('where').setAttribute('aria-activedescendant', 'wh' + ACTIVE);
+  }
+  function pickPlace(p) {
+    state.ccaa = ''; state.prov = ''; state.city = '';
+    if (p && p.t === 'c') state.ccaa = p.v;
+    else if (p && p.t === 'p') state.prov = p.v;
+    else if (p && p.t === 'l') { state.prov = p.prov; state.city = p.v; }
+    $('ccaa').value = state.ccaa; fillProvinces(); $('prov').value = state.prov;
+    CITY_KEY = norm(state.city); fillCities(); syncWhere(); closePlaces(); refresh();
   }
   // "Ciudad": aparece al elegir provincia o comunidad, con las localidades que tienen planes allí.
   var CITY_KEY = '';
@@ -227,13 +307,9 @@
       return { key: k, name: best, n: counts[k] };
     }).sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
     keys.forEach(function (c) { var o = document.createElement('option'); o.value = c.name; o.textContent = c.name + ' (' + c.n.toLocaleString('es-ES') + ')'; sel.appendChild(o); });
-    $('cityField').hidden = keys.length < 2;
+    $('cityField').hidden = keys.length < 2 || !!state.city;  // con localidad elegida, ya se ve en «Dónde»
     var cur = keys.filter(function (c) { return c.key === norm(state.city); })[0];
     if (!cur) { state.city = ''; CITY_KEY = ''; sel.value = ''; } else { state.city = cur.name; CITY_KEY = cur.key; sel.value = cur.name; }
-  }
-  function syncWhere() {
-    var sel = $('where'); var v = state.prov ? 'p:' + state.prov : (state.ccaa ? 'c:' + state.ccaa : '');
-    sel.value = v; if (sel.value !== v) sel.value = '';
   }
   var WHAT_CATS = {};
   // Filtros de "Búsqueda avanzada" activos (para el contador y para abrirla si llegan en el enlace).
@@ -649,12 +725,38 @@
   var qt;
   $('q').addEventListener('input', function () { clearTimeout(qt); qt = setTimeout(function () { state.q = $('q').value.trim(); refresh(); }, 180); });
   $('ccaa').addEventListener('change', function () { state.ccaa = this.value; fillProvinces(); refresh(); });
-  $('where').addEventListener('change', function () {
-    var v = this.value;
-    state.ccaa = v.indexOf('c:') === 0 ? v.slice(2) : ''; state.prov = v.indexOf('p:') === 0 ? v.slice(2) : '';
-    $('ccaa').value = state.ccaa; fillProvinces(); $('prov').value = state.prov; state.city = ''; fillCities(); refresh();
+  var wh = $('where');
+  // En el móvil, el campo sube arriba de la pantalla para que la lista quepa encima del teclado.
+  var SMALL = window.matchMedia ? window.matchMedia('(max-width: 640px)') : { matches: false };
+  wh.addEventListener('focus', function () {
+    if (SMALL.matches) setTimeout(function () { wh.closest('.field').scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 250);
   });
-  $('city').addEventListener('change', function () { state.city = this.value; CITY_KEY = norm(this.value); refresh(); });
+  wh.addEventListener('focus', function () { var el = this; setTimeout(function () { try { el.setSelectionRange(0, el.value.length); } catch (e) { /* */ } }, 0); showPlaces(''); });
+  wh.addEventListener('input', function () { $('whereClear').hidden = !this.value; showPlaces(this.value); });
+  wh.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+      ev.preventDefault(); if ($('whereList').hidden) showPlaces(this.value); else moveActive(ev.key === 'ArrowDown' ? 1 : -1);
+    } else if (ev.key === 'Enter') {
+      ev.preventDefault();
+      if (!this.value.trim()) pickPlace(null);
+      else if (SUGG.length) pickPlace(SUGG[ACTIVE >= 0 ? ACTIVE : 0].t === 'all' ? null : SUGG[ACTIVE >= 0 ? ACTIVE : 0]);
+      this.blur();
+    } else if (ev.key === 'Escape') { closePlaces(); syncWhere(); this.blur(); }
+  });
+  // Al salir sin elegir: si se ha borrado todo es «Toda España»; si no, vuelve el lugar que había.
+  wh.addEventListener('blur', function () {
+    setTimeout(function () {
+      if (document.activeElement === wh) return;
+      if (!wh.value.trim() && placeLabel()) pickPlace(null); else { closePlaces(); syncWhere(); }
+    }, 150);
+  });
+  $('whereList').addEventListener('mousedown', function (ev) { ev.preventDefault(); });  // que el campo no pierda el foco
+  $('whereList').addEventListener('click', function (ev) {
+    var li = ev.target.closest('li[data-i]'); if (!li) return;
+    var p = SUGG[+li.dataset.i]; pickPlace(p && p.t !== 'all' ? p : null); wh.blur();
+  });
+  $('whereClear').addEventListener('click', function () { pickPlace(null); wh.focus(); });
+  $('city').addEventListener('change', function () { state.city = this.value; CITY_KEY = norm(this.value); fillCities(); syncWhere(); refresh(); });
   $('what').querySelectorAll('a.chip').forEach(function (a) { if (a.dataset.cat) WHAT_CATS[a.dataset.cat] = true; });
   $('what').addEventListener('click', function (ev) {
     var a = ev.target.closest('a.chip');
