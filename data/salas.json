@@ -376,6 +376,7 @@
 "31|pamplona / iruna|museo universidad de navarra": {"checked": "2026-11-21", "lat": 42.803222, "lon": -1.657299, "nombre": "Museo Universidad de Navarra", "ok": true, "osm": "way/268442778", "q": "Museo Universidad de Navarra", "tipo": "tourism=museum"},
 "31|pamplona / iruna|navarra arena": {"checked": "2026-11-21", "lat": 42.795974, "lon": -1.635372, "nombre": "Navarra Arena", "ok": true, "osm": "way/160661442", "q": "Navarra Arena", "tipo": "leisure=stadium"},
 "31|pamplona / iruna|teatro gayarre": {"checked": "2026-11-21", "lat": 42.815757, "lon": -1.641484, "nombre": "Teatro Julián Gayarre", "ok": true, "osm": "way/127615691", "q": "gayarre", "tipo": "amenity=theatre"},
+"31|pamplona / iruna|txalaparta": {"checked": "2026-11-21", "lat": 42.817504, "lon": -1.647664, "nombre": "Txalaparta", "ok": true, "osm": "node/13440740873", "q": "Txalaparta", "tipo": "shop=books"},
 "31|pamplona / iruna|zentral cafe teatro": {"checked": "2026-11-21", "ok": false},
 "31|ribaforada|auditorio baranain": {"checked": "2026-11-21", "ok": false},
 "31|ribaforada|casa de cultura de ribaforada": {"checked": "2026-11-21", "ok": false},
