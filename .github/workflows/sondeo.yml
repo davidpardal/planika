@@ -2,6 +2,7 @@ name: Sondeo de fuentes (rama de pruebas, no desplegar)
 on:
   push:
     branches: [sondeo]
+    paths: ["tools/sondeo/dump.py", ".github/workflows/sondeo.yml"]
 permissions:
   contents: read
 jobs:
@@ -14,4 +15,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q -r requirements.txt
-      - run: python3 tools/sondeo/nominatim_diag.py
+      - run: python3 tools/sondeo/dump.py
