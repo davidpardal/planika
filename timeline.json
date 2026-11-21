@@ -1580,17 +1580,17 @@
 "reel": "cerca",
 "img": "cerca/068.jpg",
 "dur": 0.45,
-"cap": "4 · O míralos en el mapa",
+"cap": "5 · Toca uno y mira el plan",
 "tap": [
-195.0,
-309.7
+128.5,
+267.2
 ]
 },
 {
 "reel": "cerca",
 "img": "cerca/069.jpg",
-"dur": 0.7,
-"cap": "4 · O míralos en el mapa",
+"dur": 1.0,
+"cap": "5 · Toca uno y mira el plan",
 "tap": null
 },
 {
@@ -1599,9 +1599,23 @@
 "dur": 0.45,
 "cap": "5 · Toca uno y mira el plan",
 "tap": [
-64.5,
-525.2
+87.3,
+234.3
 ]
+},
+{
+"reel": "cerca",
+"img": "cerca/071.jpg",
+"dur": 1.8,
+"cap": "5 · Toca uno y mira el plan",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/072.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y mira el plan",
+"tap": null
 }
 ]
 }
