@@ -1,0 +1,194 @@
+"""Capturas de la web real (planikaapp.com) para los reels tutoriales.
+
+Maneja la web en un móvil simulado, hace una captura JPEG tras cada paso y escribe capturas/timeline.json
+con la duración de cada captura, el texto del paso y dónde se toca. El vídeo se monta aparte.
+"""
+import json
+import os
+import traceback
+
+from playwright.sync_api import sync_playwright
+
+SITE = "https://planikaapp.com/"
+OUT = "capturas"
+VW, VH = 390, 700
+FRAMES = []
+
+
+class Reel:
+    def __init__(self, page, name):
+        self.page, self.name, self.n = page, name, 0
+        os.makedirs(os.path.join(OUT, name), exist_ok=True)
+
+    def shot(self, dur, cap, tap=None):
+        img = "%s/%03d.jpg" % (self.name, self.n)
+        self.n += 1
+        self.page.screenshot(path=os.path.join(OUT, img), type="jpeg", quality=90)
+        FRAMES.append({"reel": self.name, "img": img, "dur": dur, "cap": cap, "tap": tap})
+
+    def center(self, loc):
+        b = loc.bounding_box()
+        return [round(b["x"] + b["width"] / 2, 1), round(b["y"] + b["height"] / 2, 1)]
+
+    def glide(self, y_target, secs, cap, fps=12):
+        """Desplaza la página poco a poco hasta scrollY = y_target, con una captura por paso."""
+        y0 = self.page.evaluate("window.scrollY")
+        n = max(1, int(secs * fps))
+        for i in range(1, n + 1):
+            k = i / n
+            k = k * k * (3 - 2 * k)
+            self.page.evaluate("y => window.scrollTo(0, y)", y0 + (y_target - y0) * k)
+            self.page.wait_for_timeout(30)
+            self.shot(1 / fps, cap)
+
+    def glide_to(self, loc, at_y, secs, cap):
+        b = loc.bounding_box()
+        y = self.page.evaluate("window.scrollY") + b["y"] - at_y
+        self.glide(max(0, y), secs, cap)
+
+    def tap(self, loc, cap, wait=700, hold=1.0, pre=0.45):
+        c = self.center(loc)
+        self.shot(pre, cap, tap=c)
+        loc.tap()
+        self.page.wait_for_timeout(wait)
+        self.shot(hold, cap)
+
+
+def new_page(browser, geo=None):
+    ctx = browser.new_context(viewport={"width": VW, "height": VH}, device_scale_factor=2, is_mobile=True, has_touch=True,
+                              locale="es-ES", timezone_id="Europe/Madrid",
+                              user_agent="Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Mobile Safari/537.36",
+                              geolocation=geo, permissions=["geolocation"] if geo else [])
+    # Sin analítica: las capturas no deben contar como visitas.
+    ctx.route("**/*", lambda r: r.abort() if any(h in r.request.url for h in ("googletagmanager", "google-analytics", "analytics.google")) else r.continue_())
+    page = ctx.new_page()
+    return ctx, page
+
+
+def open_site(page, url=SITE):
+    page.goto(url, wait_until="domcontentloaded", timeout=60000)
+    page.wait_for_function("document.querySelector('#list article[data-id]')", timeout=60000)
+    page.wait_for_timeout(2500)
+    page.evaluate("window.scrollTo(0, 0)")
+    page.wait_for_timeout(300)
+
+
+def reel_buscar(browser):
+    ctx, page = new_page(browser)
+    r = Reel(page, "buscar")
+    open_site(page)
+    r.shot(1.8, "intro")
+    where = page.locator("#where")
+    r.glide_to(where, 260, 0.6, "1 · Escribe dónde")
+    r.tap(where, "1 · Escribe dónde", wait=1100, hold=0.5)
+    for ch in "Vit":
+        page.keyboard.type(ch)
+        page.wait_for_timeout(350)
+        r.shot(0.6, "1 · Escribe dónde")
+    sug = page.locator("#whereList li[data-i]").first
+    r.tap(sug, "2 · Toca tu ciudad", wait=1300, hold=1.1)
+    wk = page.locator('#quick [data-range="weekend"]')
+    r.glide_to(wk, 330, 0.5, "3 · Elige cuándo")
+    r.tap(wk, "3 · Elige cuándo", wait=900, hold=1.0)
+    free = page.locator('#what [data-free="1"]')
+    r.tap(free, "4 · ¿Solo gratis? Un toque", wait=900, hold=1.0)
+    r.glide_to(page.locator("#count"), 70, 1.0, "¡Listo! Tus planes")
+    r.shot(0.8, "¡Listo! Tus planes")
+    r.glide(page.evaluate("window.scrollY") + 420, 1.2, "¡Listo! Tus planes")
+    link = page.locator("#list article[data-id] h3 a").first
+    r.tap(link, "5 · Toca uno y ves la ficha", wait=2200, hold=1.3)
+    r.glide(page.evaluate("window.scrollY") + 380, 1.0, "5 · Toca uno y ves la ficha")
+    r.shot(0.8, "5 · Toca uno y ves la ficha")
+    ctx.close()
+
+
+def reel_guardar(browser):
+    ctx, page = new_page(browser)
+    r = Reel(page, "guardar")
+    open_site(page, SITE + "?prov=48&city=Bilbao")
+    r.shot(1.6, "intro")
+    cards = page.locator("#list article[data-id]")
+    fav1 = cards.nth(0).locator(".fav")
+    r.glide_to(fav1, 430, 1.0, "1 · Pulsa ☆ y se guarda")
+    r.tap(fav1, "1 · Pulsa ☆ y se guarda", wait=500, hold=0.8)
+    fav2 = cards.nth(1).locator(".fav")
+    r.glide_to(fav2, 430, 0.8, "1 · Pulsa ☆ y se guarda")
+    r.tap(fav2, "1 · Pulsa ☆ y se guarda", wait=500, hold=0.8)
+    cal = cards.nth(1).locator(".addcal")
+    cal.tap()  # la primera vez carga los detalles del plan
+    page.wait_for_timeout(1800)
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(400)
+    r.tap(cal, "2 · Y a tu calendario", wait=700, hold=1.6)
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(300)
+    adv = page.locator("#adv > summary")
+    r.glide_to(adv, 250, 1.0, "3 · Tus guardados, siempre a mano")
+    r.tap(adv, "3 · Tus guardados, siempre a mano", wait=700, hold=0.6)
+    favs = page.locator('label.check:has(#favs)')
+    r.glide_to(favs, 380, 0.6, "3 · Tus guardados, siempre a mano")
+    r.tap(favs, "3 · Tus guardados, siempre a mano", wait=900, hold=0.6)
+    r.glide_to(page.locator("#count"), 90, 0.8, "3 · Tus guardados, siempre a mano")
+    r.shot(1.4, "3 · Tus guardados, siempre a mano")
+    calv = page.locator('#view [data-view="cal"]')
+    r.tap(calv, "4 · O en el calendario", wait=1200, hold=1.0)
+    day = page.locator("#calGrid .day.has:not(.out)").first
+    if day.count():
+        r.glide_to(day, 360, 0.6, "4 · O en el calendario")
+        r.tap(day, "4 · O en el calendario", wait=900, hold=0.6)
+        r.glide(page.evaluate("window.scrollY") + 300, 0.9, "4 · O en el calendario")
+        r.shot(1.0, "4 · O en el calendario")
+    ctx.close()
+
+
+def reel_cerca(browser):
+    ctx, page = new_page(browser, geo={"latitude": 42.8467, "longitude": -2.6716})  # Vitoria-Gasteiz
+    r = Reel(page, "cerca")
+    open_site(page)
+    r.shot(1.6, "intro")
+    adv = page.locator("#adv > summary")
+    r.glide_to(adv, 300, 0.8, "1 · Abre «Búsqueda avanzada»")
+    r.tap(adv, "1 · Abre «Búsqueda avanzada»", wait=700, hold=0.7)
+    geo = page.locator("#geoBtn")
+    r.glide_to(geo, 360, 0.6, "2 · Activa «Cerca de mí»")
+    r.tap(geo, "2 · Activa «Cerca de mí»", wait=1800, hold=0.9)
+    rad = page.locator("#radius")
+    c = r.center(rad)
+    r.shot(0.45, "3 · Elige a cuántos km", tap=c)
+    rad.select_option("10")
+    page.wait_for_timeout(900)
+    r.shot(0.9, "3 · Elige a cuántos km")
+    r.glide_to(page.locator("#count"), 80, 0.9, "Ordenados por distancia")
+    r.shot(0.6, "Ordenados por distancia")
+    r.glide(page.evaluate("window.scrollY") + 400, 1.1, "Ordenados por distancia")
+    mapb = page.locator('#view [data-view="map"]')
+    r.glide_to(mapb, 200, 0.8, "4 · O míralos en el mapa")
+    r.tap(mapb, "4 · O míralos en el mapa", wait=4500, hold=1.2)
+    mk = page.locator("#map .leaflet-marker-icon:not(.marker-cluster)").first
+    if mk.count():
+        r.tap(mk, "4 · O míralos en el mapa", wait=900, hold=1.0)
+        op = page.locator("#map .leaflet-popup [data-open]").first
+        if op.count():
+            r.tap(op, "5 · Y toda la info del plan", wait=1600, hold=1.6)
+    ctx.close()
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        for fn in (reel_buscar, reel_guardar, reel_cerca):
+            try:
+                fn(browser)
+            except Exception:
+                traceback.print_exc()
+        browser.close()
+    with open(os.path.join(OUT, "timeline.json"), "w", encoding="utf-8") as fh:
+        json.dump({"vw": VW, "vh": VH, "frames": FRAMES}, fh, ensure_ascii=False, indent=0)
+    for name in ("buscar", "guardar", "cerca"):
+        fr = [f for f in FRAMES if f["reel"] == name]
+        print(name, len(fr), "capturas, %.1f s" % sum(f["dur"] for f in fr))
+
+
+if __name__ == "__main__":
+    main()
