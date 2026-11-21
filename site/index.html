@@ -25,9 +25,9 @@
 <meta name="apple-mobile-web-app-title" content="Planika">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="alternate" type="application/rss+xml" title="Planika · próximos planes" href="feeds/todos.xml">
-<link rel="stylesheet" href="styles.css?v=4213b1c1f5">
+<link rel="stylesheet" href="styles.css?v=a72930f1d0">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://planikaapp.com/#web","name":"Planika","url":"https://planikaapp.com/","inLanguage":"es","description":"Agenda de planes de ocio en toda España: conciertos, teatro, exposiciones, deporte, ferias y fiestas por provincia, con calendario, entradas y un clic para guardarlos en tu agenda.","publisher":{"@id":"https://planikaapp.com/#org"}},{"@type":"Organization","@id":"https://planikaapp.com/#org","name":"Planika","url":"https://planikaapp.com/","logo":"https://planikaapp.com/icon.svg","sameAs":["https://www.instagram.com/planikaapp/"]}]}</script>
 <!-- GA4 solo se carga tras consentimiento explícito. -->
 <script defer src="/consent.js"></script>
@@ -41,6 +41,7 @@
       <p class="lead">Conciertos, teatro, exposiciones, deporte, ferias y fiestas recogidos de agendas públicas. Filtra por provincia y tipo de plan, mira el calendario y guarda el plan en tu agenda.</p>
       <p class="meta" id="meta"></p>
       <p class="social"><a class="ig" href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener"><span aria-hidden="true">📸</span> Síguenos en Instagram: <strong>@planikaapp</strong></a></p>
+      <p class="install" id="installWrap" hidden><button type="button" class="btn primary" id="installBtn"><span aria-hidden="true">📲</span> Instala Planika en tu móvil</button> <span class="install-note">Gratis, sin tienda de apps y funciona sin conexión</span></p>
     </div>
     <picture><source type="image/webp" srcset="hero-800.webp 800w, hero.webp 1200w" sizes="(min-width: 900px) 46vw, 100vw"><img class="hero-img" src="hero.jpg" width="1200" height="900" fetchpriority="high" decoding="async" alt="PLANIKA en letras pop art sobre cuatro colores, con la palabra planes en castellano, euskera y catalán, y términos como concierto, cine, teatro, jaia, exposición, rutas, talleres, danza y festival en varios idiomas"></picture>
   </div>
@@ -175,8 +176,16 @@
 <div id="menu" class="menu" hidden></div>
 <dialog id="modal" class="modal"><button type="button" class="close" id="modalClose" aria-label="Cerrar">✕</button><div id="modalBody"></div></dialog>
 <div id="toast" class="toast" hidden></div>
-<script defer src="data/core.js?v=4dd5459d4f"></script>
-<script defer src="data/d/0.js?v=b142aaccb4"></script>
-<script defer src="app.js?v=2c61f671f2"></script>
+<div id="offline" class="offline-bar" role="status" hidden>📴 Sin conexión: ves los planes de tu última visita</div>
+<dialog id="installHelp" class="modal install-help"><button type="button" class="close" id="installHelpClose" aria-label="Cerrar">✕</button>
+<h2>Instala Planika</h2>
+<p id="installIos">En el iPhone o iPad, desde <strong>Safari</strong>:</p>
+<ol id="installIosSteps"><li>Pulsa el botón <strong>Compartir</strong> <span aria-hidden="true">(el cuadrado con la flecha hacia arriba)</span>.</li><li>Elige <strong>Añadir a pantalla de inicio</strong>.</li><li>Pulsa <strong>Añadir</strong>. Planika aparecerá con su icono, como una app más.</li></ol>
+<p id="installIosApp" class="install-note">¿Estás dentro de Instagram? Abre antes la página en Safari (menú ··· → «Abrir en el navegador»).</p>
+<p id="installOther" hidden>Abre el menú del navegador (⋮) y elige <strong>Instalar app</strong> o <strong>Añadir a pantalla de inicio</strong>.</p>
+</dialog>
+<script defer src="data/core.js?v=04109eef4e"></script>
+<script defer src="data/d/0.js?v=8dc0c721dc"></script>
+<script defer src="app.js?v=b7f7e966bd"></script>
 </body>
 </html>
