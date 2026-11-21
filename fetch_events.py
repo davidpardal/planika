@@ -23,7 +23,7 @@ sys.path.insert(0, ROOT)
 # es un archivo interno del pipeline y no debe publicarse en la web (pesa ~9 MB).
 EVENTS_FILE = os.path.join(ROOT, "data", "events.json")
 
-from planes import classify, llm, publish, salas, seo, static, util  # noqa: E402
+from planes import classify, llm, partidos, publish, salas, seo, static, util  # noqa: E402
 from planes.classify import CATEGORIES  # noqa: E402
 from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
@@ -255,6 +255,9 @@ def main():
     before = len(all_events)
     all_events = dedupe(all_events)
     all_events, same_venue = dedupe_venue(all_events)
+    all_events, same_match = partidos.dedupe_matches(all_events)
+    if same_match:
+        log("Mismo partido en dos fuentes: %d unidos" % same_match)
     # Salas: las agendas que dan el centro del municipio (Euskadi y Navarra) pasan al punto de la sala
     geo_budget = float(os.environ.get("PLANIKA_GEO_BUDGET") or 0)
     sala_cache = salas.load()
