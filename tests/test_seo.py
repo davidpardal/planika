@@ -275,6 +275,140 @@ class TestArchitecture(unittest.TestCase):
             self.assertTrue(any("enlace roto" in e for e in errors), errors)
 
 
+class _Day:
+    """Fija la fecha de «hoy» en todos los módulos que la usan (las pruebas corren cualquier día del año)."""
+    def __init__(self, iso_day):
+        from datetime import date
+        self.d = date.fromisoformat(iso_day)
+
+    def __enter__(self):
+        from unittest import mock
+        self.ps = [mock.patch.object(m, "today", return_value=self.d) for m in (publish, static, seo, util)]
+        for p in self.ps:
+            p.start()
+        return self
+
+    def __exit__(self, *a):
+        for p in self.ps:
+            p.stop()
+
+
+class TestPuente(unittest.TestCase):
+    def test_puente_dates(self):
+        cases = {2025: ("2025-12-06", "2025-12-08"), 2026: ("2026-12-05", "2026-12-08"), 2027: ("2027-12-04", "2027-12-08"),
+                 2028: ("2028-12-06", "2028-12-10"), 2029: ("2029-12-06", "2029-12-09"), 2030: ("2030-12-06", "2030-12-08")}
+        for y, (a, b) in cases.items():
+            pa, pb = publish.puente_diciembre(y)
+            self.assertEqual((util.iso(pa), util.iso(pb)), (a, b), y)
+        self.assertEqual(publish.puente_rango(*publish.puente_diciembre(2026)), "del sábado 5 al martes 8 de diciembre")
+        self.assertTrue(publish.puente_estado("2026-11-20")[3])
+        self.assertTrue(publish.puente_estado("2026-12-08")[3])
+        self.assertEqual(publish.puente_estado("2026-12-09")[:1] + (publish.puente_estado("2026-12-09")[3],), (2026, False))
+        self.assertEqual(publish.puente_estado("2027-03-01")[0], 2026)  # fuera de temporada: el último puente
+        self.assertFalse(publish.puente_estado("2027-09-30")[3])
+
+    def _evs(self):
+        evs = [dict(rich(i, free=(i % 4 == 0)), start="2026-12-%02d" % (5 + i % 4), end="2026-12-%02d" % (5 + i % 4)) for i in range(30)]
+        evs += [dict(rich(100 + i, province_code="28", city="Madrid"), start="2026-12-06", end="2026-12-06") for i in range(6)]
+        evs += [dict(rich(200 + i, category="navidad"), title="Mercado de Navidad %d" % i, start="2026-12-05", end="2026-12-08") for i in range(3)]
+        evs += [rich(300, province_code="50", city="Zaragoza")]  # fuera del puente
+        return evs
+
+    def test_puente_page_in_season(self):
+        with _Day("2026-11-20"), tempfile.TemporaryDirectory() as tmp:
+            pages = build(tmp, self._evs())
+            self.assertIn("puente-diciembre.html", pages)
+            page = read(tmp, "puente-diciembre.html")
+            self.assertIn("<title>Puente de diciembre 2026: qué hacer del 5 al 8 de diciembre · Planika</title>", page)
+            self.assertIn('content="index,follow', page)
+            self.assertIn("Hay 39 planes con fecha del sábado 5 al martes 8 de diciembre", page)
+            self.assertIn('<section id="navidad">', page)
+            self.assertIn('<section id="bizkaia">', page)
+            self.assertIn('<section id="madrid">', page)
+            self.assertIn("Sábado 5</a> (", page)
+            self.assertNotIn("Zaragoza", page.split("Planes del puente por provincia")[1].split("Otras páginas")[0])
+            self.assertIn('href="puente-diciembre.html"', read(tmp, "planes-gratis.html"))  # enlazada desde los hubs
+            self.assertIn("puente-diciembre.html", read(tmp, "sitemap-paginas.xml"))
+            self.assertEqual(seo_check.check(tmp, SITE)[0], [])
+
+    def test_puente_page_out_of_season_is_noindex(self):
+        with _Day("2026-12-09"), tempfile.TemporaryDirectory() as tmp:
+            evs = [dict(rich(i), start="2026-12-10", end="2026-12-10") for i in range(25)]
+            pages = build(tmp, evs)
+            self.assertNotIn("puente-diciembre.html", pages)
+            page = read(tmp, "puente-diciembre.html")  # la dirección sigue existiendo: no da 404
+            self.assertIn('content="noindex,follow"', page)
+            self.assertIn("El puente de diciembre de 2026 ya pasó", page)
+            self.assertNotIn("puente-diciembre.html", read(tmp, "sitemap-paginas.xml"))
+            self.assertNotIn('href="puente-diciembre.html"', read(tmp, "planes-gratis.html"))
+            self.assertEqual(seo_check.check(tmp, SITE)[0], [])
+
+
+class TestGoneFichas(unittest.TestCase):
+    def _build(self, tmp, evs):
+        return publish.write_pages(tmp, evs, [], "2026-11-18T04:30", state_path=os.path.join(tmp, "state.json"),
+                                   fichas_path=os.path.join(tmp, "fichas.json"))
+
+    def test_gone_fichas_stay_with_notice_for_60_days(self):
+        a = dict(rich(1), start="2026-11-20", end="2026-11-20")
+        b = dict(rich(2), start="2026-11-20", end="2026-11-20", title="Concierto que ya pasó")
+        c = dict(rich(3), start="2026-11-28", end="2026-11-28", title="Concierto que se cancela")
+        d = dict(rich(4), start="2026-11-29", end="2026-11-29", title="Concierto con nombre viejo")
+        e = dict(rich(5), start="2026-11-30", end="2026-11-30", title="Concierto que cambia de id")
+        others = [dict(rich(10 + i), start="2026-11-25", end="2026-11-25") for i in range(3)]
+        with tempfile.TemporaryDirectory() as tmp:
+            with _Day("2026-11-20"):
+                self._build(tmp, [a, b, c, d, e] + others)
+            fb, fc, fd = (static.event_file(x) for x in (b, c, d))
+            d2 = dict(d, title="Concierto con nombre nuevo")
+            e2 = dict(e, id="otroid5")
+            with _Day("2026-11-21"):
+                pages = self._build(tmp, [d2, e2] + others)  # a y b ya pasaron, c desaparece, d cambia de título, e de id
+                self.assertIn('url=%s"' % static.event_file(e2), read(tmp, "e", static.event_file(e)))
+                past = read(tmp, "e", fb)
+                self.assertIn('content="noindex,follow"', past)
+                self.assertIn("<title>Concierto que ya pasó (ya pasó) · Planika</title>", past)
+                self.assertIn("Planes parecidos próximos", past)
+                self.assertIn(static.event_file(others[0]), past)       # enlaza planes próximos de la misma ciudad
+                self.assertIn('href="../p/bizkaia.html"', past)
+                self.assertIn("ya no aparece en la agenda", read(tmp, "e", fc))
+                moved = read(tmp, "e", fd)
+                self.assertIn('http-equiv="refresh"', moved)
+                self.assertIn('<link rel="canonical" href="%s/e/%s">' % (SITE, static.event_file(d2)), moved)
+                self.assertNotIn("e/" + fb, pages)                       # no cuenta como página indexable
+                self.assertNotIn(fb, read(tmp, "sitemap-fichas.xml"))
+                state = json.loads(read(tmp, "fichas.json"))
+                self.assertEqual(state[fb]["g"], "2026-11-21")
+                self.assertNotIn("g", state[static.event_file(d2)])
+            with _Day("2027-01-20"):  # 60 días después de desaparecer: se mantiene
+                self._build(tmp, others)
+                self.assertTrue(os.path.exists(os.path.join(tmp, "e", fb)))
+            with _Day("2027-01-21"):  # al día 61, la dirección deja de existir
+                self._build(tmp, others)
+                self.assertFalse(os.path.exists(os.path.join(tmp, "e", fb)))
+                self.assertNotIn(fb, json.loads(read(tmp, "fichas.json")))
+
+    def test_same_name_same_day_is_not_redirected(self):
+        a1 = dict(rich(1), title="Taller de pilates", start="2026-11-25", end="2026-11-25")
+        a2 = dict(rich(2), title="Taller de pilates", start="2026-11-25", end="2026-11-25")
+        a3 = dict(rich(3), title="Taller de pilates", start="2026-11-25", end="2026-11-25")
+        with tempfile.TemporaryDirectory() as tmp:
+            with _Day("2026-11-20"):
+                self._build(tmp, [a1, a2])
+            with _Day("2026-11-21"):
+                self._build(tmp, [a2, a3])  # a1 desaparece; a3 es otro taller con el mismo nombre
+                page = read(tmp, "e", static.event_file(a1))
+                self.assertNotIn('http-equiv="refresh"', page)
+                self.assertIn("ya no aparece en la agenda", page)
+
+    def test_bad_state_names_are_ignored(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with open(os.path.join(tmp, "fichas.json"), "w") as fh:
+                json.dump({"../../index.html": {"id": "x", "t": "x", "s": "2026-01-01", "e": "2026-01-01", "k": "musica", "pc": "48"}}, fh)
+            self._build(tmp, [rich(1)])
+            self.assertFalse(os.path.exists(os.path.join(tmp, "index.html")))
+
+
 class TestSeason(unittest.TestCase):
     def test_xmas_sections(self):
         mk = lambda i, t, d, **kw: util.event("Agenda", "x%d" % i, t, d, province_code="28", city="Madrid", **kw)
