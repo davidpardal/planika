@@ -39,14 +39,16 @@ PAUSE = 1.1             # segundos entre peticiones (política de Nominatim: má
 _VENUE = {"amenity": {"theatre", "arts_centre", "cinema", "library", "community_centre", "conference_centre", "events_venue",
                       "music_venue", "nightclub", "exhibition_centre", "social_centre", "townhall", "university", "college",
                       "place_of_worship", "public_bookcase", "planetarium", "concert_hall", "auditorium", "school", "casino"},
-          "tourism": {"museum", "gallery", "attraction", "theme_park", "zoo", "aquarium", "artwork"},
+          "tourism": {"museum", "gallery", "attraction", "theme_park", "zoo", "aquarium"},
           "leisure": {"stadium", "sports_centre", "sports_hall", "ice_rink", "bullring", "water_park", "dance"},
-          "historic": None, "building": {"public", "civic", "yes", "church", "cathedral", "palace", "castle", "university",
+          "historic": {"castle", "monument", "building", "manor", "monastery", "church", "archaeological_site", "city_gate",
+                       "fort", "palace", "tower", "ruins", "aqueduct", "theatre", "amphitheatre"}, "building": {"public", "civic", "yes", "church", "cathedral", "palace", "castle", "university",
                                          "college", "school", "train_station", "stadium", "sports_hall", "theatre", "cinema",
                                          "museum", "monastery", "industrial", "commercial", "hall"},
           "office": {"government"}}
 _OPEN = {"leisure": {"park", "garden", "nature_reserve", "marina", "pitch"}, "place": {"square"},
-         "landuse": {"cemetery", "retail", "recreation_ground"}, "man_made": {"lighthouse", "tower"}}
+         "landuse": {"cemetery", "retail", "recreation_ground"}, "man_made": {"lighthouse", "tower"},
+         "tourism": {"artwork", "viewpoint"}, "historic": {"memorial"}}
 _MINOR = {"amenity": {"bar", "pub", "cafe", "restaurant", "fast_food", "biergarten", "ice_cream"},
           "shop": None, "tourism": {"hotel", "hostel", "guest_house", "information"}, "craft": None}
 _SCORE = ((_VENUE, 2.0), (_OPEN, 1.0), (_MINOR, 0.5))
@@ -58,16 +60,23 @@ _HINTS = (({"teatro", "antzokia", "auditorio", "auditorium", "teatre"}, {"theatr
           ({"estadio", "estadi", "arena", "pabellon", "polideportivo", "frontoia", "fronton", "kiroldegia"},
            {"stadium", "sports_centre", "sports_hall"}),
           ({"civico", "gizarte", "kultur", "cultura", "kulturgunea", "kulturetxea", "etxea"}, {"community_centre", "arts_centre", "social_centre", "library"}),
-          ({"galeria", "galeria", "aretoa", "erakusketa"}, {"gallery", "arts_centre", "museum"}))
+          ({"galeria", "aretoa", "erakusketa"}, {"gallery", "arts_centre", "museum"}),
+          ({"iglesia", "eliza", "ermita", "parroquia", "basilica", "catedral", "santuario", "convento", "monasterio"}, {"place_of_worship"}),
+          ({"escuela", "eskola", "ikastola", "colegio", "ikastetxea", "instituto", "facultad", "universidad", "campus"},
+           {"school", "college", "university"}))
+# Tipos que solo valen si el nombre de la sala los nombra (comparten nombre con el barrio o el santo)
+_HINT_TYPES = {"library", "place_of_worship", "school", "college", "university"}
 # Palabras que no distinguen una sala (para buscar solo por lo propio: «Sala Rekalde» -> «Rekalde»)
 _GENERIC_WORDS = set("""teatro antzokia auditorio aretoa sala salon centro civico gizarte etxea kultur kulturgunea casa cultura
     biblioteca liburutegia municipal udal museo museoa fabrica palacio jauregia real club jazz fundazioa fundacion espacio
     gunea de del la el las los y en the plaza enparantza calle kalea parque parkea polideportivo frontoia cine cines zinema
-    galeria escuela eskola ikastola iglesia eliza ermita torre dorrea foral nuevo nueva viejo vieja""".split())
+    galeria escuela eskola ikastola iglesia eliza ermita torre dorrea foral nuevo nueva viejo vieja herri andra mari
+    zentroa kz kultur aula magna grados facultad sala gela eraikina interpretacion""".split())
 _PAREN = re.compile(r"\s*[\(\[]([^)\]]*)[\)\]]\s*")
 # Nombres que no son una sala concreta
 _GENERIC = {"", "online", "en linea", "varios", "varios espacios", "varios lugares", "diversos espacios", "por determinar",
-            "consultar", "otros", "calle", "calles", "centro", "casco historico", "casco viejo", "todo el municipio"}
+            "consultar", "otros", "calle", "calles", "centro", "casco historico", "casco viejo", "todo el municipio",
+            "lugar por determinar", "lugar a determinar", "por confirmar", "a confirmar", "diversos lugares", "varias sedes"}
 
 
 def key(province_code, city, venue):
@@ -238,17 +247,17 @@ def _score(r, venue_words):
     return base + 2 * float(r.get("importance") or 0)
 
 
-def plan(venue):
+def plan(venue, city=""):
     """Consultas en orden: las formas del nombre y, al final, solo sus palabras propias (en OpenStreetMap la
     sala suele llamarse distinto: «Palacio Real de la Almudaina» es «Palau de l'Almudaina»)."""
     out = [(q, False) for q in queries(venue)]
-    own = distinctive(venue)
+    own = distinctive(venue, city)
     if own and len(own) <= 3 and " ".join(sorted(own)) not in {norm(q) for q, _ in out}:
         out.append((" ".join(w for w in norm(_PAREN.sub(" ", venue)).split() if w in own), True))
     return out[:4]
 
 
-def pick(results, ref, venue="", strict=False):
+def pick(results, ref, venue="", strict=False, city=""):
     """El mejor resultado: un lugar concreto (no una calle, una parada ni un barrio), cerca de la referencia y,
     entre varios, el que más parece una sala. Con strict (búsqueda solo por las palabras propias) se exige
     que sea una sala o un edificio y que su nombre lleve esas palabras."""
@@ -268,7 +277,7 @@ def pick(results, ref, venue="", strict=False):
             continue
         if strict:
             name = set(norm(r.get("name") or r.get("display_name", "").split(",")[0]).split())
-            if sc < 2 or not distinctive(venue) <= name:
+            if sc < 2 or not distinctive(venue, city) <= name or not hint_ok(words, r.get("type")):
                 continue
         if best is None or sc > best[0]:
             cls = r.get("category") or r.get("class")
@@ -277,9 +286,18 @@ def pick(results, ref, venue="", strict=False):
     return best[1] if best else None
 
 
-def distinctive(venue):
-    """Las palabras propias del nombre de la sala, sin las genéricas ni lo que va entre paréntesis."""
-    return {w for w in norm(_PAREN.sub(" ", venue or "")).split() if len(w) >= 4 and w not in _GENERIC_WORDS and not w.isdigit()}
+def hint_ok(venue_words, typ):
+    """En la búsqueda por palabras propias, una biblioteca, una iglesia o un colegio solo valen si el nombre lo dice («Sala Rekalde» no es
+    la biblioteca de Rekalde; «Cine Andra Mari» no es la iglesia de Andra Mari)."""
+    if typ not in _HINT_TYPES:
+        return True
+    return any(venue_words & words and typ in types for words, types in _HINTS)
+
+
+def distinctive(venue, city=""):
+    """Las palabras propias del nombre de la sala, sin las genéricas, las de la localidad ni lo que va entre paréntesis."""
+    skip = _GENERIC_WORDS | set(norm(city).split())
+    return {w for w in norm(_PAREN.sub(" ", venue or "")).split() if len(w) >= 4 and w not in skip and not w.isdigit()}
 
 
 def _search(q, ref):
@@ -308,12 +326,12 @@ def geocode(events, log, cache=None, budget=90.0, search=_search, sleep=time.sle
             if time.time() - started > budget:
                 break
             hit = None
-            for q, strict in plan(venue):
+            for q, strict in plan(venue, city):
                 wait = PAUSE - (time.time() - last)
                 if wait > 0:
                     sleep(wait)
                 last = time.time()
-                hit = pick(search(q, ref), ref, venue, strict)
+                hit = pick(search(q, ref), ref, venue, strict, city)
                 if hit:
                     hit["q"] = q
                     break

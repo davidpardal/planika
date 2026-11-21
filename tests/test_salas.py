@@ -70,6 +70,14 @@ class TestSalas(unittest.TestCase):
         self.assertEqual(salas.pick([street, palau], palma, "Palacio Real de la Almudaina", strict=True)["nombre"], "Palau de l'Almudaina")
         self.assertIsNone(salas.pick([street], palma, "Palacio Real de la Almudaina", strict=True))
 
+    def test_strict_rules(self):
+        # Las palabras de la localidad y las genéricas (herri, kultur...) no cuentan como propias
+        self.assertEqual(salas.plan("Herri Antzokia Soraluze", "Soraluze"), [("Herri Antzokia Soraluze", False)])
+        # «Sala Rekalde» no es la biblioteca del barrio de Rekalde; «Biblioteca de Rekalde» sí
+        lib = {"category": "amenity", "type": "library", "lat": "43.25", "lon": "-2.94", "name": "Biblioteca municipal de Rekalde"}
+        self.assertIsNone(salas.pick([lib], BILBAO, "Sala Rekalde", strict=True, city="Bilbao"))
+        self.assertIsNotNone(salas.pick([lib], BILBAO, "Biblioteca Rekalde", strict=True, city="Bilbao"))
+
     def test_fix_coords(self):
         evs = [{"lat": -6.05205, "lon": 42.45574}, {"lat": 4047862.1, "lon": 205135.2}, {"lat": 40.4, "lon": -3.7}]
         self.assertEqual(salas.fix_coords(evs), 2)
