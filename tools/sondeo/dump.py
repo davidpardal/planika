@@ -1,13 +1,13 @@
-import requests, json
-K = "90fc021a491df512d0db3e97830567b5"
-for u in ("https://planikaapp.com/%s.txt" % K, "https://www.planikaapp.com/%s.txt" % K):
+"""Sondeo: cadena de redirecciones de las variantes del dominio y DNS."""
+import socket, subprocess
+import requests
+for u in ["http://planikaapp.com/", "https://www.planikaapp.com/", "http://www.planikaapp.com/", "https://planikaapp.com/",
+          "https://davidpardal.github.io/planika/", "https://www.planikaapp.com/p/bizkaia.html"]:
     try:
-        r = requests.get(u, timeout=30, allow_redirects=True)
-        print(u, "->", r.url, r.status_code, r.headers.get("content-type"), repr(r.text[:80]))
-    except Exception as e: print(u, "ERR", e)
-body = {"host": "planikaapp.com", "key": K, "keyLocation": "https://planikaapp.com/%s.txt" % K, "urlList": ["https://planikaapp.com/planes-hoy.html"]}
-for ep in ("https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow", "https://yandex.com/indexnow"):
-    try:
-        r = requests.post(ep, json=body, timeout=30)
-        print(ep, r.status_code, r.reason, repr(r.text[:300]))
-    except Exception as e: print(ep, "ERR", e)
+        r = requests.get(u, allow_redirects=False, timeout=20, headers={"User-Agent": "Mozilla/5.0"})
+        print(u, "->", r.status_code, r.headers.get("location"), r.headers.get("server"))
+    except Exception as e:
+        print(u, "ERROR", e)
+for h in ["planikaapp.com", "www.planikaapp.com"]:
+    print(h, subprocess.run(["dig", "+short", h, "A"], capture_output=True, text=True).stdout.split())
+    print(h, "CNAME", subprocess.run(["dig", "+short", h, "CNAME"], capture_output=True, text=True).stdout.split())
