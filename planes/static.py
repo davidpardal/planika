@@ -17,10 +17,8 @@ from .classify import CATEGORIES
 from .util import is_permanent, iso, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
-# Analítica: Google Analytics 4 (cuenta de Planika, planikaapp.com@gmail.com). El ID de medición es público por diseño: viaja en el HTML de cada página.
-BEACON = ('<script async src="https://www.googletagmanager.com/gtag/js?id=G-E4DXWFYPH1"></script>'
-                    '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}'
-                    'gtag("js",new Date());gtag("config","G-E4DXWFYPH1");</script>')
+# GA4 se carga desde consent.js únicamente tras aceptación explícita.
+BEACON = '<script defer src="/consent.js"></script>'
 CHUNK = 250  # planes por bloque de detalles
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
@@ -340,7 +338,7 @@ _EVENT_PAGE = """<!doctype html>
 <div class="src">Fuente: %(source)s%(srclink)s. %(updated)sComprueba siempre fechas y precios en la web del organizador.</div>
 </div></article>
 <nav class="foot evnav"><h2 class="sticker">Más planes</h2>%(related)s
-<p>%(city_link)s<a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
+<p>%(city_link)s<a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="../aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
 </main></body></html>
 """
 
