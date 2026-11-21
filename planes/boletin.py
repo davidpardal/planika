@@ -270,7 +270,7 @@ _PAGE = """<!doctype html>
 <main class="wrap" style="max-width:680px">
 %(email)s
 %(archive)s
-<nav class="foot" style="border:0;margin-top:30px"><p><a href="/">Inicio</a> · <a href="/planes-este-fin-de-semana.html">Planes este fin de semana</a> · <a href="/feeds/boletin.xml">RSS del boletín</a> · <a href="/privacidad.html">Privacidad y cookies</a> · <a href="/aviso-legal.html">Aviso legal</a></p></nav>
+<nav class="foot" style="border:0;margin-top:30px"><p><a href="/">Inicio</a> · <a href="/planes-este-fin-de-semana.html">Planes este fin de semana</a> · <a href="/feeds/boletin.xml">RSS del boletín</a> · <a href="/privacidad.html">Privacidad y cookies</a> · <a href="/privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="/aviso-legal.html">Aviso legal</a></p></nav>
 </main></body></html>
 """
 
