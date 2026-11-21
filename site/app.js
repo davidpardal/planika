@@ -803,6 +803,37 @@
   $('nextM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); state.selDay = null; renderCalendar(); });
   $('todayM').addEventListener('click', function () { state.month = fromIso(TODAY); state.selDay = TODAY; renderCalendar(); });
 
+  // ---------- app instalable (PWA) y sin conexión
+  function track(name, params) { try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) { /* sin analítica */ } }
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var installEv = null;
+  if (!standalone) {
+    // Chrome, Edge y Samsung Internet avisan cuando se puede instalar; en iPhone hay que hacerlo desde Compartir
+    window.addEventListener('beforeinstallprompt', function (ev) { ev.preventDefault(); installEv = ev; $('installWrap').hidden = false; });
+    if (ios) $('installWrap').hidden = false;
+  } else {
+    track('pwa_open');
+  }
+  $('installBtn').addEventListener('click', function () {
+    track('pwa_install_click', { method: installEv ? 'prompt' : (ios ? 'ios' : 'menu') });
+    if (installEv) {
+      installEv.prompt();
+      installEv.userChoice.then(function (c) { track('pwa_install_choice', { outcome: c.outcome }); if (c.outcome === 'accepted') $('installWrap').hidden = true; });
+      installEv = null;
+      return;
+    }
+    $('installIos').hidden = $('installIosSteps').hidden = $('installIosApp').hidden = !ios; $('installOther').hidden = ios;
+    if ($('installHelp').showModal) $('installHelp').showModal(); else $('installHelp').setAttribute('open', '');
+  });
+  $('installHelpClose').addEventListener('click', function () { $('installHelp').close(); });
+  window.addEventListener('appinstalled', function () { $('installWrap').hidden = true; track('pwa_installed'); toast('¡Planika instalada! Ya la tienes en tu pantalla de inicio'); });
+  function netState() { $('offline').hidden = navigator.onLine !== false; }
+  window.addEventListener('online', netState); window.addEventListener('offline', netState); netState();
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () { /* sin service worker */ }); });
+  }
+
   // ---------- arranque
   var openId = readURL();
   window.PLANIKA_D = applyChunk;

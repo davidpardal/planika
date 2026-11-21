@@ -23,6 +23,11 @@ CHUNK = 250  # planes por bloque de detalles
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
 CAT_KEYS = [k for k, _, _ in CATEGORIES]
+# App instalable en todas las páginas: quien llega a una ficha desde Google también puede instalarla, y lo
+# que visita queda guardado para verlo sin conexión (site/sw.js). Va con la analítica en la cabecera.
+PWA_HEAD = ('<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png">'
+            '<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("/sw.js")})</script>')
+BEACON += PWA_HEAD
 LD_TYPE = {"musica": "MusicEvent", "escena": "TheaterEvent", "expos": "ExhibitionEvent", "cine": "ScreeningEvent",
            "deporte": "SportsEvent", "gastro": "FoodEvent", "infantil": "ChildrensEvent", "fiestas": "Festival",
            "charlas": "EducationEvent"}
