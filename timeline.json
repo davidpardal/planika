@@ -1,0 +1,1510 @@
+{
+"vw": 390,
+"vh": 700,
+"frames": [
+{
+"reel": "buscar",
+"img": "buscar/000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/001.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/002.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/008.jpg",
+"dur": 0.45,
+"cap": "1 · Escribe dónde",
+"tap": [
+195.0,
+281.8
+]
+},
+{
+"reel": "buscar",
+"img": "buscar/009.jpg",
+"dur": 0.5,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/010.jpg",
+"dur": 0.6,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/011.jpg",
+"dur": 0.6,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/012.jpg",
+"dur": 0.6,
+"cap": "1 · Escribe dónde",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/013.jpg",
+"dur": 0.45,
+"cap": "2 · Toca tu ciudad",
+"tap": [
+195.0,
+107.6
+]
+},
+{
+"reel": "buscar",
+"img": "buscar/014.jpg",
+"dur": 1.1,
+"cap": "2 · Toca tu ciudad",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/015.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige cuándo",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/016.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige cuándo",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/017.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige cuándo",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/018.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige cuándo",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/019.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige cuándo",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/020.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige cuándo",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/021.jpg",
+"dur": 0.45,
+"cap": "3 · Elige cuándo",
+"tap": [
+228.4,
+350.6
+]
+},
+{
+"reel": "buscar",
+"img": "buscar/022.jpg",
+"dur": 1.0,
+"cap": "3 · Elige cuándo",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/023.jpg",
+"dur": 0.45,
+"cap": "4 · ¿Solo gratis? Un toque",
+"tap": [
+100.3,
+482.6
+]
+},
+{
+"reel": "buscar",
+"img": "buscar/024.jpg",
+"dur": 1.0,
+"cap": "4 · ¿Solo gratis? Un toque",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/025.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/026.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/027.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/028.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/033.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/034.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/035.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/036.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/037.jpg",
+"dur": 0.8,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/038.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/039.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/040.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/041.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/045.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/046.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/047.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/048.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/049.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/050.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/051.jpg",
+"dur": 0.08333333333333333,
+"cap": "¡Listo! Tus planes",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/052.jpg",
+"dur": 0.45,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": [
+189.3,
+87.6
+]
+},
+{
+"reel": "buscar",
+"img": "buscar/053.jpg",
+"dur": 1.3,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/054.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/055.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/056.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/057.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/058.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/059.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/060.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/061.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/062.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/063.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/064.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/065.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "buscar",
+"img": "buscar/066.jpg",
+"dur": 0.8,
+"cap": "5 · Toca uno y ves la ficha",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/000.jpg",
+"dur": 1.6,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/001.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/002.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/008.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/009.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/010.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/011.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/012.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/013.jpg",
+"dur": 0.45,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": [
+282.7,
+449.5
+]
+},
+{
+"reel": "guardar",
+"img": "guardar/014.jpg",
+"dur": 0.8,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/015.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/016.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/017.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/018.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/019.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/020.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/021.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/022.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/023.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/024.jpg",
+"dur": 0.45,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": [
+282.7,
+449.4
+]
+},
+{
+"reel": "guardar",
+"img": "guardar/025.jpg",
+"dur": 0.8,
+"cap": "1 · Pulsa ☆ y se guarda",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/026.jpg",
+"dur": 0.45,
+"cap": "2 · Y a tu calendario",
+"tap": [
+197.5,
+449.4
+]
+},
+{
+"reel": "guardar",
+"img": "guardar/027.jpg",
+"dur": 1.6,
+"cap": "2 · Y a tu calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/028.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/033.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/034.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/035.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/036.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/037.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/038.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/039.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/040.jpg",
+"dur": 0.45,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": [
+195.0,
+272.1
+]
+},
+{
+"reel": "guardar",
+"img": "guardar/041.jpg",
+"dur": 0.6,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/045.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/046.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/047.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/048.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/049.jpg",
+"dur": 0.45,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": [
+114.5,
+396.6
+]
+},
+{
+"reel": "guardar",
+"img": "guardar/050.jpg",
+"dur": 0.6,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/051.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/052.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/053.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/054.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/055.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/056.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/057.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/058.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/059.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/060.jpg",
+"dur": 1.4,
+"cap": "3 · Tus guardados, siempre a mano",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/061.jpg",
+"dur": 0.45,
+"cap": "4 · O en el calendario",
+"tap": [
+161.4,
+209.7
+]
+},
+{
+"reel": "guardar",
+"img": "guardar/062.jpg",
+"dur": 1.0,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/063.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/064.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/065.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/066.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/067.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/068.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/069.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/070.jpg",
+"dur": 0.45,
+"cap": "4 · O en el calendario",
+"tap": [
+292.1,
+386.7
+]
+},
+{
+"reel": "guardar",
+"img": "guardar/071.jpg",
+"dur": 0.6,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/072.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/073.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/074.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/075.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/076.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/077.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/078.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/079.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/080.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/081.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "guardar",
+"img": "guardar/082.jpg",
+"dur": 1.0,
+"cap": "4 · O en el calendario",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/000.jpg",
+"dur": 1.6,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/001.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/002.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/008.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/009.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/010.jpg",
+"dur": 0.45,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": [
+195.0,
+322.1
+]
+},
+{
+"reel": "cerca",
+"img": "cerca/011.jpg",
+"dur": 0.7,
+"cap": "1 · Abre «Búsqueda avanzada»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/012.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/013.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/014.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/015.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/016.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/017.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/018.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/019.jpg",
+"dur": 0.45,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": [
+79.6,
+380.1
+]
+},
+{
+"reel": "cerca",
+"img": "cerca/020.jpg",
+"dur": 0.9,
+"cap": "2 · Activa «Cerca de mí»",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/021.jpg",
+"dur": 0.45,
+"cap": "3 · Elige a cuántos km",
+"tap": [
+195.0,
+428.6
+]
+},
+{
+"reel": "cerca",
+"img": "cerca/022.jpg",
+"dur": 0.9,
+"cap": "3 · Elige a cuántos km",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/023.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/024.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/025.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/026.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/027.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/028.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/033.jpg",
+"dur": 0.6,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/034.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/035.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/036.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/037.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/038.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/039.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/040.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/041.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/045.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/046.jpg",
+"dur": 0.08333333333333333,
+"cap": "Ordenados por distancia",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/047.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/048.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/049.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/050.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/051.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/052.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/053.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/054.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/055.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/056.jpg",
+"dur": 0.45,
+"cap": "4 · O míralos en el mapa",
+"tap": [
+273.5,
+220.7
+]
+},
+{
+"reel": "cerca",
+"img": "cerca/057.jpg",
+"dur": 1.2,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+}
+]
+}
