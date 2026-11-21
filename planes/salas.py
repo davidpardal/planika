@@ -34,10 +34,36 @@ MAX_KM = 12             # una sala no puede estar más lejos que esto del punto 
 BOX = (0.09, 0.12)      # caja de búsqueda alrededor de la referencia (grados de latitud y longitud, ~10 km)
 RETRY_DAYS = 45         # una sala no encontrada se vuelve a buscar pasado este tiempo
 PAUSE = 1.1             # segundos entre peticiones (política de Nominatim: máximo 1 por segundo)
-# Lo que devuelve Nominatim cuando no encuentra la sala sino la localidad o el barrio: no sirve
-_REJECT_CLASS = {"boundary"}
-_REJECT_PLACE = {"city", "town", "village", "hamlet", "municipality", "suburb", "quarter", "neighbourhood",
-                 "borough", "county", "state", "region", "province", "island", "locality", "isolated_dwelling"}
+# Qué tipo de lugar devuelve Nominatim: una sala de verdad puntúa más que un bar con el mismo nombre
+# (el bar «Kursaal» frente al palacio Kursaal). Calles, paradas, montes o barrios no sirven.
+_VENUE = {"amenity": {"theatre", "arts_centre", "cinema", "library", "community_centre", "conference_centre", "events_venue",
+                      "music_venue", "nightclub", "exhibition_centre", "social_centre", "townhall", "university", "college",
+                      "place_of_worship", "public_bookcase", "planetarium", "concert_hall", "auditorium", "school", "casino"},
+          "tourism": {"museum", "gallery", "attraction", "theme_park", "zoo", "aquarium", "artwork"},
+          "leisure": {"stadium", "sports_centre", "sports_hall", "ice_rink", "bullring", "water_park", "dance"},
+          "historic": None, "building": {"public", "civic", "yes", "church", "cathedral", "palace", "castle", "university",
+                                         "college", "school", "train_station", "stadium", "sports_hall", "theatre", "cinema",
+                                         "museum", "monastery", "industrial", "commercial", "hall"},
+          "office": {"government"}}
+_OPEN = {"leisure": {"park", "garden", "nature_reserve", "marina", "pitch"}, "place": {"square"},
+         "landuse": {"cemetery", "retail", "recreation_ground"}, "man_made": {"lighthouse", "tower"}}
+_MINOR = {"amenity": {"bar", "pub", "cafe", "restaurant", "fast_food", "biergarten", "ice_cream"},
+          "shop": None, "tourism": {"hotel", "hostel", "guest_house", "information"}, "craft": None}
+_SCORE = ((_VENUE, 2.0), (_OPEN, 1.0), (_MINOR, 0.5))
+# Palabras del nombre que dicen el tipo de sala y la clase de OpenStreetMap que le corresponde
+_HINTS = (({"teatro", "antzokia", "auditorio", "auditorium", "teatre"}, {"theatre", "arts_centre", "concert_hall", "auditorium"}),
+          ({"biblioteca", "liburutegia", "biblioteka", "bibliotheque", "biblioteques"}, {"library"}),
+          ({"museo", "museoa", "museu", "museum"}, {"museum", "gallery"}),
+          ({"cine", "cines", "zinema", "zinemak", "cinema"}, {"cinema"}),
+          ({"estadio", "estadi", "arena", "pabellon", "polideportivo", "frontoia", "fronton", "kiroldegia"},
+           {"stadium", "sports_centre", "sports_hall"}),
+          ({"civico", "gizarte", "kultur", "cultura", "kulturgunea", "kulturetxea", "etxea"}, {"community_centre", "arts_centre", "social_centre", "library"}),
+          ({"galeria", "galeria", "aretoa", "erakusketa"}, {"gallery", "arts_centre", "museum"}))
+# Palabras que no distinguen una sala (para buscar solo por lo propio: «Sala Rekalde» -> «Rekalde»)
+_GENERIC_WORDS = set("""teatro antzokia auditorio aretoa sala salon centro civico gizarte etxea kultur kulturgunea casa cultura
+    biblioteca liburutegia municipal udal museo museoa fabrica palacio jauregia real club jazz fundazioa fundacion espacio
+    gunea de del la el las los y en the plaza enparantza calle kalea parque parkea polideportivo frontoia cine cines zinema
+    galeria escuela eskola ikastola iglesia eliza ermita torre dorrea foral nuevo nueva viejo vieja""".split())
 _PAREN = re.compile(r"\s*[\(\[]([^)\]]*)[\)\]]\s*")
 # Nombres que no son una sala concreta
 _GENERIC = {"", "online", "en linea", "varios", "varios espacios", "varios lugares", "diversos espacios", "por determinar",
@@ -83,6 +109,29 @@ def _pt(e):
         return None
 
 
+SPAIN = (27.4, 44.0, -18.5, 4.6)  # lat y lon mínimas y máximas (con Canarias)
+
+
+def _in_spain(lat, lon):
+    return SPAIN[0] < lat < SPAIN[1] and SPAIN[2] < lon < SPAIN[3]
+
+
+def fix_coords(events):
+    """Coordenadas imposibles de algunas agendas: latitud y longitud al revés (se giran) o en otro sistema
+    (UTM, se quitan para buscar la sala). Devuelve cuántos planes se han tocado."""
+    n = 0
+    for e in events:
+        p = _pt(e)
+        if p is None or _in_spain(*p):
+            continue
+        if _in_spain(p[1], p[0]):
+            e["lat"], e["lon"] = p[1], p[0]
+        else:
+            e["lat"] = e["lon"] = None
+        n += 1
+    return n
+
+
 def usable_venue(venue):
     v = norm(venue)
     return len(v) >= 4 and v not in _GENERIC
@@ -120,9 +169,9 @@ def references(events):
 
 def apply(events, cache=None):
     """Pone en su sala los planes situados en el centro del municipio (o sin coordenadas) cuya sala ya está
-    localizada. Devuelve cuántos planes se han movido."""
+    localizada (y corrige coordenadas imposibles). Devuelve cuántos planes se han tocado."""
     cache = load() if cache is None else cache
-    n = 0
+    n = fix_coords(events)
     for i in imprecise(events):
         e = events[i]
         hit = cache.get(key(e["province_code"], e.get("city"), e["venue"]))
@@ -173,20 +222,64 @@ def queries(venue):
     return res[:3]
 
 
-def pick(results, ref):
-    """El primer resultado que es un lugar concreto (no la localidad ni un barrio) y está cerca de la referencia."""
+def _score(r, venue_words):
+    cls, typ = r.get("category") or r.get("class"), r.get("type")
+    base = 0.0
+    for table, pts in _SCORE:
+        if cls in table and (table[cls] is None or typ in table[cls]):
+            base = pts
+            break
+    if not base:
+        return 0.0
+    for words, types in _HINTS:
+        if venue_words & words and typ in types:
+            base += 1.0
+            break
+    return base + 2 * float(r.get("importance") or 0)
+
+
+def plan(venue):
+    """Consultas en orden: las formas del nombre y, al final, solo sus palabras propias (en OpenStreetMap la
+    sala suele llamarse distinto: «Palacio Real de la Almudaina» es «Palau de l'Almudaina»)."""
+    out = [(q, False) for q in queries(venue)]
+    own = distinctive(venue)
+    if own and len(own) <= 3 and " ".join(sorted(own)) not in {norm(q) for q, _ in out}:
+        out.append((" ".join(w for w in norm(_PAREN.sub(" ", venue)).split() if w in own), True))
+    return out[:4]
+
+
+def pick(results, ref, venue="", strict=False):
+    """El mejor resultado: un lugar concreto (no una calle, una parada ni un barrio), cerca de la referencia y,
+    entre varios, el que más parece una sala. Con strict (búsqueda solo por las palabras propias) se exige
+    que sea una sala o un edificio y que su nombre lleve esas palabras."""
+    words = set(norm(venue).split())
+    best = None
     for r in results or []:
-        cls, typ = r.get("category") or r.get("class"), r.get("type")
-        if cls in _REJECT_CLASS or (cls == "place" and typ in _REJECT_PLACE):
+        sc = _score(r, words)
+        if sc <= 0:
             continue
         try:
             p = (round(float(r["lat"]), 6), round(float(r["lon"]), 6))
         except (KeyError, TypeError, ValueError):
             continue
-        if km(p, ref) <= MAX_KM:
-            return {"lat": p[0], "lon": p[1], "osm": "%s/%s" % (r.get("osm_type", ""), r.get("osm_id", "")),
-                    "tipo": "%s=%s" % (cls, typ)}
-    return None
+        d = km(p, ref)
+        # Una sala lejos del centro puede ser buena (un estadio); un bar con el mismo nombre a 10 km, no
+        if d > (MAX_KM if sc >= 2 else 4):
+            continue
+        if strict:
+            name = set(norm(r.get("name") or r.get("display_name", "").split(",")[0]).split())
+            if sc < 2 or not distinctive(venue) <= name:
+                continue
+        if best is None or sc > best[0]:
+            cls = r.get("category") or r.get("class")
+            best = (sc, {"lat": p[0], "lon": p[1], "osm": "%s/%s" % (r.get("osm_type", ""), r.get("osm_id", "")),
+                         "tipo": "%s=%s" % (cls, r.get("type")), "nombre": (r.get("name") or "")[:80]})
+    return best[1] if best else None
+
+
+def distinctive(venue):
+    """Las palabras propias del nombre de la sala, sin las genéricas ni lo que va entre paréntesis."""
+    return {w for w in norm(_PAREN.sub(" ", venue or "")).split() if len(w) >= 4 and w not in _GENERIC_WORDS and not w.isdigit()}
 
 
 def _search(q, ref):
@@ -194,9 +287,10 @@ def _search(q, ref):
     params = {"q": q, "format": "jsonv2", "countrycodes": "es", "limit": 5, "bounded": 1, "accept-language": "es",
               "viewbox": "%.5f,%.5f,%.5f,%.5f" % (lon - BOX[1], lat + BOX[0], lon + BOX[1], lat - BOX[0])}
     r = _session.get(URL, params=params, headers={"User-Agent": UA, "Accept": "application/json"}, timeout=(10, 30))
-    if r.status_code in (403, 429):
+    if r.status_code in (403, 429) or r.status_code >= 500:
         raise RuntimeError("Nominatim ha respondido %d: se para la búsqueda" % r.status_code)
-    r.raise_for_status()
+    if r.status_code != 200:
+        return []  # consulta que no le gusta (400): sin resultado, se sigue con la siguiente
     return r.json()
 
 
@@ -205,6 +299,7 @@ def geocode(events, log, cache=None, budget=90.0, search=_search, sleep=time.sle
     Devuelve (encontradas, no encontradas, pendientes que quedan)."""
     cache = load(path) if cache is None else cache
     today = today or date.today()
+    fix_coords(events)
     todo = pending(events, cache, today)
     started, found, missed, done = time.time(), 0, 0, 0
     last = 0.0
@@ -213,12 +308,12 @@ def geocode(events, log, cache=None, budget=90.0, search=_search, sleep=time.sle
             if time.time() - started > budget:
                 break
             hit = None
-            for q in queries(venue):
+            for q, strict in plan(venue):
                 wait = PAUSE - (time.time() - last)
                 if wait > 0:
                     sleep(wait)
                 last = time.time()
-                hit = pick(search(q, ref), ref)
+                hit = pick(search(q, ref), ref, venue, strict)
                 if hit:
                     hit["q"] = q
                     break

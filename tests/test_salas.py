@@ -46,6 +46,35 @@ class TestSalas(unittest.TestCase):
         hit = salas.pick([town, far, near], BILBAO)
         self.assertEqual((hit["lat"], hit["lon"], hit["osm"]), (43.26, -2.925, "way/7"))
 
+    def test_pick_prefers_venue(self):
+        # Nominatim devuelve antes un bar y una inmobiliaria que se llaman igual que el palacio de congresos
+        res = [{"category": "amenity", "type": "bar", "lat": "43.3246", "lon": "-1.9765", "importance": 0},
+               {"category": "office", "type": "estate_agent", "lat": "43.3164", "lon": "-1.9726", "importance": 0},
+               {"category": "building", "type": "public", "lat": "43.3244", "lon": "-1.9785", "importance": 0.38, "name": "Kursaal jauregia"}]
+        self.assertEqual(salas.pick(res, (43.32073, -1.98445), "Kursaal")["tipo"], "building=public")
+        # Calles, paradas, montes: nunca
+        bad = [{"category": "highway", "type": "bus_stop", "lat": "43.2", "lon": "-2.9"},
+               {"category": "natural", "type": "peak", "lat": "43.2", "lon": "-2.9"}]
+        self.assertIsNone(salas.pick(bad, BILBAO, "Plaza Untzaga"))
+        # Un bar con el nombre de la sala a más de 4 km no es la sala
+        far_bar = [{"category": "amenity", "type": "restaurant", "lat": "43.20", "lon": "-2.83", "importance": 0}]
+        self.assertIsNone(salas.pick(far_bar, BILBAO, "Azkena"))
+
+    def test_plan_and_strict(self):
+        self.assertEqual(salas.plan("Palacio Real de la Almudaina"),
+                         [("Palacio Real de la Almudaina", False), ("almudaina", True)])
+        self.assertEqual(salas.plan("Kursaal"), [("Kursaal", False)])
+        palma = (39.5696, 2.6502)
+        palau = {"category": "historic", "type": "castle", "lat": "39.5676", "lon": "2.6480", "name": "Palau de l'Almudaina"}
+        street = {"category": "building", "type": "yes", "lat": "39.5676", "lon": "2.6480", "name": "Can Pere"}
+        self.assertEqual(salas.pick([street, palau], palma, "Palacio Real de la Almudaina", strict=True)["nombre"], "Palau de l'Almudaina")
+        self.assertIsNone(salas.pick([street], palma, "Palacio Real de la Almudaina", strict=True))
+
+    def test_fix_coords(self):
+        evs = [{"lat": -6.05205, "lon": 42.45574}, {"lat": 4047862.1, "lon": 205135.2}, {"lat": 40.4, "lon": -3.7}]
+        self.assertEqual(salas.fix_coords(evs), 2)
+        self.assertEqual([(e["lat"], e["lon"]) for e in evs], [(42.45574, -6.05205), (None, None), (40.4, -3.7)])
+
     def test_geocode_apply_and_cache(self):
         evs = [ev("Teatro Arriaga"), ev("Teatro Arriaga"), ev("Sala Inexistente"), ev("Sala BBK", 43.26, -2.93, source="Otra")]
         calls = []
