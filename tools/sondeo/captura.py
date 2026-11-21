@@ -49,7 +49,10 @@ class Reel:
     def tap(self, loc, cap, wait=700, hold=1.0, pre=0.45):
         c = self.center(loc)
         self.shot(pre, cap, tap=c)
-        loc.tap()
+        try:
+            loc.tap(timeout=5000)
+        except Exception:  # p. ej. chinchetas del mapa que Playwright no da por «estables»: toque en el punto
+            self.page.touchscreen.tap(c[0], c[1])
         self.page.wait_for_timeout(wait)
         self.shot(hold, cap)
 
@@ -142,7 +145,8 @@ def reel_guardar(browser):
 
 
 def reel_cerca(browser):
-    ctx, page = new_page(browser, geo={"latitude": 42.8467, "longitude": -2.6716})  # Vitoria-Gasteiz
+    # Barcelona (plaza de Catalunya): sus planes traen coordenadas propias y el mapa sale con chinchetas reales.
+    ctx, page = new_page(browser, geo={"latitude": 41.3870, "longitude": 2.1701})
     r = Reel(page, "cerca")
     open_site(page)
     r.shot(1.6, "intro")
@@ -195,6 +199,7 @@ def reel_cerca(browser):
         op = page.locator("#map .leaflet-popup [data-open]").first
         if op.count():
             r.tap(op, "5 · Toca uno y mira el plan", wait=1800, hold=1.8)
+            r.glide(page.evaluate("window.scrollY"), 0.1, "5 · Toca uno y mira el plan")
     ctx.close()
 
 
