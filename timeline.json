@@ -1502,9 +1502,106 @@
 {
 "reel": "cerca",
 "img": "cerca/057.jpg",
-"dur": 1.2,
+"dur": 0.6,
 "cap": "4 · O míralos en el mapa",
 "tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/058.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/059.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/060.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/061.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/062.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/063.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/064.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/065.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/066.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/067.jpg",
+"dur": 0.8,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/068.jpg",
+"dur": 0.45,
+"cap": "4 · O míralos en el mapa",
+"tap": [
+195.0,
+309.7
+]
+},
+{
+"reel": "cerca",
+"img": "cerca/069.jpg",
+"dur": 0.7,
+"cap": "4 · O míralos en el mapa",
+"tap": null
+},
+{
+"reel": "cerca",
+"img": "cerca/070.jpg",
+"dur": 0.45,
+"cap": "5 · Toca uno y mira el plan",
+"tap": [
+64.5,
+525.2
+]
 }
 ]
 }
