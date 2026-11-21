@@ -5,7 +5,7 @@ import re
 import html as _html
 
 from .classify import classify
-from .util import event, http_text, parse_date, parse_ics, strip_html
+from .util import event, http_text, norm, parse_date, parse_ics, strip_html
 
 NAME = "Axenda de Cultura de Galicia"
 # El portal cultura.gal sirve los mismos feeds que abertos.xunta.gal y responde desde más redes (GitHub incluida)
@@ -15,6 +15,12 @@ URL_ALT = ("https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/00
 HOME = "https://www.cultura.gal/gl/axenda"
 RSS = "https://www.cultura.gal/gl/rssaxenda"
 BROWSER = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
+
+
+def _sid(start, title):
+    """Id propio de la fuente: día y nombre. El calendario (UID) y el RSS (enlace) usan claves distintas, y
+    los días en que falla el calendario cada plan cambiaba de id y su ficha de dirección."""
+    return "%s|%s" % (start, norm(title))
 
 
 def fetch(log):
@@ -45,7 +51,7 @@ def fetch(log):
         t = (v.get("DTSTART") or "")
         tm = "%s:%s" % (t[9:11], t[11:13]) if "T" in t and len(t) >= 13 else ""
         ev = event(
-            NAME, v.get("UID"), v.get("SUMMARY"), start, end=end, time=tm, description=desc.split("http")[0],
+            NAME, _sid(start, v.get("SUMMARY")), v.get("SUMMARY"), start, end=end, time=tm, description=desc.split("http")[0],
             subtype=subtype, category=classify([subtype], v.get("SUMMARY"), desc),
             province=prov, city=city, venue=venue, url=v.get("URL") or HOME,
         )
@@ -78,7 +84,7 @@ def _fetch_rss(log):
         loc = lines[1] if len(lines) > 1 else ""
         parts = [x.strip() for x in loc.split(" - ") if x.strip()]
         desc = strip_html(info.group(1), 300) if info else strip_html(raw, 300)
-        ev = event(NAME, link or title, title, start, time=tm, description=desc, category=classify([], title, desc),
+        ev = event(NAME, _sid(start, title), title, start, time=tm, description=desc, category=classify([], title, desc),
                    venue=parts[0] if parts else "", city=parts[1] if len(parts) > 1 else "",
                    province=parts[-1] if len(parts) > 2 else _prov_from_text(loc), url=link or HOME,
                    image=img.group(1) if img else "")

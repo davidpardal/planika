@@ -434,6 +434,19 @@ class TestSeason(unittest.TestCase):
 
 
 class TestAssets(unittest.TestCase):
+    def test_prerender_index(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with open(os.path.join(tmp, "index.html"), "w", encoding="utf-8") as fh:
+                fh.write('<h2 class="count" id="count" aria-live="polite"></h2>\n<section id="list" class="list" aria-live="polite"></section>')
+            evs = static.default_order([rich(i) for i in range(30)])
+            self.assertTrue(publish.prerender_index(tmp, evs))
+            page = read(tmp, "index.html")
+            self.assertEqual(page.count("<article class=\"card pop"), 24)
+            self.assertIn('href="e/%s"' % static.event_file(evs[0]), page)
+            self.assertIn('aria-live="polite">30 planes</h2>', page)
+            self.assertFalse(publish.prerender_index(tmp, evs))  # sin cambios: no reescribe
+            self.assertEqual(page.count('<section id="list"'), 1)
+
     def test_stamp_index_versions_assets(self):
         with tempfile.TemporaryDirectory() as tmp:
             os.makedirs(os.path.join(tmp, "data", "d"))
