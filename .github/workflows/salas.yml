@@ -1,0 +1,29 @@
+name: Salas en OpenStreetMap (rama sondeo, carga inicial)
+on:
+  push:
+    branches: [sondeo]
+    paths: [".github/workflows/salas.yml"]
+permissions:
+  contents: write
+jobs:
+  salas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rama salas-geo
+        run: git clone -q --depth 1 -b salas-geo "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repo
+      - run: pip install -q -r repo/requirements.txt
+      - name: Buscar todas las salas pendientes (1 consulta por segundo)
+        working-directory: repo
+        run: python3 -m planes.salas --budget 2700
+      - name: Subir data/salas.json a la rama salas-geo
+        working-directory: repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/salas.json
+          git commit -q -m "Salas localizadas en OpenStreetMap (carga inicial)"
+          git push -q origin HEAD:salas-geo
