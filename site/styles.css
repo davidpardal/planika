@@ -311,3 +311,13 @@ a.chip.on { color: var(--white); }
   border: var(--b2); border-radius: 999px; box-shadow: 3px 3px 0 var(--ink); font-size: 14px; font-weight: 700; text-decoration: none; }
 .ig:hover { box-shadow: 4px 4px 0 var(--hot); }
 .ig > span { margin-right: 8px; }
+/* App instalable */
+.install { margin: 12px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.install .btn { min-height: 44px; }
+.install-note { font-size: 13px; color: var(--ink-2); }
+.install-help { padding: 22px 22px 18px; }
+.install-help h2 { margin: 0 34px 8px 0; font-size: 22px; }
+.install-help ol { margin: 6px 0 4px; padding-left: 22px; }
+.install-help li { margin: 6px 0; }
+.offline-bar { position: fixed; left: 0; right: 0; top: 0; z-index: 90; padding: 8px 14px; text-align: center; font-size: 14px; font-weight: 700;
+  background: var(--ink); color: var(--white); border-bottom: 3px solid var(--yellow); }
