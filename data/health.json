@@ -80,8 +80,8 @@
    },
    {
     "date": "2026-11-21",
-    "count": 4320,
-    "error": ""
+    "count": 4153,
+    "error": "HTTPError: 403 Client Error: Forbidden for url: https://opendata-ajuntament.barcelona.cat/data/api/3/action/datastore_search?resour"
    }
   ],
   "euskadi": [
@@ -332,8 +332,8 @@
    },
    {
     "date": "2026-11-21",
-    "count": 34,
-    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+    "count": 43,
+    "error": ""
    }
   ],
   "galicia": [
@@ -906,9 +906,9 @@
    }
   ]
  },
- "updated_at": "2026-11-21T05:50",
+ "updated_at": "2026-11-21T07:05",
  "alerts": [
-  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-20",
-  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-20"
+  "Ajuntament de Barcelona: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-21",
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-21"
  ]
 }
