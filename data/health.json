@@ -48,7 +48,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 1103,
+    "count": 1139,
     "error": ""
    }
   ],
@@ -412,8 +412,8 @@
    },
    {
     "date": "2026-11-23",
-    "count": 29,
-    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+    "count": 30,
+    "error": ""
    }
   ],
   "galicia": [
@@ -657,7 +657,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 16,
+    "count": 15,
     "error": ""
    }
   ],
@@ -1146,8 +1146,8 @@
    }
   ]
  },
- "updated_at": "2026-11-23T18:37",
+ "updated_at": "2026-11-23T19:57",
  "alerts": [
-  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-23"
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-23"
  ]
 }
