@@ -9,27 +9,29 @@ jobs:
   sondeo:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: burdeos-diciembre
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
       - run: |
-          B=https://opendata.bordeaux-metropole.fr/api/explore/v2.1/catalog/datasets/met_agenda
-          W="firstdate_begin<='2026-12-08T23:59:59' and lastdate_end>='2026-12-05'"
-          curl -sS -G "$B/exports/json" --data-urlencode "where=$W" -o dic.json
           python3 - <<'PY'
-          import json, collections
-          rows = json.load(open("dic.json"))
-          print("ROWS", len(rows))
-          print("KEYS", sorted(rows[0].keys()))
-          c = collections.Counter
-          for k in ("status", "attendancemode", "location_countrycode", "location_department", "originagenda_title"):
-              print("CNT", k, c(str(r.get(k)) for r in rows).most_common(12))
-          spans = c()
-          for r in rows:
-              d = (r["lastdate_end"][:10] > r["firstdate_begin"][:10]) and ((int(r["lastdate_end"][:4])*400+int(r["lastdate_end"][5:7])*31+int(r["lastdate_end"][8:10])) - (int(r["firstdate_begin"][:4])*400+int(r["firstdate_begin"][5:7])*31+int(r["firstdate_begin"][8:10])))
-              spans["0" if not d else "1-3" if d <= 3 else "4-14" if d <= 14 else ">14"] += 1
-          print("SPANS", spans)
-          for r in rows[:40]:
-              print("EV | %s | %s -> %s | %s | %s | %s | cond=%s | kw=%s | links=%s" % (r["title_fr"][:60], r["firstdate_begin"][:16], r["lastdate_end"][:16], (r.get("daterange_fr") or "")[:70], r.get("location_name"), r.get("location_city"), (r.get("conditions_fr") or "")[:50], (r.get("keywords_fr") or "")[:60] if isinstance(r.get("keywords_fr"), str) else r.get("keywords_fr"), str(r.get("links"))[:80]))
-          r = rows[0]
-          print("URLTEST", r["originagenda_uid"], r["uid"], r["slug"])
-          open("u.txt","w").write("https://openagenda.com/agendas/%s/events/%s\nhttps://openagenda.com/fr/agendas/%s/events/%s\n" % (r["originagenda_uid"], r["uid"], r["originagenda_uid"], r["slug"]))
+          import collections, json, sys
+          sys.path.insert(0, ".")
+          from planes import src_burdeos as s
+          evs = s.fetch(print)
+          json.dump(evs, open("burdeos.json", "w"), ensure_ascii=False)
+          C = collections.Counter
+          print("CAT", C(e["category"] for e in evs).most_common())
+          print("CITY", C(e["city"] for e in evs).most_common(8))
+          print("DAYS", C((e["start"], e["end"]) for e in evs).most_common(12))
+          print("FREE", sum(1 for e in evs if e["free"]), "NOCOORD", sum(1 for e in evs if e["lat"] is None))
+          for e in sorted(evs, key=lambda e: (e["start"], e["time"]))[:400]:
+              print("EV | %s | %s-%s %s | %s | %s | %s | %s | %s" % (e["category"], e["start"][5:], e["end"][5:], e["time"], e["title"][:55], (e["venue"] or "")[:28], e["city"], (e["price"] or "")[:25], e["url"][:60]))
           PY
-          while read u; do echo "URL $u -> $(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$u")"; done < u.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: burdeos
+          path: burdeos.json
