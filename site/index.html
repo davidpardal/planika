@@ -185,7 +185,7 @@
 <p id="installIosApp" class="install-note">¿Estás dentro de Instagram? Abre antes la página en Safari (menú ··· → «Abrir en el navegador»).</p>
 <p id="installOther" hidden>Abre el menú del navegador <strong>⋮</strong> y elige <strong>Añadir a pantalla de inicio</strong> (o <strong>Instalar app</strong>) y después <strong>Instalar</strong>. Planika aparecerá con su icono, como una app más.</p>
 </dialog>
-<dialog id="account" class="modal install-help account-dlg" aria-labelledby="accTitle"><button type="button" class="close" id="accountClose" aria-label="Cerrar">✕</button>
+<dialog id="account" class="modal install-help account-dlg" aria-label="Tu cuenta de Planika"><button type="button" class="close" id="accountClose" aria-label="Cerrar">✕</button>
 <div id="accOut">
 <h2 id="accTitle">Entra en Planika</h2>
 <p>Guarda tus favoritos y tu ciudad en tu cuenta y tenlos en el móvil, la tablet y el ordenador. Sin contraseña: te enviamos un enlace a tu email.</p>
@@ -204,6 +204,11 @@
 <button type="submit" class="btn primary">Entrar con el código</button>
 </form>
 <p><button type="button" class="btn" id="accBack">Usar otro email</button></p>
+</div>
+<div id="accConfirm" hidden>
+<h2>¿Entrar como <span id="accConfirmWho"></span>?</h2>
+<p>Este enlace no se pidió desde este navegador (por ejemplo, lo pediste desde la app instalada). Entra solo si ese es tu email. Si no has pedido entrar en Planika, pulsa «No soy yo».</p>
+<p class="acc-row"><button type="button" class="btn primary" id="accConfirmYes">Sí, entrar</button> <button type="button" class="btn" id="accConfirmNo">No soy yo</button></p>
 </div>
 <div id="accIn" hidden>
 <h2>Tu cuenta</h2>

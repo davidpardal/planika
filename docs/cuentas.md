@@ -17,6 +17,9 @@ dispositivos. Sin cuenta, Planika funciona igual que siempre: los favoritos se q
   pública por diseño; la seguridad la ponen las políticas RLS. **Nunca** se usa la clave `service_role`.
 - Al entrar, los favoritos del dispositivo se suben a la cuenta; a partir de ahí la cuenta manda. Los cambios sin
   conexión se guardan en cola (`planika_fav_ops`) y se envían al volver la conexión o al abrir Planika.
+- Si el enlace del email vuelve a un navegador que no lo pidió (por ejemplo, se pidió desde la app instalada) o es de
+  otro email, Planika pregunta «¿Entrar como …?» antes de entrar. Así nadie puede colarte su sesión con un enlace
+  preparado y quedarse con tus favoritos.
 - «Mi ciudad» se guarda como `comunidad|provincia|localidad` (lo mismo que el filtro «Dónde»). Al abrir Planika sin
   filtros en la dirección, se aplica.
 
@@ -38,9 +41,15 @@ hacer esto en el panel de Supabase (https://supabase.com/dashboard/project/jygal
      `hola@planikaapp.com`), nombre «Planika».
 3. **Authentication → Emails → Templates**: pegar las plantillas de abajo en *Magic link* y en *Confirm signup*
    (a quien entra por primera vez le llega la de *Confirm signup*).
-4. Probar con `?cuentas=1` desde un email que no sea del equipo de Supabase y, si llega, poner
+4. **Authentication → Rate Limits**: con SMTP propio, Supabase permite 30 correos por hora en total. Si se anuncia
+   en Instagram y entra mucha gente a la vez, súbelo (por ejemplo a 100) y deja en 60 s el mínimo entre correos a
+   la misma persona.
+5. Probar con `?cuentas=1` desde un email que no sea del equipo de Supabase y, si llega, poner
    `ACCOUNTS_PUBLIC = true`.
-5. Opcional: **Authentication → Sign In / Providers → Google** y después `GOOGLE_LOGIN = true`.
+6. Opcional: activar el proveedor **Google** en Authentication y después `GOOGLE_LOGIN = true`.
+
+Si algún día alguien usa el formulario para mandar correos a lo loco, se puede añadir un captcha (Cloudflare
+Turnstile) en Authentication → Attack Protection.
 
 ## Plantillas de email
 
@@ -57,6 +66,13 @@ Asunto (*Confirm signup*): `Confirma tu email para entrar en Planika`
   <p style="color:#4a4263;font-size:13px">Si no has pedido entrar en Planika, ignora este correo.</p>
 </div>
 ```
+
+## Avisos
+
+- Algunos correos de empresa abren los enlaces solos para revisarlos y los gastan: entonces el enlace da «caducado» y
+  hay que pedir otro.
+- La app instalada (iPhone sobre todo) no comparte la sesión con Safari: si el enlace se abre en Safari, entras en
+  Safari. Por eso el correo lleva también el código, que se escribe en la app.
 
 ## Pruebas
 

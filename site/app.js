@@ -847,7 +847,8 @@
   var SB_KEY = 'sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4';
   var ACCOUNTS_PUBLIC = false;  // mientras sea false, las cuentas solo se ven con ?cuentas=1 (pruebas)
   var GOOGLE_LOGIN = false;     // se activa cuando el proveedor Google esté configurado en Supabase
-  var K_SESSION = 'planika_sesion', K_OPS = 'planika_fav_ops', K_PLACE = 'planika_lugar', K_ON = 'planika_cuentas';
+  var K_SESSION = 'planika_sesion', K_OPS = 'planika_fav_ops', K_PLACE = 'planika_lugar', K_ON = 'planika_cuentas', K_ASK = 'planika_pide';
+  var ASK_TTL = 2 * 3600e3;  // el enlace caduca en 1 h; lo pedido en este navegador se recuerda 2 h como mucho
   function lsGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
   function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } }
   (function () { var c = new URLSearchParams(location.search).get('cuentas'); if (c === '1') lsSet(K_ON, 1); else if (c === '0') lsSet(K_ON, null); })();
@@ -856,14 +857,16 @@
   var pending = lsGet(K_OPS) || {};      // favoritos cambiados aún sin confirmar en la cuenta: id -> 1 (añadir) | 0 (quitar)
   var myPlace = session ? (lsGet(K_PLACE) || '') : '';
   var lastPull = 0;
+  (function () { var a = lsGet(K_ASK); if (a && !(Date.now() - a.t < ASK_TTL)) lsSet(K_ASK, null); })();
 
   function b64json(part) {
     var b = atob(part.replace(/-/g, '+').replace(/_/g, '/'));
     return JSON.parse(new TextDecoder().decode(Uint8Array.from(b, function (c) { return c.charCodeAt(0); })));
   }
+  function tokenInfo(t) { try { return b64json(String(t).split('.')[1]) || {}; } catch (e) { return {}; } }
   function setSession(s) {
     if (s && s.access_token) {
-      var p = {}; try { p = b64json(s.access_token.split('.')[1]); } catch (e) { /* token raro: se usa igual */ }
+      var p = tokenInfo(s.access_token);
       var exp = +s.expires_at || +p.exp || (Math.floor(Date.now() / 1000) + (+s.expires_in || 3600));
       session = { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: exp, id: p.sub || (s.user && s.user.id) || '', email: p.email || (s.user && s.user.email) || '' };
     } else session = null;
@@ -953,8 +956,11 @@
     flushFavs().catch(function () { /* se reintenta al volver la conexión o al abrir Planika */ });
   }
   function syncAll() {
-    if (!session) return Promise.resolve();
-    return flushFavs().then(pullFavs).then(pullPlace).catch(function (err) { if (session && err && err.status) accMsg('No se han podido sincronizar tus favoritos ahora. Lo intentaremos más tarde.', true); });
+    if (!session) return Promise.resolve(false);
+    return flushFavs().then(pullFavs).then(pullPlace).then(function () { return true; }, function (err) {
+      if (session && err && err.status) accMsg('No se han podido sincronizar tus favoritos ahora. Lo intentaremos más tarde.', true);
+      return false;
+    });
   }
 
   // «Mi ciudad»: comunidad|provincia|localidad, como el filtro «Dónde».
@@ -987,16 +993,22 @@
 
   // Entrar, salir y borrar la cuenta
   function signedIn(s, how) {
-    setSession(s);
-    favSet.forEach(function (id) { if (!(id in pending)) pending[id] = 1; });  // lo que ya tenías aquí pasa a tu cuenta
-    lsSet(K_OPS, pending); lsSet(K_ON, 1); accountsOn = true;
+    var who = tokenInfo(s.access_token);
+    var other = session && who.sub && session.id !== who.sub;  // cambio de cuenta: lo de este dispositivo es de la otra
+    if (other) signedOut();
+    setSession(s); lsSet(K_ASK, null);
+    if (!other) favSet.forEach(function (id) { if (!(id in pending)) pending[id] = 1; });  // lo que ya tenías aquí pasa a tu cuenta
+    lsSet(K_OPS, Object.keys(pending).length ? pending : null); lsSet(K_ON, 1); accountsOn = true;
     track('login', { method: how });
     paintAccount();
-    return syncAll().then(function () { if (session) toast(favSet.size ? 'Has entrado: tus favoritos ya están en tu cuenta' : 'Has entrado en Planika'); });
+    return syncAll().then(function (ok) {
+      if (!session) return;
+      toast(!ok ? 'Has entrado. Tus favoritos se sincronizarán en cuanto haya conexión' : favSet.size ? 'Has entrado: tus favoritos ya están en tu cuenta' : 'Has entrado en Planika');
+    });
   }
   function signedOut() {
     session = null; pending = {}; myPlace = '';
-    lsSet(K_SESSION, null); lsSet(K_OPS, null); lsSet(K_PLACE, null);
+    lsSet(K_SESSION, null); lsSet(K_OPS, null); lsSet(K_PLACE, null); lsSet(K_ASK, null);
     paintAccount();
   }
   function readAuthReturn() {
@@ -1022,7 +1034,10 @@
   // Ventana «Tu cuenta»
   var sentTo = '';
   function accMsg(text, isErr) { var m = $('accMsg'); m.textContent = text || ''; m.hidden = !text; m.classList.toggle('err', !!isErr); }
-  function accShow(which) { $('accOut').hidden = which !== 'out'; $('accSent').hidden = which !== 'sent'; $('accIn').hidden = which !== 'in'; $('accDelAsk').hidden = true; }
+  function accShow(which) {
+    $('accOut').hidden = which !== 'out'; $('accSent').hidden = which !== 'sent'; $('accConfirm').hidden = which !== 'confirm';
+    $('accIn').hidden = which !== 'in'; $('accDelAsk').hidden = true;
+  }
   function paintAccount() {
     $('accountWrap').hidden = !accountsOn;
     $('accountLabel').textContent = session ? 'Mi cuenta' : 'Entrar';
@@ -1050,7 +1065,7 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { accMsg('Escribe un email válido, por ejemplo nombre@gmail.com.', true); return; }
     var btn = $('accSend'); btn.disabled = true; btn.textContent = 'Enviando…'; accMsg('');
     authPost('otp?redirect_to=' + encodeURIComponent(location.origin + '/'), { email: email, create_user: true })
-      .then(function () { sentTo = email; $('accSentTo').textContent = email; $('accCode').value = ''; accShow('sent'); track('login_link_sent'); },
+      .then(function () { sentTo = email; lsSet(K_ASK, { email: email, t: Date.now() }); $('accSentTo').textContent = email; $('accCode').value = ''; accShow('sent'); track('login_link_sent'); },
         function (err) { accMsg(authErrorText(err), true); })
       .then(function () { btn.disabled = false; btn.textContent = 'Enviarme el enlace'; });
   });
@@ -1073,6 +1088,23 @@
       if (tok) authPost('logout?scope=local', {}, tok).catch(function () { /* la sesión caduca sola */ });
       signedOut(); accShow('out'); accMsg('Has salido. Tus favoritos siguen en este dispositivo.'); track('logout');
     });
+  });
+  // Vuelta del enlace del email. Si no se pidió desde este navegador (o es de otro email), se pregunta antes de
+  // entrar: así nadie puede colarte su sesión con un enlace preparado y quedarse con tus favoritos.
+  var backWaiting = null;
+  function onAuthBack(back) {
+    if (!back.access_token) { openAccount(); accMsg(authErrorText({ code: back.error }), true); return; }
+    var who = tokenInfo(back.access_token), email = String(who.email || '').toLowerCase();
+    var asked = lsGet(K_ASK);
+    if ((asked && email && asked.email === email && Date.now() - asked.t < ASK_TTL) || (session && who.sub && session.id === who.sub)) { sentTo = ''; signedIn(back, 'link'); return; }
+    backWaiting = back; sentTo = '';
+    openAccount(); accShow('confirm'); $('accConfirmWho').textContent = email || 'otra cuenta';
+  }
+  $('accConfirmYes').addEventListener('click', function () { var b = backWaiting; backWaiting = null; if (!b) return; accShow('in'); signedIn(b, 'link'); });
+  $('accConfirmNo').addEventListener('click', function () {
+    var b = backWaiting; backWaiting = null;
+    if (b) authPost('logout?scope=local', {}, b.access_token).catch(function () { /* caduca sola */ });
+    accShow(session ? 'in' : 'out'); paintAccount(); accMsg('No has entrado. Si no pediste el enlace, puedes ignorar el correo.');
   });
   $('accDel').addEventListener('click', function () { $('accDelAsk').hidden = false; $('accDelYes').focus(); });
   $('accDelNo').addEventListener('click', function () { $('accDelAsk').hidden = true; });
@@ -1103,10 +1135,6 @@
   if (state.view !== 'list') setView(state.view);
   if (openId) openModal(openId);
   paintAccount();
-  function onAuthBack(back) {
-    if (back.access_token) signedIn(back, 'link');
-    else { openAccount(); accMsg(authErrorText({ code: back.error }), true); }
-  }
   if (authBack) onAuthBack(authBack); else if (session) syncAll();
   // Si el enlace se abre en una pestaña que ya tenía Planika, solo cambia el #: no se recarga la página.
   window.addEventListener('hashchange', function () { var back = readAuthReturn(); if (back) onAuthBack(back); });
