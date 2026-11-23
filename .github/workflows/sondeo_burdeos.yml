@@ -1,0 +1,21 @@
+name: Sondeo Burdeos (rama sondeo, no desplegar)
+on:
+  push:
+    branches: [sondeo]
+    paths: [".github/workflows/sondeo_burdeos.yml"]
+permissions:
+  contents: read
+jobs:
+  sondeo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          B=https://opendata.bordeaux-metropole.fr/api/explore/v2.1/catalog/datasets/met_agenda
+          echo "== META"; curl -sS "$B" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('metas',{}).get('default',{}).get('modified'), d.get('metas',{}).get('default',{}).get('records_count')); [print(' F', f['name'], f['type'], (f.get('label') or '')[:40]) for f in d.get('fields',[])]"
+          echo "== TOTAL"; curl -sS "$B/records?limit=0" | head -c 300; echo
+          for w in "firstdate_begin<='2026-12-08T23:59:59' and lastdate_end>='2026-12-05'" ; do
+            echo "== WHERE $w"
+            curl -sS -G "$B/records" --data-urlencode "where=$w" --data-urlencode "limit=3" | python3 -c "import json,sys; d=json.load(sys.stdin); print('total', d.get('total_count'), d.get('error_code'), d.get('message')); [print(json.dumps(r, ensure_ascii=False)[:1500]) for r in d.get('results',[])]"
+          done
+          echo "== POR CIUDAD 5-8 dic"
+          curl -sS -G "$B/records" --data-urlencode "where=firstdate_begin<='2026-12-08T23:59:59' and lastdate_end>='2026-12-05'" --data-urlencode "group_by=location_city" --data-urlencode "select=count(*) as n" --data-urlencode "order_by=n desc" --data-urlencode "limit=40" | head -c 3000; echo
