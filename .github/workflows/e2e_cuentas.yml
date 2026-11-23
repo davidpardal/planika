@@ -18,9 +18,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -q playwright && python -m playwright install --with-deps chromium >/dev/null
+      - run: pip install -q -r app/requirements.txt playwright && python -m playwright install --with-deps chromium >/dev/null
       - name: Construir la web de la rama
-        run: cd app && python3 fetch_events.py --rebuild | tail -2
+        run: cd app && python3 fetch_events.py --rebuild 2>&1 | tail -2 && test -f site/data/core.js
       - name: Prueba
         run: |
           (cd app/site && python3 -m http.server 8765 >/dev/null 2>&1 &)
