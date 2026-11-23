@@ -686,6 +686,7 @@
     var f = ev.target.closest('[data-fav]');
     if (f) { var id = f.dataset.fav; if (favSet.has(id)) favSet.delete(id); else favSet.add(id); saveFavs();
       document.querySelectorAll('[data-fav="' + id + '"]').forEach(function (x) { x.classList.toggle('on', favSet.has(id)); x.textContent = favSet.has(id) ? '★' : '☆'; });
+      favChanged(id, favSet.has(id));
       if (state.favs) refresh(); return; }
     var s = ev.target.closest('[data-share]');
     if (s) { var e2 = byId(s.dataset.share); if (e2) shareLink(e2); return; }
@@ -837,8 +838,262 @@
     window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () { /* sin service worker */ }); });
   }
 
+  // ---------- cuentas (opcionales): favoritos y «mi ciudad» en todos tus dispositivos
+  // Supabase (Auth + Postgres en la región de la UE), sin librerías: se habla directamente con su API.
+  // La clave es la «publishable», pública por diseño: lo que cada persona puede leer o escribir lo deciden
+  // las políticas RLS de la base de datos (solo sus propias filas). Sin sesión, todo sigue como siempre:
+  // los favoritos viven en este navegador (planika_favs).
+  var SB_URL = 'https://jygalcbsfrntavhqahpx.supabase.co';
+  var SB_KEY = 'sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4';
+  var ACCOUNTS_PUBLIC = false;  // mientras sea false, las cuentas solo se ven con ?cuentas=1 (pruebas)
+  var GOOGLE_LOGIN = false;     // se activa cuando el proveedor Google esté configurado en Supabase
+  var K_SESSION = 'planika_sesion', K_OPS = 'planika_fav_ops', K_PLACE = 'planika_lugar', K_ON = 'planika_cuentas';
+  function lsGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } }
+  (function () { var c = new URLSearchParams(location.search).get('cuentas'); if (c === '1') lsSet(K_ON, 1); else if (c === '0') lsSet(K_ON, null); })();
+  var accountsOn = ACCOUNTS_PUBLIC || !!lsGet(K_ON);
+  var session = lsGet(K_SESSION);
+  var pending = lsGet(K_OPS) || {};      // favoritos cambiados aún sin confirmar en la cuenta: id -> 1 (añadir) | 0 (quitar)
+  var myPlace = session ? (lsGet(K_PLACE) || '') : '';
+  var lastPull = 0;
+
+  function b64json(part) {
+    var b = atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(new TextDecoder().decode(Uint8Array.from(b, function (c) { return c.charCodeAt(0); })));
+  }
+  function setSession(s) {
+    if (s && s.access_token) {
+      var p = {}; try { p = b64json(s.access_token.split('.')[1]); } catch (e) { /* token raro: se usa igual */ }
+      var exp = +s.expires_at || +p.exp || (Math.floor(Date.now() / 1000) + (+s.expires_in || 3600));
+      session = { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: exp, id: p.sub || (s.user && s.user.id) || '', email: p.email || (s.user && s.user.email) || '' };
+    } else session = null;
+    lsSet(K_SESSION, session);
+  }
+  function httpError(r, j) {
+    var e = new Error((j && (j.msg || j.error_description || j.message)) || ('HTTP ' + r.status));
+    e.status = r.status; e.code = j && (j.error_code || j.code); return e;
+  }
+  function readJSON(r) { return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) { /* no es JSON */ } if (!r.ok) throw httpError(r, j); return j; }); }
+  function authPost(path, body, token) {
+    var h = { apikey: SB_KEY, 'Content-Type': 'application/json' };
+    if (token) h.Authorization = 'Bearer ' + token;
+    return fetch(SB_URL + '/auth/v1/' + path, { method: 'POST', headers: h, body: JSON.stringify(body || {}) }).then(readJSON);
+  }
+  var refreshing = null;
+  function freshToken(force) {
+    var s = lsGet(K_SESSION);  // otra pestaña pudo renovarla ya
+    if (!s) { if (session) signedOut(); return Promise.reject(new Error('sin sesión')); }
+    session = s;
+    if (!force && s.expires_at - 60 > Date.now() / 1000) return Promise.resolve(s.access_token);
+    if (!refreshing) {
+      refreshing = authPost('token?grant_type=refresh_token', { refresh_token: s.refresh_token })
+        .then(function (j) { refreshing = null; setSession(j); return j.access_token; },
+          function (err) { refreshing = null; if (err.status >= 400 && err.status < 500) { signedOut(); toast('Tu sesión ha caducado: vuelve a entrar'); } throw err; });
+    }
+    return refreshing;
+  }
+  function api(method, path, body, prefer, retried) {
+    return freshToken(retried === 'force').then(function (tok) {
+      var h = { apikey: SB_KEY, Authorization: 'Bearer ' + tok };
+      if (body !== undefined) h['Content-Type'] = 'application/json';
+      if (prefer) h.Prefer = prefer;
+      return fetch(SB_URL + path, { method: method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
+    }).then(function (r) {
+      if (r.status === 401 && !retried) return api(method, path, body, prefer, 'force');
+      return readJSON(r);
+    });
+  }
+  function pgList(ids) { return '(' + ids.map(function (id) { return '"' + String(id).replace(/["\\]/g, '\\$&') + '"'; }).join(',') + ')'; }
+
+  // Favoritos: este navegador guarda una copia y la cola de cambios pendientes; la cuenta manda.
+  var flushing = null, flushAgain = false;
+  function flushFavs() {
+    if (!session) return Promise.resolve();
+    if (flushing) { flushAgain = true; return flushing; }
+    var sent = {}, adds = [], dels = [];
+    Object.keys(pending).forEach(function (id) { sent[id] = pending[id]; (pending[id] ? adds : dels).push(id); });
+    adds = adds.filter(function (id) { return id.length && id.length <= 64; });
+    if (!adds.length && !dels.length) { pending = {}; lsSet(K_OPS, null); return Promise.resolve(); }
+    var jobs = [];
+    for (var i = 0; i < adds.length; i += 500) jobs.push(api('POST', '/rest/v1/favorites', adds.slice(i, i + 500).map(function (id) { return { event_id: id }; }), 'resolution=ignore-duplicates,return=minimal'));
+    for (var j = 0; j < dels.length; j += 100) jobs.push(api('DELETE', '/rest/v1/favorites?event_id=in.' + encodeURIComponent(pgList(dels.slice(j, j + 100)))));
+    flushing = Promise.all(jobs).then(function () {
+      Object.keys(sent).forEach(function (id) { if (pending[id] === sent[id]) delete pending[id]; });
+      lsSet(K_OPS, Object.keys(pending).length ? pending : null);
+    }).then(function () { flushing = null; if (flushAgain) { flushAgain = false; return flushFavs(); } },
+      function (err) { flushing = null; flushAgain = false; throw err; });
+    return flushing;
+  }
+  function pullFavs() {
+    var got = [];
+    function page(off) {
+      return api('GET', '/rest/v1/favorites?select=event_id&order=created_at.asc,event_id.asc&limit=1000&offset=' + off).then(function (rows) {
+        rows = rows || []; rows.forEach(function (r) { got.push(r.event_id); });
+        return rows.length === 1000 ? page(off + 1000) : null;
+      });
+    }
+    return page(0).then(function () {
+      if (!session) return;
+      var s = new Set(got);
+      Object.keys(pending).forEach(function (id) { if (pending[id]) s.add(id); else s.delete(id); });
+      favSet = s; saveFavs(); repaintFavs(); lastPull = Date.now();
+    });
+  }
+  function repaintFavs() {
+    document.querySelectorAll('[data-fav]').forEach(function (x) { var on = favSet.has(x.dataset.fav); x.classList.toggle('on', on); x.textContent = on ? '★' : '☆'; });
+    if (state.favs) refresh();
+    if ($('accFavN')) $('accFavN').textContent = favSet.size.toLocaleString('es-ES');
+  }
+  function favChanged(id, on) {
+    if (!session) {
+      if (accountsOn && on && !lsGet('planika_aviso_cuenta')) { lsSet('planika_aviso_cuenta', 1); toast('Guardado en este dispositivo. Entra con tu email para tenerlo en todos'); }
+      return;
+    }
+    pending[id] = on ? 1 : 0; lsSet(K_OPS, pending);
+    flushFavs().catch(function () { /* se reintenta al volver la conexión o al abrir Planika */ });
+  }
+  function syncAll() {
+    if (!session) return Promise.resolve();
+    return flushFavs().then(pullFavs).then(pullPlace).catch(function (err) { if (session && err && err.status) accMsg('No se han podido sincronizar tus favoritos ahora. Lo intentaremos más tarde.', true); });
+  }
+
+  // «Mi ciudad»: comunidad|provincia|localidad, como el filtro «Dónde».
+  function placeNow() { return state.ccaa || state.prov || state.city ? [state.ccaa, state.prov, state.city].join('|') : ''; }
+  function placeName(code) {
+    var p = (code || '').split('|');
+    return p[2] || (p[1] && (PROV[p[1]] || {}).name) || p[0] || '';
+  }
+  function setPlaceState(code) { var p = (code || '').split('|'); state.ccaa = p[0] || ''; state.prov = p[1] || ''; state.city = p[2] || ''; }
+  function applyPlace(code) {
+    setPlaceState(code);
+    $('ccaa').value = state.ccaa; fillProvinces(); $('prov').value = state.prov;
+    CITY_KEY = norm(state.city); fillCities(); syncWhere(); refresh();
+  }
+  function pullPlace() {
+    return api('GET', '/rest/v1/profiles?select=place').then(function (rows) {
+      if (!session) return;
+      var place = (rows && rows[0] && rows[0].place) || '';
+      var was = myPlace; myPlace = place; lsSet(K_PLACE, place || null);
+      if (place && place !== was && !placeNow() && !state.favs && !$('modal').open) applyPlace(place);
+      paintAccount();
+    });
+  }
+  function savePlace(code) {
+    accMsg('');
+    return api('POST', '/rest/v1/profiles', { place: code || null, updated_at: new Date().toISOString() }, 'resolution=merge-duplicates,return=minimal')
+      .then(function () { myPlace = code || ''; lsSet(K_PLACE, myPlace || null); paintAccount(); accMsg(code ? 'Guardado: tu ciudad es ' + placeName(code) + '.' : 'Ciudad quitada.'); track('account_place', { set: code ? 1 : 0 }); })
+      .catch(function () { accMsg('No se ha podido guardar. Prueba otra vez en un momento.', true); });
+  }
+
+  // Entrar, salir y borrar la cuenta
+  function signedIn(s, how) {
+    setSession(s);
+    favSet.forEach(function (id) { if (!(id in pending)) pending[id] = 1; });  // lo que ya tenías aquí pasa a tu cuenta
+    lsSet(K_OPS, pending); lsSet(K_ON, 1); accountsOn = true;
+    track('login', { method: how });
+    paintAccount();
+    return syncAll().then(function () { if (session) toast(favSet.size ? 'Has entrado: tus favoritos ya están en tu cuenta' : 'Has entrado en Planika'); });
+  }
+  function signedOut() {
+    session = null; pending = {}; myPlace = '';
+    lsSet(K_SESSION, null); lsSet(K_OPS, null); lsSet(K_PLACE, null);
+    paintAccount();
+  }
+  function readAuthReturn() {
+    var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    var q = new URLSearchParams(location.search);
+    var tok = h.get('access_token');
+    var err = h.get('error_code') || h.get('error') || q.get('error_code') || q.get('error');
+    if (!tok && !err) return null;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* file:// */ }
+    lsSet(K_ON, 1); accountsOn = true;
+    if (tok) return { access_token: tok, refresh_token: h.get('refresh_token'), expires_in: h.get('expires_in'), expires_at: h.get('expires_at') };
+    return { error: err };
+  }
+  function authErrorText(err) {
+    var c = (err && (err.code || err.error)) || '';
+    if (err && err.status === 429 || /rate_limit/.test(c)) return 'Has pedido varios enlaces seguidos. Espera un minuto y vuelve a probar.';
+    if (/otp_expired|expired|access_denied/.test(c)) return 'El enlace o el código ha caducado o ya se usó. Pide uno nuevo.';
+    if (/email_address_invalid|validation/.test(c)) return 'Revisa el email: no parece válido.';
+    if (err && err.status === 403) return 'El código no es correcto o ha caducado.';
+    return 'No se ha podido completar. Comprueba tu conexión y vuelve a probar.';
+  }
+
+  // Ventana «Tu cuenta»
+  var sentTo = '';
+  function accMsg(text, isErr) { var m = $('accMsg'); m.textContent = text || ''; m.hidden = !text; m.classList.toggle('err', !!isErr); }
+  function accShow(which) { $('accOut').hidden = which !== 'out'; $('accSent').hidden = which !== 'sent'; $('accIn').hidden = which !== 'in'; $('accDelAsk').hidden = true; }
+  function paintAccount() {
+    $('accountWrap').hidden = !accountsOn;
+    $('accountLabel').textContent = session ? 'Mi cuenta' : 'Entrar';
+    $('accountNote').textContent = session ? '★ Favoritos sincronizados' : 'Tus favoritos y tu ciudad en todos tus dispositivos';
+    $('accGoogleWrap').hidden = !GOOGLE_LOGIN;
+    if (!session) { if ($('accIn').hidden === false) accShow('out'); return; }
+    $('accWho').textContent = session.email || 'tu email';
+    $('accFavN').textContent = favSet.size.toLocaleString('es-ES');
+    $('accPlace').textContent = myPlace ? 'Tu ciudad: ' + placeName(myPlace) + '.' : 'Aún no has elegido tu ciudad.';
+    var now = placeNow();
+    $('accPlaceSet').textContent = now ? (now === myPlace ? '✓ ' + placeName(now) : 'Usar «' + placeName(now) + '»') : 'Elige antes un lugar en «Dónde»';
+    $('accPlaceSet').disabled = !now || now === myPlace;
+    $('accPlaceDel').hidden = !myPlace;
+  }
+  function openAccount() {
+    accMsg(''); accShow(session ? 'in' : (sentTo ? 'sent' : 'out')); paintAccount();
+    if ($('account').showModal) $('account').showModal(); else $('account').setAttribute('open', '');
+    if (session && Date.now() - lastPull > 30000) syncAll().then(paintAccount);
+  }
+  $('accountBtn').addEventListener('click', openAccount);
+  $('accountClose').addEventListener('click', function () { $('account').close(); });
+  $('accForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var email = $('accEmail').value.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { accMsg('Escribe un email válido, por ejemplo nombre@gmail.com.', true); return; }
+    var btn = $('accSend'); btn.disabled = true; btn.textContent = 'Enviando…'; accMsg('');
+    authPost('otp?redirect_to=' + encodeURIComponent(location.origin + '/'), { email: email, create_user: true })
+      .then(function () { sentTo = email; $('accSentTo').textContent = email; $('accCode').value = ''; accShow('sent'); track('login_link_sent'); },
+        function (err) { accMsg(authErrorText(err), true); })
+      .then(function () { btn.disabled = false; btn.textContent = 'Enviarme el enlace'; });
+  });
+  $('accCodeForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var code = $('accCode').value.replace(/\D/g, '');
+    if (code.length < 6) { accMsg('El código tiene al menos 6 cifras.', true); return; }
+    accMsg('Comprobando…');
+    authPost('verify', { type: 'email', email: sentTo, token: code })
+      .then(function (s) { sentTo = ''; accMsg(''); accShow('in'); return signedIn(s, 'code'); },
+        function (err) { accMsg(err.status === 403 || /otp_expired/.test(err.code || '') ? 'El código no es correcto o ha caducado. Usa el del último correo o pide uno nuevo.' : authErrorText(err), true); });
+  });
+  $('accBack').addEventListener('click', function () { sentTo = ''; accMsg(''); accShow('out'); $('accEmail').focus(); });
+  $('accGoogle').addEventListener('click', function () { location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(location.origin + '/'); });
+  $('accPlaceSet').addEventListener('click', function () { var now = placeNow(); if (now) savePlace(now); });
+  $('accPlaceDel').addEventListener('click', function () { savePlace(''); });
+  $('accLogout').addEventListener('click', function () {
+    var tok = session && session.access_token;
+    flushFavs().catch(function () { /* sin conexión: los cambios se quedan en este dispositivo */ }).then(function () {
+      if (tok) authPost('logout?scope=local', {}, tok).catch(function () { /* la sesión caduca sola */ });
+      signedOut(); accShow('out'); accMsg('Has salido. Tus favoritos siguen en este dispositivo.'); track('logout');
+    });
+  });
+  $('accDel').addEventListener('click', function () { $('accDelAsk').hidden = false; $('accDelYes').focus(); });
+  $('accDelNo').addEventListener('click', function () { $('accDelAsk').hidden = true; });
+  $('accDelYes').addEventListener('click', function () {
+    var btn = this; btn.disabled = true; accMsg('Borrando tu cuenta…');
+    api('POST', '/rest/v1/rpc/delete_my_account', {})
+      .then(function () { signedOut(); accShow('out'); accMsg('Cuenta borrada. Hemos eliminado tu email, tus favoritos guardados en la cuenta y tu ciudad.'); track('account_deleted'); },
+        function () { accMsg('No se ha podido borrar ahora. Comprueba tu conexión y vuelve a probar.', true); })
+      .then(function () { btn.disabled = false; });
+  });
+  window.addEventListener('storage', function (ev) {
+    if (ev.key === K_SESSION) { session = lsGet(K_SESSION); if (!session) { pending = {}; myPlace = ''; } paintAccount(); }
+    else if (ev.key === 'planika_favs') { favSet = loadFavs(); repaintFavs(); }
+  });
+  window.addEventListener('online', function () { if (session) syncAll(); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && session && Date.now() - lastPull > 300000) syncAll(); });
+
   // ---------- arranque
+  var authBack = readAuthReturn();  // vuelta del enlace del email (antes de que writeURL limpie la dirección)
   var openId = readURL();
+  if (session && myPlace && !state.ccaa && !state.prov && !state.city && !state.q && !state.favs && !openId) setPlaceState(myPlace);
   window.PLANIKA_D = applyChunk;
   (window.PLANIKA_Q || []).forEach(function (a) { applyChunk(a[0], a[1], a[2]); });
   window.PLANIKA_Q = [];
@@ -847,4 +1102,8 @@
   if (advCount()) $('adv').open = true;
   if (state.view !== 'list') setView(state.view);
   if (openId) openModal(openId);
+  paintAccount();
+  if (authBack && authBack.access_token) signedIn(authBack, 'link');
+  else if (authBack) { openAccount(); accMsg(authErrorText({ code: authBack.error }), true); }
+  else if (session) syncAll();
 })();

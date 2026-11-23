@@ -42,6 +42,7 @@
       <p class="meta" id="meta"></p>
       <p class="social"><a class="ig" href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener"><span aria-hidden="true">📸</span> Síguenos en Instagram: <strong>@planikaapp</strong></a></p>
       <p class="install" id="installWrap" hidden><button type="button" class="btn primary" id="installBtn"><span aria-hidden="true">📲</span> Instala Planika en tu móvil</button> <span class="install-note">Gratis, sin tienda de apps y funciona sin conexión</span></p>
+      <p class="install account" id="accountWrap" hidden><button type="button" class="btn" id="accountBtn"><span aria-hidden="true">👤</span> <span id="accountLabel">Entrar</span></button> <span class="install-note" id="accountNote">Tus favoritos y tu ciudad en todos tus dispositivos</span></p>
     </div>
     <picture><source type="image/webp" srcset="hero-800.webp 800w, hero.webp 1200w" sizes="(min-width: 900px) 46vw, 100vw"><img class="hero-img" src="hero.jpg" width="1200" height="900" fetchpriority="high" decoding="async" alt="PLANIKA en letras pop art sobre cuatro colores, con la palabra planes en castellano, euskera y catalán, y términos como concierto, cine, teatro, jaia, exposición, rutas, talleres, danza y festival en varios idiomas"></picture>
   </div>
@@ -183,6 +184,39 @@
 <ol id="installIosSteps"><li>Pulsa <strong>⋯</strong> junto a la dirección y después <strong>Compartir</strong> <span aria-hidden="true">(en versiones anteriores, el botón Compartir: el cuadrado con la flecha hacia arriba)</span>.</li><li>Elige <strong>Añadir a pantalla de inicio</strong>.</li><li>Deja activado <strong>Abrir como app web</strong> y pulsa <strong>Añadir</strong>. Planika aparecerá con su icono, como una app más.</li></ol>
 <p id="installIosApp" class="install-note">¿Estás dentro de Instagram? Abre antes la página en Safari (menú ··· → «Abrir en el navegador»).</p>
 <p id="installOther" hidden>Abre el menú del navegador <strong>⋮</strong> y elige <strong>Añadir a pantalla de inicio</strong> (o <strong>Instalar app</strong>) y después <strong>Instalar</strong>. Planika aparecerá con su icono, como una app más.</p>
+</dialog>
+<dialog id="account" class="modal install-help account-dlg" aria-labelledby="accTitle"><button type="button" class="close" id="accountClose" aria-label="Cerrar">✕</button>
+<div id="accOut">
+<h2 id="accTitle">Entra en Planika</h2>
+<p>Guarda tus favoritos y tu ciudad en tu cuenta y tenlos en el móvil, la tablet y el ordenador. Sin contraseña: te enviamos un enlace a tu email.</p>
+<form id="accForm" class="acc-form" novalidate>
+<label class="field"><span>Tu email</span><input type="email" id="accEmail" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="tu@email.com" required></label>
+<button type="submit" class="btn primary" id="accSend">Enviarme el enlace</button>
+</form>
+<p id="accGoogleWrap" hidden><button type="button" class="btn" id="accGoogle">Entrar con Google</button></p>
+<p class="install-note">Solo guardamos tu email, tus favoritos y tu ciudad, en servidores de la Unión Europea. Puedes borrar tu cuenta cuando quieras. <a href="privacidad.html#cuentas">Privacidad</a></p>
+</div>
+<div id="accSent" hidden>
+<h2>Revisa tu correo</h2>
+<p>Te hemos enviado un enlace a <strong id="accSentTo"></strong>. Púlsalo para entrar. Puede tardar un par de minutos; si no lo ves, mira en «spam» o «promociones».</p>
+<form id="accCodeForm" class="acc-form">
+<label class="field"><span>Si el correo trae un código, escríbelo aquí (útil si usas Planika instalada en el móvil)</span><input id="accCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>
+<button type="submit" class="btn primary">Entrar con el código</button>
+</form>
+<p><button type="button" class="btn" id="accBack">Usar otro email</button></p>
+</div>
+<div id="accIn" hidden>
+<h2>Tu cuenta</h2>
+<p>Has entrado como <strong id="accWho"></strong>. Tienes <strong id="accFavN">0</strong> planes en favoritos, guardados en tu cuenta.</p>
+<h3>Mi ciudad</h3>
+<p id="accPlace"></p>
+<p class="acc-row"><button type="button" class="btn" id="accPlaceSet"></button> <button type="button" class="btn" id="accPlaceDel">Quitar</button></p>
+<p class="install-note">Al abrir Planika verás primero los planes de tu ciudad.</p>
+<p class="acc-row acc-end"><button type="button" class="btn" id="accLogout">Salir</button> <button type="button" class="btn danger" id="accDel">Borrar mi cuenta</button></p>
+<div id="accDelAsk" class="acc-ask" hidden><p><strong>¿Borrar tu cuenta?</strong> Se borrarán tu email, los favoritos guardados en la cuenta y tu ciudad. En este dispositivo seguirás viendo tus favoritos. No se puede deshacer.</p>
+<p class="acc-row"><button type="button" class="btn danger" id="accDelYes">Sí, borrar mi cuenta</button> <button type="button" class="btn" id="accDelNo">Cancelar</button></p></div>
+</div>
+<p class="acc-msg" id="accMsg" role="status" hidden></p>
 </dialog>
 <script defer src="data/core.js?v=968eca2c17"></script>
 <script defer src="data/d/0.js?v=b5108095b3"></script>

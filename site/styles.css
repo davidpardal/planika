@@ -330,3 +330,16 @@ a.chip.on { color: var(--white); }
 .install-help li { margin: 6px 0; }
 .offline-bar { position: fixed; left: 0; right: 0; top: 0; z-index: 90; padding: 8px 14px; text-align: center; font-size: 14px; font-weight: 700;
   background: var(--ink); color: var(--white); border-bottom: 3px solid var(--yellow); }
+
+/* Cuentas (opcionales): favoritos y «mi ciudad» sincronizados */
+.account .btn { background: var(--white); }
+.account-dlg h3 { margin: 16px 0 4px; font-size: 16px; }
+.acc-form { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.acc-form .btn { align-self: flex-start; min-height: 44px; }
+.acc-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.acc-end { margin-top: 18px; padding-top: 14px; border-top: 2px dashed var(--ink); }
+.btn.danger { background: var(--white); color: #b00020; border-color: #b00020; }
+.btn.danger:hover { background: #ffe8ec; }
+.acc-ask { margin-top: 10px; padding: 10px 12px; border: var(--b2); border-radius: 12px; background: #fff4f6; }
+.acc-msg { margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: var(--yellow); font-size: 14px; font-weight: 700; }
+.acc-msg.err { background: #ffd6dd; }
