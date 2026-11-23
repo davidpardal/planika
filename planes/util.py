@@ -220,8 +220,16 @@ PROVINCIAS = [
     ("47", "Valladolid", "Castilla y León"), ("48", "Bizkaia", "País Vasco"),
     ("49", "Zamora", "Castilla y León"), ("50", "Zaragoza", "Aragón"),
     ("51", "Ceuta", "Ceuta"), ("52", "Melilla", "Melilla"),
+    # Fuera de España: código propio que no choca con los del INE (ver country())
+    ("FR33", "Gironda", "Francia"),
 ]
 PROV_BY_CODE = {c: {"code": c, "name": n, "ccaa": a} for c, n, a in PROVINCIAS}
+
+
+def country(code):
+    """País ISO de una provincia: los códigos del INE son España; los que empiezan por letras llevan el país delante."""
+    c = str(code or "")
+    return c[:2] if c[:2].isalpha() else "ES"
 
 _ALIASES = {
     "alava": "01", "araba": "01", "araba alava": "01", "alava araba": "01", "vitoria": "01",

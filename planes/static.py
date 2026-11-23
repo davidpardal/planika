@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover - Python < 3.9
 
 from . import seo
 from .classify import CATEGORIES
-from .util import is_permanent, iso, today
+from .util import country, is_permanent, iso, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
 # GA4 se carga desde consent.js únicamente tras aceptación explícita.
@@ -233,7 +233,7 @@ def event_jsonld(e, canonical, t0=None):
     start = next_session(e, t0)
     end = start if e.get("sessions") else e["end"]
     place = {"@type": "Place", "name": e.get("venue") or e.get("city") or e.get("province") or "España",
-             "address": {"@type": "PostalAddress", "addressCountry": "ES"}}
+             "address": {"@type": "PostalAddress", "addressCountry": country(e.get("province_code"))}}
     if e.get("address"):
         place["address"]["streetAddress"] = e["address"]
     if e.get("city"):
@@ -265,7 +265,7 @@ def event_jsonld(e, canonical, t0=None):
 def place_jsonld(e, canonical):
     """Las visitas permanentes (museos, monumentos, espacios naturales) no son eventos: Google pide no marcarlas
     como Event. Se describen como TouristAttraction con su dirección y coordenadas."""
-    addr = {"@type": "PostalAddress", "addressCountry": "ES"}
+    addr = {"@type": "PostalAddress", "addressCountry": country(e.get("province_code"))}
     if e.get("address"):
         addr["streetAddress"] = e["address"]
     if e.get("city"):

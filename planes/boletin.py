@@ -19,7 +19,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import seo, static
 from .classify import CATEGORIES
-from .util import is_permanent, iso, norm
+from .util import country, is_permanent, iso, norm
 
 SITE_URL = static.SITE_URL
 CONFIG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "boletin.json")
@@ -91,7 +91,7 @@ def select(events, t0):
     """La edición: {fri, sun, total, top, free, kids, cities: [(nombre, provincia, código, total, planes)]}."""
     fri, sun, first = weekend(t0)
     a, b = iso(first), iso(sun)
-    pool = [e for e in events if _in_weekend(e, a, b)]
+    pool = [e for e in events if _in_weekend(e, a, b) and country(e.get("province_code")) == "ES"]  # boletín de España
     pool.sort(key=lambda e: (-score(e), _day(e, a, b), e.get("time") or "99", e["title"]))
     used = set()
 

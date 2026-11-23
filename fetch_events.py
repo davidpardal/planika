@@ -29,7 +29,7 @@ from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
 SOURCES = ["madrid", "esmadrid", "barcelona", "diba", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia",
            "galicia", "zaragoza", "cartagena", "murcia", "vitoria", "jimmyjazz", "tribe", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
-           "ticketmaster", "destacados", "curated"]
+           "ticketmaster", "burdeos", "destacados", "curated"]
 
 
 def load_dotenv(path):

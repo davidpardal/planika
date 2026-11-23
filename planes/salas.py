@@ -22,7 +22,7 @@ import statistics
 import time
 from datetime import date, timedelta
 
-from .util import UA, _session, norm
+from .util import UA, _session, country, norm
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATH = os.path.join(ROOT, "data", "salas.json")
@@ -131,7 +131,7 @@ def fix_coords(events):
     n = 0
     for e in events:
         p = _pt(e)
-        if p is None or _in_spain(*p):
+        if p is None or _in_spain(*p) or country(e.get("province_code")) != "ES":
             continue
         if _in_spain(p[1], p[0]):
             e["lat"], e["lon"] = p[1], p[0]
@@ -156,7 +156,7 @@ def imprecise(events):
             salas_en.setdefault((e["province_code"], norm(e.get("city")), round(p[0], 5), round(p[1], 5)), set()).add(norm(e["venue"]))
     out = []
     for i, e in enumerate(events):
-        if not usable_venue(e.get("venue")):
+        if not usable_venue(e.get("venue")) or country(e.get("province_code")) != "ES":  # el buscador de salas es solo de España
             continue
         p = _pt(e)
         if (p is None or e.get("source") in IMPRECISE_SOURCES
