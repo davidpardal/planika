@@ -188,12 +188,13 @@
 <dialog id="account" class="modal install-help account-dlg" aria-label="Tu cuenta de Planika"><button type="button" class="close" id="accountClose" aria-label="Cerrar">✕</button>
 <div id="accOut">
 <h2 id="accTitle">Entra en Planika</h2>
-<p>Guarda tus favoritos y tu ciudad en tu cuenta y tenlos en el móvil, la tablet y el ordenador. Sin contraseña: te enviamos un enlace a tu email.</p>
-<form id="accForm" class="acc-form" novalidate>
-<label class="field"><span>Tu email</span><input type="email" id="accEmail" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="tu@email.com" required></label>
+<p>Guarda tus favoritos y tu ciudad en tu cuenta y tenlos en el móvil, la tablet y el ordenador. Sin contraseñas nuevas.</p>
+<p id="accGoogleWrap" hidden><button type="button" class="btn primary acc-google" id="accGoogle">Continuar con Google</button></p>
+<p id="accInApp" class="acc-ask" hidden>Google no deja entrar desde el navegador de Instagram ni de otras apps. Abre Planika en Safari o Chrome (menú <strong>···</strong> → «Abrir en el navegador») y entra desde allí.</p>
+<form id="accForm" class="acc-form" novalidate hidden>
+<label class="field"><span>Entra con tu email: te enviamos un enlace</span><input type="email" id="accEmail" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="tu@email.com" required></label>
 <button type="submit" class="btn primary" id="accSend">Enviarme el enlace</button>
 </form>
-<p id="accGoogleWrap" hidden><button type="button" class="btn" id="accGoogle">Entrar con Google</button></p>
 <p class="install-note">Solo guardamos tu email, tus favoritos y tu ciudad, en servidores de la Unión Europea. Puedes borrar tu cuenta cuando quieras. <a href="privacidad.html#cuentas">Privacidad</a></p>
 </div>
 <div id="accSent" hidden>
@@ -207,7 +208,7 @@
 </div>
 <div id="accConfirm" hidden>
 <h2>¿Entrar como <span id="accConfirmWho"></span>?</h2>
-<p>Este enlace no se pidió desde este navegador (por ejemplo, lo pediste desde la app instalada). Entra solo si ese es tu email. Si no has pedido entrar en Planika, pulsa «No soy yo».</p>
+<p>No has empezado a entrar desde este navegador (por ejemplo, empezaste desde la app instalada). Entra solo si ese es tu email. Si no has pedido entrar en Planika, pulsa «No soy yo».</p>
 <p class="acc-row"><button type="button" class="btn primary" id="accConfirmYes">Sí, entrar</button> <button type="button" class="btn" id="accConfirmNo">No soy yo</button></p>
 </div>
 <div id="accIn" hidden>

@@ -335,7 +335,8 @@ a.chip.on { color: var(--white); }
 .account .btn { background: var(--white); }
 .account-dlg h3 { margin: 16px 0 4px; font-size: 16px; }
 .acc-form { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
-.acc-form .btn { align-self: flex-start; min-height: 44px; }
+.acc-form .btn, .acc-google { align-self: flex-start; min-height: 44px; }
+.acc-google { font-size: 16px; padding: 10px 20px; }
 .acc-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .acc-end { margin-top: 18px; padding-top: 14px; border-top: 2px dashed var(--ink); }
 .btn.danger { background: var(--white); color: #b00020; border-color: #b00020; }

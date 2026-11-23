@@ -846,7 +846,9 @@
   var SB_URL = 'https://jygalcbsfrntavhqahpx.supabase.co';
   var SB_KEY = 'sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4';
   var ACCOUNTS_PUBLIC = false;  // mientras sea false, las cuentas solo se ven con ?cuentas=1 (pruebas)
-  var GOOGLE_LOGIN = false;     // se activa cuando el proveedor Google esté configurado en Supabase
+  var GOOGLE_LOGIN = true;      // «Continuar con Google» (proveedor Google configurado en Supabase)
+  var EMAIL_LOGIN = false;      // entrar con enlace/código por email: necesita SMTP propio (Brevo) en Supabase
+  var IN_APP = /Instagram|FBAN|FBAV|FB_IAB|musical_ly|BytedanceWebview|Line\/|Twitter/i.test(navigator.userAgent);  // Google no deja entrar desde ahí
   var K_SESSION = 'planika_sesion', K_OPS = 'planika_fav_ops', K_PLACE = 'planika_lugar', K_ON = 'planika_cuentas', K_ASK = 'planika_pide';
   var ASK_TTL = 2 * 3600e3;  // el enlace caduca en 1 h; lo pedido en este navegador se recuerda 2 h como mucho
   function lsGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
@@ -949,7 +951,7 @@
   }
   function favChanged(id, on) {
     if (!session) {
-      if (accountsOn && on && !lsGet('planika_aviso_cuenta')) { lsSet('planika_aviso_cuenta', 1); toast('Guardado en este dispositivo. Entra con tu email para tenerlo en todos'); }
+      if (accountsOn && on && !lsGet('planika_aviso_cuenta')) { lsSet('planika_aviso_cuenta', 1); toast('Guardado en este dispositivo. Entra en tu cuenta para tenerlo en todos'); }
       return;
     }
     pending[id] = on ? 1 : 0; lsSet(K_OPS, pending);
@@ -1025,7 +1027,8 @@
   function authErrorText(err) {
     var c = (err && (err.code || err.error)) || '';
     if (err && err.status === 429 || /rate_limit/.test(c)) return 'Has pedido varios enlaces seguidos. Espera un minuto y vuelve a probar.';
-    if (/otp_expired|expired|access_denied/.test(c)) return 'El enlace o el código ha caducado o ya se usó. Pide uno nuevo.';
+    if (/otp_expired|expired/.test(c)) return 'El enlace o el código ha caducado o ya se usó. Pide uno nuevo.';
+    if (/access_denied/.test(c)) return 'No has llegado a entrar. Puedes volver a probar cuando quieras.';
     if (/email_address_invalid|validation/.test(c)) return 'Revisa el email: no parece válido.';
     if (err && err.status === 403) return 'El código no es correcto o ha caducado.';
     return 'No se ha podido completar. Comprueba tu conexión y vuelve a probar.';
@@ -1042,7 +1045,8 @@
     $('accountWrap').hidden = !accountsOn;
     $('accountLabel').textContent = session ? 'Mi cuenta' : 'Entrar';
     $('accountNote').textContent = session ? '★ Favoritos sincronizados' : 'Tus favoritos y tu ciudad en todos tus dispositivos';
-    $('accGoogleWrap').hidden = !GOOGLE_LOGIN;
+    $('accGoogleWrap').hidden = !GOOGLE_LOGIN || IN_APP; $('accInApp').hidden = !GOOGLE_LOGIN || !IN_APP;
+    $('accForm').hidden = !EMAIL_LOGIN;
     if (!session) { if ($('accIn').hidden === false) accShow('out'); return; }
     $('accWho').textContent = session.email || 'tu email';
     $('accFavN').textContent = favSet.size.toLocaleString('es-ES');
@@ -1079,7 +1083,10 @@
         function (err) { accMsg(err.status === 403 || /otp_expired/.test(err.code || '') ? 'El código no es correcto o ha caducado. Usa el del último correo o pide uno nuevo.' : authErrorText(err), true); });
   });
   $('accBack').addEventListener('click', function () { sentTo = ''; accMsg(''); accShow('out'); $('accEmail').focus(); });
-  $('accGoogle').addEventListener('click', function () { location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(location.origin + '/'); });
+  $('accGoogle').addEventListener('click', function () {
+    lsSet(K_ASK, { google: 1, t: Date.now() }); track('login_start', { method: 'google' });
+    location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(location.origin + '/');
+  });
   $('accPlaceSet').addEventListener('click', function () { var now = placeNow(); if (now) savePlace(now); });
   $('accPlaceDel').addEventListener('click', function () { savePlace(''); });
   $('accLogout').addEventListener('click', function () {
@@ -1096,11 +1103,13 @@
     if (!back.access_token) { openAccount(); accMsg(authErrorText({ code: back.error }), true); return; }
     var who = tokenInfo(back.access_token), email = String(who.email || '').toLowerCase();
     var asked = lsGet(K_ASK);
-    if ((asked && email && asked.email === email && Date.now() - asked.t < ASK_TTL) || (session && who.sub && session.id === who.sub)) { sentTo = ''; signedIn(back, 'link'); return; }
+    var fresh = asked && Date.now() - asked.t < ASK_TTL;
+    var how = who.app_metadata && who.app_metadata.provider === 'google' ? 'google' : 'link';
+    if ((fresh && (asked.google ? how === 'google' : email && asked.email === email)) || (session && who.sub && session.id === who.sub)) { sentTo = ''; signedIn(back, how); return; }
     backWaiting = back; sentTo = '';
     openAccount(); accShow('confirm'); $('accConfirmWho').textContent = email || 'otra cuenta';
   }
-  $('accConfirmYes').addEventListener('click', function () { var b = backWaiting; backWaiting = null; if (!b) return; accShow('in'); signedIn(b, 'link'); });
+  $('accConfirmYes').addEventListener('click', function () { var b = backWaiting; backWaiting = null; if (!b) return; accShow('in'); signedIn(b, 'confirmado'); });
   $('accConfirmNo').addEventListener('click', function () {
     var b = backWaiting; backWaiting = null;
     if (b) authPost('logout?scope=local', {}, b.access_token).catch(function () { /* caduca sola */ });
