@@ -32,21 +32,24 @@ _RECURRING = re.compile(r"\b(certains|chaque|tous les|toutes les|les (lundis|mar
 _EXPO = re.compile(r"\b(expo|exposition|exposicion|exhibition)\b")
 # Trámites y avisos municipales que la agenda mezcla con el ocio
 _NOT_LEISURE = re.compile(r"\b(conseil (municipal|de metropole|communautaire)|appel a (projets|candidatures)|recherche d.emploi|"
-                          r"insalubre|permanence|reunion publique|enquete publique|don du sang|collecte de)\b")
+                          r"insalubre|permanence|reunion publique|enquete publique|don du sang|collecte de|entreprise|"
+                          r"entrepreneur|emploi|broyage|dechets verts|devenez benevole)\b")
+# Visitas, talleres o cursos sobre una exposición: tienen sesiones sueltas, no están abiertos todos los días
+_NOT_CONTINUOUS = re.compile(r"^(visite|visites|atelier|ateliers|cours|stage|conference|rencontre|lecture|projection)\b")
 # Tipos de plan en francés (el clasificador general está pensado para castellano, catalán y euskera)
 _FR_RULES = [
     ("infantil", r"\b(enfants?|famille|familles|familial|jeune public|bebes?|tout.petits|marionnettes?|conte|contes|kids)\b"),
     ("navidad", r"\b(noel|marche de noel|fetes de fin d.annee|pere noel|calendrier de l.avent|sapin)\b"),
     ("cine", r"\b(cinema|cine|film|films|projection|court.metrage|documentaire)\b"),
-    ("deporte", r"\b(sport|sportif|match|rugby|football|basket|handball|course a pied|marathon|trail|natation|patinage)\b"),
+    ("deporte", r"\b(sport|sportif|match|rugby|football|basket|handball|course a pied|marathon|trail|natation|patinage|petanque)\b"),
     ("escena", r"\b(theatre|danse|spectacle|opera|cirque|humour|one man show|comedie|ballet|improvisation|cabaret|magie)\b"),
     ("musica", r"\b(concert|concerts|musique|jazz|piano|orchestre|chorale|recital|chanson|chansons|dj|symphoni|rock|electro|rap|lyrique)\b"),
     ("expos", r"\b(expo|exposition|musee|galerie|vernissage|photographie|peinture|sculpture|oeuvres?)\b"),
     ("gastro", r"\b(marche|degustation|vins?|gastronom|brocante|salon|foire|vide.grenier|oenolog|portes ouvertes)\b"),
     ("fiestas", r"\b(fete|festival|carnaval|bal|guinguette)\b"),
     ("naturaleza", r"\b(visite|visites|balade|randonnee|promenade|nature|jardin|parc|velo|patrimoine)\b"),
-    ("charlas", r"\b(conference|atelier|ateliers|rencontre|lecture|livres?|bibliotheque|mediatheque|debat|cours|formation|"
-                r"dictee|club|numerique|jeux|jeu|scrabble|echecs)\b"),
+    ("charlas", r"\b(conference|atelier|ateliers|rencontre|lecture|lecteurs|litteraire|livres?|bd|bibliotheque|mediatheque|"
+                r"debat|cours|formation|dictee|club|numerique|jeux|jeu|scrabble|echecs|puzzles?)\b"),
 ]
 _FR_COMPILED = [(k, re.compile(rx)) for k, rx in _FR_RULES]
 
@@ -127,8 +130,9 @@ def plan_dates(r):
     recurring = bool(_RECURRING.search(dr))
     if (d1 - d0).days <= 3:
         return [(d0, d1, hour)]
-    title_kw = norm(" ".join([r.get("title_fr") or ""] + _keywords(r)))
-    if _EXPO.search(title_kw) and not recurring:
+    title = norm(r.get("title_fr") or "")
+    expo = _EXPO.search(title) or (_EXPO.search(norm(" ".join(_keywords(r)))) and not _NOT_CONTINUOUS.search(title))
+    if expo and not recurring:
         return [(d0, d1, "")]
     out = []
     if _in_window(d0):
