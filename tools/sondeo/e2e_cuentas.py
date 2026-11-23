@@ -64,6 +64,16 @@ with sync_playwright() as p:
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.on("console", lambda m: m.type == "error" and errors.append(m.text))
+
+    def on_resp(r):
+        if r.url.startswith(SB):
+            try:
+                body = r.text()[:300] if r.status >= 400 else ""
+            except Exception:
+                body = "?"
+            print("   net %s %s %s %s" % (r.request.method, r.url[len(SB):][:110], r.status, body), flush=True)
+    page.on("response", on_resp)
+    page.on("requestfailed", lambda r: print("   net FAILED %s %s %s" % (r.method, r.url[:120], r.failure), flush=True))
     page.goto(BASE + "?cuentas=1"); page.wait_for_selector("article.card")
     ids = page.eval_on_selector_all("#list article.card .fav.corner", "els => els.slice(0,6).map(e => e.dataset.fav)")
     page.evaluate("ids => localStorage.setItem('planika_favs', JSON.stringify(ids))", ids[:2])
@@ -72,7 +82,11 @@ with sync_playwright() as p:
     page.goto(BASE + "#access_token=%s&expires_at=%d&expires_in=%d&refresh_token=%s&token_type=bearer&type=magiclink"
               % (s["access_token"], s["expires_at"], s["expires_in"], s["refresh_token"]))
     page.wait_for_selector("article.card")
-    page.wait_for_function("!localStorage.getItem('planika_fav_ops') && localStorage.getItem('planika_sesion')", timeout=15000)
+    try:
+        page.wait_for_function("!localStorage.getItem('planika_fav_ops') && localStorage.getItem('planika_sesion')", timeout=15000)
+    except Exception:
+        print("DIAG ops=%s ses=%s msg=%s errors=%s url=%s" % (ls(page, "planika_fav_ops"), (ls(page, "planika_sesion") or "")[:80], page.inner_text("#accMsg"), errors, page.url))
+        raise
     page.wait_for_timeout(1500)
     tok = json.loads(ls(page, "planika_sesion"))["access_token"]
     check(favs(tok) == set(ids[:2]), "al entrar, los favoritos del dispositivo están en la cuenta")
