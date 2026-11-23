@@ -115,18 +115,6 @@ jobs:
           python-version: "3.12"
       - name: Avisar a los buscadores (IndexNow)
         run: python3 tools/indexnow.py site
-  # Las cuentas (favoritos sincronizados) usan un proyecto gratuito de Supabase, que se pausa tras una semana
-  # sin peticiones. Esta llamada diaria lo mantiene activo. La clave es la «publishable», pública por diseño
-  # (la misma que lleva app.js): solo puede llamar a public.ping(), que devuelve la hora. Nunca bloquea nada.
-  cuentas-ping:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Mantener activa la base de datos de cuentas
-        run: |
-          curl -fsS --retry 3 --max-time 20 -X POST "https://jygalcbsfrntavhqahpx.supabase.co/rest/v1/rpc/ping" \
-            -H "apikey: sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4" -H "Content-Type: application/json" -d '{}' \
-            || echo "::warning::Supabase no responde al ping de mantenimiento"
   # Opcional: publica también en Cloudflare Pages. Se activa con la variable del repositorio
   # CLOUDFLARE_ENABLED=true y los secretos CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID.
   deploy-cloudflare:
