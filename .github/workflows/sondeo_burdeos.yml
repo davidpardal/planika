@@ -32,6 +32,7 @@ jobs:
                   continue
               seen.add(r["uid"])
               desc = strip_html(r.get("description_fr") or r.get("longdescription_fr") or "", 260)
-              print("ROW " + json.dumps({"u": r["uid"], "t": strip_html(r["title_fr"], 200), "d": desc, "p": s.price_fr(r.get("conditions_fr"))[0]}, ensure_ascii=False))
+              line = json.dumps({"u": r["uid"], "t": strip_html(r["title_fr"], 200), "d": desc, "p": s.price_fr(r.get("conditions_fr"))[0]}, ensure_ascii=True)
+              print("ROW " + line.replace("::", ": :"))
           print("TOTAL", len(seen))
           PY
