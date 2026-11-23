@@ -132,7 +132,7 @@ with sync_playwright() as p:
     page.reload(); page.wait_for_selector("article.card"); page.wait_for_timeout(3000)
     new = json.loads(ls(page, "planika_sesion") or "null")
     check(new and new["refresh_token"] != old["refresh_token"] and new["expires_at"] > time.time(), "renueva la sesión caducada")
-    check(page.inner_text("#favCount") == "2", "favoritos tras renovar")
+    check(page.text_content("#favCount") == "2", "favoritos tras renovar (%s)" % page.text_content("#favCount"))
 
     # Salir en el segundo dispositivo revoca solo su sesión
     s2r = json.loads(p2.evaluate("() => localStorage.getItem('planika_sesion')"))["refresh_token"]
