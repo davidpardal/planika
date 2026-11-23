@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
-          ref: cuentas-supabase
+          ref: cuentas-proyecto-planika
           path: app
       - uses: actions/setup-python@v5
         with:
@@ -28,4 +28,4 @@ jobs:
           python3 tools/sondeo/e2e_cuentas.py
         env:
           E2E_EMAIL: e2e-e9731bfe@planikaapp.invalid
-          E2E_PW: yfNFN90sfafMok076m6tCvND
+          E2E_PW: c39AqSQ8v7SCiMNojenZ7reW

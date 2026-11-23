@@ -2,8 +2,8 @@
 import json, os, sys, time, urllib.request, urllib.error
 from playwright.sync_api import sync_playwright
 
-SB = "https://jygalcbsfrntavhqahpx.supabase.co"
-KEY = "sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4"
+SB = "https://rqjrrdtdscvcimwzrwxj.supabase.co"
+KEY = "sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF"
 BASE = "http://localhost:8765/"
 EMAIL, PW = os.environ["E2E_EMAIL"], os.environ["E2E_PW"]
 fails = []
