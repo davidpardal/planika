@@ -807,11 +807,14 @@
   function track(name, params) { try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) { /* sin analítica */ } }
   var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
   var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var mobile = ios || /android/i.test(navigator.userAgent) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
   var installEv = null;
   if (!standalone) {
-    // Chrome, Edge y Samsung Internet avisan cuando se puede instalar; en iPhone hay que hacerlo desde Compartir
+    // Chrome, Edge y Samsung Internet avisan cuando se puede instalar (Chrome, solo tras un toque y 30 s en la web):
+    // entonces el botón abre su ventana de instalación. En el móvil el botón sale siempre; mientras el navegador no
+    // avise (o en iPhone, que no avisa nunca), explica cómo instalarla desde su menú.
     window.addEventListener('beforeinstallprompt', function (ev) { ev.preventDefault(); installEv = ev; $('installWrap').hidden = false; });
-    if (ios) $('installWrap').hidden = false;
+    if (mobile) $('installWrap').hidden = false;
   } else {
     track('pwa_open');
   }
