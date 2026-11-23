@@ -77,6 +77,7 @@ with sync_playwright() as p:
     page.goto(BASE + "?cuentas=1"); page.wait_for_selector("article.card")
     ids = page.eval_on_selector_all("#list article.card .fav.corner", "els => els.slice(0,6).map(e => e.dataset.fav)")
     page.evaluate("ids => localStorage.setItem('planika_favs', JSON.stringify(ids))", ids[:2])
+    page.evaluate("e => localStorage.setItem('planika_pide', JSON.stringify({email: e, t: Date.now()}))", EMAIL)  # pedido aquí
     page.goto("about:blank")  # el enlace del email abre la web desde cero
 
     # Vuelta del enlace del email (mismo formato que manda Supabase)
@@ -120,8 +121,11 @@ with sync_playwright() as p:
     ctx2 = br.new_context(); ctx2.add_init_script("try{localStorage.setItem('planika_analytics_consent','rejected')}catch(e){}")
     p2 = ctx2.new_page()
     p2.goto(BASE + "?x=1#access_token=%s&expires_in=3600&refresh_token=%s&token_type=bearer&type=magiclink" % (s2["access_token"], s2["refresh_token"]))
-    p2.wait_for_selector("article.card")
+    p2.wait_for_selector("#account[open]")
+    check(p2.text_content("#accConfirmWho") == EMAIL, "enlace no pedido en este navegador: pregunta «¿Entrar como …?»")
+    p2.click("#accConfirmYes")
     p2.wait_for_function("document.getElementById('favCount').textContent === '2'", timeout=15000)
+    p2.click("#accountClose")
     p2.wait_for_timeout(1000)
     check(p2.input_value("#where") == where, "en otro dispositivo aparecen los favoritos y la ciudad (%s)" % p2.input_value("#where"))
 

@@ -28,4 +28,4 @@ jobs:
           python3 tools/sondeo/e2e_cuentas.py
         env:
           E2E_EMAIL: e2e-e9731bfe@planikaapp.invalid
-          E2E_PW: zvsIyiiN1F-UTPiAwBaEEbXK
+          E2E_PW: L6_DL0TDh5Fi8C9M2XL4jDQV
