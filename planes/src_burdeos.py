@@ -99,6 +99,21 @@ def _links(r):
     return out
 
 
+_FREE = re.compile(r"\b(gratuit|gratuite|entree (libre|gratuite)|acces libre)\b")
+_PAID = re.compile(r"\d\s?(€|eur\b|euros?\b)", re.I)
+
+
+def price_fr(conditions):
+    """(precio corto para la etiqueta, gratis). Las condiciones suelen ser largas: se queda la primera tarifa."""
+    full = strip_html(conditions or "")
+    n = norm(full)
+    free = bool(_FREE.search(n)) and not _PAID.search(full)
+    first = re.split(r"\s[/;|]\s|\s?[|]\s?|\n|\.\s|\s-\s", full.strip(" -•"), maxsplit=1)[0].strip(" -•:;,.")
+    if len(first) > 40:
+        first = first[:38].rsplit(" ", 1)[0] + "…"
+    return first, free
+
+
 def category_fr(title, keywords, description, age_max=None):
     if age_max not in (None, "") and str(age_max).isdigit() and 0 < int(age_max) <= 12:
         return "infantil"
@@ -162,6 +177,7 @@ def to_events(rows):
         geo = r.get("location_coordinates") or {}
         links = _links(r)
         url = links[0] if links else "https://openagenda.com/agendas/%s/events/%s" % (r.get("originagenda_uid"), r.get("uid"))
+        price, free = price_fr(r.get("conditions_fr"))
         fam = re.search(r"\b(famille|familles|familial|jeune public|enfants?)\b", norm(" ".join(kws + [title])))
         for d0, d1, hour in dates:
             ev = event(
@@ -169,7 +185,7 @@ def to_events(rows):
                 end=d1.isoformat(), time=hour, description=desc,
                 category=category_fr(title, kws, strip_html(desc), r.get("age_max")),
                 province_code=PROVINCE_CODE, city=city, venue=r.get("location_name"), address=r.get("location_address"),
-                lat=geo.get("lat"), lon=geo.get("lon"), price=r.get("conditions_fr"), url=url,
+                lat=geo.get("lat"), lon=geo.get("lon"), price=price, free=free, url=url,
                 audience="Familias" if fam else "",
             )
             if ev:
