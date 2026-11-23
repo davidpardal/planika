@@ -344,3 +344,5 @@ a.chip.on { color: var(--white); }
 .acc-ask { margin-top: 10px; padding: 10px 12px; border: var(--b2); border-radius: 12px; background: #fff4f6; }
 .acc-msg { margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: var(--yellow); font-size: 14px; font-weight: 700; }
 .acc-msg.err { background: #ffd6dd; }
+.acc-or { display: flex; align-items: center; gap: 10px; margin: 14px 0 2px; font-size: 14px; font-weight: 700; color: var(--ink-2, #4a4263); }
+.acc-or::before, .acc-or::after { content: ""; flex: 1; border-top: 2px dashed currentColor; opacity: .5; }

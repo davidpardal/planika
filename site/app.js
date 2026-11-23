@@ -847,7 +847,7 @@
   var SB_KEY = 'sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF';
   var ACCOUNTS_PUBLIC = false;  // mientras sea false, las cuentas solo se ven con ?cuentas=1 (pruebas)
   var GOOGLE_LOGIN = true;      // «Continuar con Google» (proveedor Google configurado en Supabase)
-  var EMAIL_LOGIN = false;      // entrar con enlace/código por email: necesita SMTP propio (Brevo) en Supabase
+  var EMAIL_LOGIN = true;       // código (y enlace) por email: necesita SMTP propio (Brevo) configurado en Supabase
   var IN_APP = /Instagram|FBAN|FBAV|FB_IAB|musical_ly|BytedanceWebview|Line\/|Twitter/i.test(navigator.userAgent);  // Google no deja entrar desde ahí
   var K_SESSION = 'planika_sesion', K_OPS = 'planika_fav_ops', K_PLACE = 'planika_lugar', K_ON = 'planika_cuentas', K_ASK = 'planika_pide';
   var ASK_TTL = 2 * 3600e3;  // el enlace caduca en 1 h; lo pedido en este navegador se recuerda 2 h como mucho
@@ -1030,6 +1030,7 @@
     if (/otp_expired|expired/.test(c)) return 'El enlace o el código ha caducado o ya se usó. Pide uno nuevo.';
     if (/access_denied/.test(c)) return 'No has llegado a entrar. Puedes volver a probar cuando quieras.';
     if (/email_address_invalid|validation/.test(c)) return 'Revisa el email: no parece válido.';
+    if (/not_authorized/.test(c)) return 'Todavía no podemos enviar códigos a ese email. De momento, entra con Google.';
     if (err && err.status === 403) return 'El código no es correcto o ha caducado.';
     return 'No se ha podido completar. Comprueba tu conexión y vuelve a probar.';
   }
@@ -1046,7 +1047,7 @@
     $('accountLabel').textContent = session ? 'Mi cuenta' : 'Entrar';
     $('accountNote').textContent = session ? '★ Favoritos sincronizados' : 'Tus favoritos y tu ciudad en todos tus dispositivos';
     $('accGoogleWrap').hidden = !GOOGLE_LOGIN || IN_APP; $('accInApp').hidden = !GOOGLE_LOGIN || !IN_APP;
-    $('accForm').hidden = !EMAIL_LOGIN;
+    $('accForm').hidden = !EMAIL_LOGIN; $('accOr').hidden = !EMAIL_LOGIN || !GOOGLE_LOGIN || IN_APP;
     if (!session) { if ($('accIn').hidden === false) accShow('out'); return; }
     $('accWho').textContent = session.email || 'tu email';
     $('accFavN').textContent = favSet.size.toLocaleString('es-ES');
@@ -1069,9 +1070,9 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { accMsg('Escribe un email válido, por ejemplo nombre@gmail.com.', true); return; }
     var btn = $('accSend'); btn.disabled = true; btn.textContent = 'Enviando…'; accMsg('');
     authPost('otp?redirect_to=' + encodeURIComponent(location.origin + '/'), { email: email, create_user: true })
-      .then(function () { sentTo = email; lsSet(K_ASK, { email: email, t: Date.now() }); $('accSentTo').textContent = email; $('accCode').value = ''; accShow('sent'); track('login_link_sent'); },
+      .then(function () { sentTo = email; lsSet(K_ASK, { email: email, t: Date.now() }); $('accSentTo').textContent = email; $('accCode').value = ''; accShow('sent'); try { $('accCode').focus(); } catch (e) { /* sin foco */ } track('login_code_sent'); },
         function (err) { accMsg(authErrorText(err), true); })
-      .then(function () { btn.disabled = false; btn.textContent = 'Enviarme el enlace'; });
+      .then(function () { btn.disabled = false; btn.textContent = 'Enviarme un código'; });
   });
   $('accCodeForm').addEventListener('submit', function (ev) {
     ev.preventDefault();

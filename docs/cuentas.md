@@ -25,7 +25,7 @@ dispositivos. Sin cuenta, Planika funciona igual que siempre: los favoritos se q
 - «Mi ciudad» se guarda como `comunidad|provincia|localidad` (lo mismo que el filtro «Dónde»). Al abrir Planika sin
   filtros en la dirección, se aplica.
 
-## Entrar con Google (lo que está activo)
+## Entrar con Google
 
 Se entra con «Continuar con Google». No hace falta enviar correos (ni Brevo). Google comparte email, nombre y foto;
 un trigger de la base de datos (`minimizar_datos_google`) descarta nombre y foto al recibirlos.
@@ -55,39 +55,46 @@ Mientras `ACCOUNTS_PUBLIC = false` (en `site/app.js`), el botón «Entrar» solo
 1. **Authentication → URL Configuration**: Site URL `https://planikaapp.com` y en Redirect URLs `https://planikaapp.com/**`.
 2. **Authentication → Sign In / Providers → Google**: activar y pegar Client ID y Client secret (el secreto solo ahí,
    nunca en un chat ni en el repositorio).
-3. Opcional: en el mismo sitio, desactivar **Email** mientras no se use el correo.
+
 
 Google mostrará «continuar a rqjrrdtdscvcimwzrwxj.supabase.co» en su pantalla: es la dirección del proyecto. Para
 que salga un dominio propio (por ejemplo `cuentas.planikaapp.com`) hace falta el dominio personalizado de Supabase,
 que es de pago.
 
-## Entrar con el email (más adelante)
+## Entrar con el email (código)
 
-Está programado pero apagado (`EMAIL_LOGIN = false`). Para activarlo hace falta SMTP propio, porque sin él Supabase
-solo envía correos a los miembros del equipo del proyecto:
+Debajo de Google: «o con tu email» → «Enviarme un código». El correo lleva un código y un botón; se puede entrar con
+cualquiera de los dos. Necesita SMTP propio, porque sin él Supabase solo envía correos a los miembros del equipo del
+proyecto. Se usa Brevo (plan gratuito):
 
-1. **Authentication → Emails → SMTP Settings**: activar *Custom SMTP* con Brevo (host `smtp-relay.brevo.com`,
-   puerto `587`, login SMTP y clave SMTP de Brevo; remitente de `planikaapp.com` verificado en Brevo).
-2. **Authentication → Emails → Templates**: pegar las plantillas de abajo en *Magic link* y en *Confirm signup*.
-3. **Authentication → Rate Limits**: con SMTP propio son 30 correos por hora; súbelo antes de anunciarlo.
-4. Poner `EMAIL_LOGIN = true`. En privacidad, volver a nombrar Brevo y el enlace por email.
+1. **Brevo** (cuenta planikaapp.com@gmail.com): *Senders, Domains & Dedicated IPs → Domains → Add a domain*:
+   `planikaapp.com`. Añadir en el proveedor del dominio los registros que da Brevo (código de Brevo, DKIM y DMARC) o
+   dejar que Brevo los ponga solo si lo ofrece. Después, en *Senders*, crear `hola@planikaapp.com` («Planika»).
+2. **Brevo**: *Settings → SMTP & API → SMTP*: copiar el **Login** y pulsar **Generate a new SMTP key** (la clave solo
+   se ve una vez; es una clave SMTP, no una API key).
+3. **Supabase → Authentication → Emails → SMTP Settings**: activar *Enable custom SMTP*:
+   - Sender email `hola@planikaapp.com`, sender name `Planika`
+   - Host `smtp-relay.brevo.com`, port `587`
+   - Username: el Login de Brevo; Password: la clave SMTP (solo ahí, nunca en un chat ni en el repositorio)
+4. **Supabase → Authentication → Emails → Templates**: pegar la plantilla de abajo en *Magic link* y en
+   *Confirm signup* (a quien entra por primera vez le llega la de *Confirm signup*).
+5. **Supabase → Authentication → Rate Limits**: con SMTP propio son 30 correos por hora; súbelo antes de anunciarlo.
 
 Si alguien usa el formulario para mandar correos a lo loco, se puede añadir un captcha (Cloudflare Turnstile) en
 Authentication → Attack Protection.
 
 ## Plantillas de email
 
-Asunto (*Magic link*): `Tu enlace para entrar en Planika`
-Asunto (*Confirm signup*): `Confirma tu email para entrar en Planika`
+Asunto (*Magic link* y *Confirm signup*): `Tu código para entrar en Planika`
 
 ```html
 <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:480px;margin:0 auto;color:#1a1033">
   <h2 style="margin:0 0 12px">Entra en Planika</h2>
-  <p>Pulsa el botón para entrar. El enlace caduca en una hora y solo sirve una vez.</p>
+  <p>Escribe este código en Planika para entrar:</p>
+  <p style="font-size:32px;font-weight:800;letter-spacing:6px;margin:8px 0 16px">{{ .Token }}</p>
+  <p>O pulsa el botón:</p>
   <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#ff3d81;color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;text-decoration:none">Entrar en Planika</a></p>
-  <p>¿Usas Planika instalada en el móvil? Escribe este código en la ventana «Revisa tu correo»:</p>
-  <p style="font-size:28px;font-weight:800;letter-spacing:4px;margin:8px 0">{{ .Token }}</p>
-  <p style="color:#4a4263;font-size:13px">Si no has pedido entrar en Planika, ignora este correo.</p>
+  <p style="color:#4a4263;font-size:13px">El código y el botón caducan en una hora y solo sirven una vez. Si no has pedido entrar en Planika, ignora este correo.</p>
 </div>
 ```
 
