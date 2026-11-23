@@ -152,7 +152,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 3427,
+    "count": 3487,
     "error": ""
    }
   ],
@@ -204,7 +204,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 1181,
+    "count": 1204,
     "error": ""
    }
   ],
@@ -412,8 +412,8 @@
    },
    {
     "date": "2026-11-23",
-    "count": 30,
-    "error": ""
+    "count": 29,
+    "error": "HTTPError: 503 Server Error: Service Temporarily Unavailable for url: https://www.juntadeandalucia.es/ssdigitales/festa/download-pr"
    }
   ],
   "galicia": [
@@ -516,7 +516,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 43,
+    "count": 44,
     "error": ""
    }
   ],
@@ -897,7 +897,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 712,
+    "count": 761,
     "error": ""
    }
   ],
@@ -991,7 +991,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 127,
+    "count": 136,
     "error": ""
    }
   ],
@@ -1028,7 +1028,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 18,
+    "count": 19,
     "error": ""
    }
   ],
@@ -1119,7 +1119,7 @@
    },
    {
     "date": "2026-11-23",
-    "count": 11,
+    "count": 12,
     "error": ""
    }
   ],
@@ -1146,6 +1146,9 @@
    }
   ]
  },
- "updated_at": "2026-11-23T10:18",
- "alerts": []
+ "updated_at": "2026-11-23T14:38",
+ "alerts": [
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-23",
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-23"
+ ]
 }
