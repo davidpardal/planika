@@ -5,8 +5,7 @@ dispositivos. Sin cuenta, Planika funciona igual que siempre: los favoritos se q
 
 ## Cómo está hecho
 
-- **Supabase**, cuenta planikaapp.com@gmail.com, organización «Planika», proyecto `rqjrrdtdscvcimwzrwxj`, región UE
-  (Irlanda, eu-west-1), plan gratuito. El esquema completo está en `supabase/esquema.sql`.
+- **Supabase**, proyecto `planika` (`jygalcbsfrntavhqahpx`), región UE (París), plan gratuito.
 - Tablas `public.favorites` (usuario, plan) y `public.profiles` (usuario, ciudad). Con RLS: cada persona solo ve y
   cambia sus filas; el rol anónimo no tiene acceso. Máximo 2.000 favoritos por cuenta.
 - `public.delete_my_account()` borra la cuenta de quien la llama (y en cascada sus favoritos y su ciudad).
@@ -41,23 +40,23 @@ Mientras `ACCOUNTS_PUBLIC = false` (en `site/app.js`), el botón «Entrar» solo
 1. Crea un proyecto (por ejemplo «Planika») y entra en **Google Auth Platform**.
 2. **Branding**: nombre de la app «Planika», email de asistencia, página principal `https://planikaapp.com`,
    política de privacidad `https://planikaapp.com/privacidad.html` y, en dominios autorizados, `planikaapp.com` y
-   `rqjrrdtdscvcimwzrwxj.supabase.co`.
+   `jygalcbsfrntavhqahpx.supabase.co`.
 3. **Audience**: tipo *External*. Mientras está en *Testing* solo pueden entrar los usuarios de prueba que añadas
    (añade tu Gmail). Para abrirlo a todo el mundo, *Publish app*.
 4. **Data Access**: deja solo `openid`, `.../auth/userinfo.email` y `.../auth/userinfo.profile` (no piden revisión).
 5. **Clients → Create client** → *Web application*:
    - Authorized JavaScript origins: `https://planikaapp.com`
-   - Authorized redirect URIs: `https://rqjrrdtdscvcimwzrwxj.supabase.co/auth/v1/callback`
+   - Authorized redirect URIs: `https://jygalcbsfrntavhqahpx.supabase.co/auth/v1/callback`
    - Guarda el **Client ID** y el **Client secret**.
 
-### Pasos en Supabase (https://supabase.com/dashboard/project/rqjrrdtdscvcimwzrwxj)
+### Pasos en Supabase (https://supabase.com/dashboard/project/jygalcbsfrntavhqahpx)
 
 1. **Authentication → URL Configuration**: Site URL `https://planikaapp.com` y en Redirect URLs `https://planikaapp.com/**`.
 2. **Authentication → Sign In / Providers → Google**: activar y pegar Client ID y Client secret (el secreto solo ahí,
    nunca en un chat ni en el repositorio).
 3. Opcional: en el mismo sitio, desactivar **Email** mientras no se use el correo.
 
-Google mostrará «continuar a rqjrrdtdscvcimwzrwxj.supabase.co» en su pantalla: es la dirección del proyecto. Para
+Google mostrará «continuar a jygalcbsfrntavhqahpx.supabase.co» en su pantalla: es la dirección del proyecto. Para
 que salga un dominio propio (por ejemplo `cuentas.planikaapp.com`) hace falta el dominio personalizado de Supabase,
 que es de pago.
 
