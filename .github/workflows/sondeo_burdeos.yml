@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: burdeos-espanol
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -19,20 +19,13 @@ jobs:
       - run: |
           python3 - <<'PY'
           import json, sys
-          from datetime import timedelta
           sys.path.insert(0, ".")
           from planes import src_burdeos as s
-          from planes.util import http_json, strip_html
-          a, b = s.WINDOW[0] - timedelta(days=1), s.WINDOW[1] + timedelta(days=1)
-          where = "firstdate_begin <= '%sT23:59:59' and lastdate_end >= '%s'" % (b.isoformat(), a.isoformat())
-          rows = http_json(s.API, params={"where": where, "lang": "fr"})
-          seen = set()
-          for r in rows:
-              if not s.to_events([r]) or r["uid"] in seen:
-                  continue
-              seen.add(r["uid"])
-              desc = strip_html(r.get("description_fr") or r.get("longdescription_fr") or "", 260)
-              line = json.dumps({"u": r["uid"], "t": strip_html(r["title_fr"], 200), "d": desc, "p": s.price_fr(r.get("conditions_fr"))[0]}, ensure_ascii=True)
-              print("ROW " + line.replace("::", ": :"))
-          print("TOTAL", len(seen))
+          evs = s.fetch(print)
+          es = [e for e in evs if e.get("title_es")]
+          same = [e for e in evs if not e.get("title_es")]
+          print("RES total=%d con_titulo_es=%d sin=%d" % (len(evs), len(es), len(same)))
+          for e in same: print("SIN", e["title"][:80])
+          for e in evs:
+              print("JSONLINE " + json.dumps(e, ensure_ascii=True).replace("::", ": :"))
           PY
