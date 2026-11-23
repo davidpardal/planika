@@ -11,11 +11,25 @@ jobs:
     steps:
       - run: |
           B=https://opendata.bordeaux-metropole.fr/api/explore/v2.1/catalog/datasets/met_agenda
-          echo "== META"; curl -sS "$B" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('metas',{}).get('default',{}).get('modified'), d.get('metas',{}).get('default',{}).get('records_count')); [print(' F', f['name'], f['type'], (f.get('label') or '')[:40]) for f in d.get('fields',[])]"
-          echo "== TOTAL"; curl -sS "$B/records?limit=0" | head -c 300; echo
-          for w in "firstdate_begin<='2026-12-08T23:59:59' and lastdate_end>='2026-12-05'" ; do
-            echo "== WHERE $w"
-            curl -sS -G "$B/records" --data-urlencode "where=$w" --data-urlencode "limit=3" | python3 -c "import json,sys; d=json.load(sys.stdin); print('total', d.get('total_count'), d.get('error_code'), d.get('message')); [print(json.dumps(r, ensure_ascii=False)[:1500]) for r in d.get('results',[])]"
-          done
-          echo "== POR CIUDAD 5-8 dic"
-          curl -sS -G "$B/records" --data-urlencode "where=firstdate_begin<='2026-12-08T23:59:59' and lastdate_end>='2026-12-05'" --data-urlencode "group_by=location_city" --data-urlencode "select=count(*) as n" --data-urlencode "order_by=n desc" --data-urlencode "limit=40" | head -c 3000; echo
+          W="firstdate_begin<='2026-12-08T23:59:59' and lastdate_end>='2026-12-05'"
+          curl -sS -G "$B/exports/json" --data-urlencode "where=$W" -o dic.json
+          python3 - <<'PY'
+          import json, collections
+          rows = json.load(open("dic.json"))
+          print("ROWS", len(rows))
+          print("KEYS", sorted(rows[0].keys()))
+          c = collections.Counter
+          for k in ("status", "attendancemode", "location_countrycode", "location_department", "originagenda_title"):
+              print("CNT", k, c(str(r.get(k)) for r in rows).most_common(12))
+          spans = c()
+          for r in rows:
+              d = (r["lastdate_end"][:10] > r["firstdate_begin"][:10]) and ((int(r["lastdate_end"][:4])*400+int(r["lastdate_end"][5:7])*31+int(r["lastdate_end"][8:10])) - (int(r["firstdate_begin"][:4])*400+int(r["firstdate_begin"][5:7])*31+int(r["firstdate_begin"][8:10])))
+              spans["0" if not d else "1-3" if d <= 3 else "4-14" if d <= 14 else ">14"] += 1
+          print("SPANS", spans)
+          for r in rows[:40]:
+              print("EV | %s | %s -> %s | %s | %s | %s | cond=%s | kw=%s | links=%s" % (r["title_fr"][:60], r["firstdate_begin"][:16], r["lastdate_end"][:16], (r.get("daterange_fr") or "")[:70], r.get("location_name"), r.get("location_city"), (r.get("conditions_fr") or "")[:50], (r.get("keywords_fr") or "")[:60] if isinstance(r.get("keywords_fr"), str) else r.get("keywords_fr"), str(r.get("links"))[:80]))
+          r = rows[0]
+          print("URLTEST", r["originagenda_uid"], r["uid"], r["slug"])
+          open("u.txt","w").write("https://openagenda.com/agendas/%s/events/%s\nhttps://openagenda.com/fr/agendas/%s/events/%s\n" % (r["originagenda_uid"], r["uid"], r["originagenda_uid"], r["slug"]))
+          PY
+          while read u; do echo "URL $u -> $(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$u")"; done < u.txt
