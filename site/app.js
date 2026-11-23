@@ -434,7 +434,8 @@
       var up = e.sessions.filter(function (x) { return x >= TODAY; });
       sess = '<div class="sessions">Fechas: ' + up.slice(0, 6).map(function (x) { return fmtShort.format(fromIso(x)); }).join(', ') + (up.length > 6 ? ' y ' + (up.length - 6) + ' más' : '') + '</div>';
     }
-    return '<article class="card pop' + pop + '" data-id="' + e.id + '" data-c="' + Math.floor(e.i / CHUNK) + '" data-pop="' + pop + '"' + (opts.noOngoing ? ' data-no="1"' : '') + '>' + img + '<div class="body">' +
+    var fav = '<button type="button" class="fav corner' + (favSet.has(e.id) ? ' on' : '') + '" data-fav="' + e.id + '" title="Guardar en favoritos" aria-label="Guardar en favoritos">' + (favSet.has(e.id) ? '★' : '☆') + '</button>';
+    return '<article class="card pop' + pop + '" data-id="' + e.id + '" data-c="' + Math.floor(e.i / CHUNK) + '" data-pop="' + pop + '"' + (opts.noOngoing ? ' data-no="1"' : '') + '>' + fav + img + '<div class="body">' +
       '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>' + price + permBadge + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">En curso</span>' : '') + (d !== null ? '<span class="badge dist">a ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + ' km</span>' : '') + '</div>' +
       // El título lleva a la ficha del plan en Planika (enlace rastreable); la web oficial sigue en "Entradas" y "Más info".
       '<h3><a href="' + esc(evFile(e)) + '">' + esc(title(e)) + '</a></h3>' +
@@ -443,7 +444,6 @@
       (where ? '<div class="where">📍 ' + esc(where) + '</div>' : '') +
       (e.description ? '<p class="desc">' + esc(e.description) + '</p>' : '') +
       '<div class="actions">' + tickets + info + '<button type="button" class="btn addcal" data-id="' + e.id + '">＋ Calendario</button>' +
-      '<button type="button" class="fav' + (favSet.has(e.id) ? ' on' : '') + '" data-fav="' + e.id + '" title="Guardar en favoritos">' + (favSet.has(e.id) ? '★' : '☆') + '</button>' +
       '<button type="button" class="btn share" data-share="' + e.id + '" title="Compartir este plan">↗ Compartir</button></div>' +
       ((e.source || (e.subtype && !isPermanent(e))) ? '<div class="src">' + (e.source ? 'Fuente: ' + esc(e.source) : '') + (e.subtype && !isPermanent(e) ? (e.source ? ' · ' : '') + esc(e.subtype) : '') + '</div>' : '') +
       '</div></article>';
