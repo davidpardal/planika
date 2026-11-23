@@ -135,9 +135,14 @@ h1, h2 { letter-spacing: -.02em; }
 .pop3 { --c: var(--lilac); }
 .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px 24px; }
 .card {
+  position: relative;
   background: var(--c, var(--yellow)); color: var(--ink); border: var(--b); border-radius: var(--r);
   overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--sh-lg); min-width: 0;
 }
+/* Favorito en la esquina de arriba a la derecha (sobre la foto si la hay) */
+.card > .fav.corner { position: absolute; top: 10px; right: 10px; z-index: 2; width: 44px; height: 44px; min-height: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 21px; line-height: 1; }
+.card:not(:has(> img)) .badges { padding-right: 50px; }
 .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--white); display: block; border-bottom: var(--b); }
 .card .body { padding: 14px 16px 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .badges { display: flex; gap: 6px; flex-wrap: wrap; font-size: 13px; }
@@ -150,7 +155,11 @@ h1, h2 { letter-spacing: -.02em; }
 .when { font-weight: 700; font-size: 14.5px; }
 .where, .desc { font-size: 14px; }
 .desc { margin: 0; background: #fff8; border-radius: 10px; padding: 8px 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; }
+.actions { display: flex; gap: 6px; flex-wrap: nowrap; margin-top: auto; padding-top: 10px; }
+.actions .btn { flex: 1 1 auto; justify-content: center; white-space: nowrap; padding: 7px 8px; min-width: 0; }
+/* Con «Entradas» no caben cuatro botones en el móvil: Entradas ocupa su propia fila y el resto va debajo, en una */
+.actions:has(> .btn.primary) { flex-wrap: wrap; }
+.actions > .btn.primary { flex: 1 1 100%; }
 .btn { padding: 7px 13px; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; }
 .src { font-size: 12px; margin-top: 4px; opacity: .8; }
 .more { text-align: center; margin: 28px 0 44px; }
