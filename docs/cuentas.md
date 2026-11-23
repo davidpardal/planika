@@ -9,6 +9,8 @@ dispositivos. Sin cuenta, Planika funciona igual que siempre: los favoritos se q
 - Tablas `public.favorites` (usuario, plan) y `public.profiles` (usuario, ciudad). Con RLS: cada persona solo ve y
   cambia sus filas; el rol anónimo no tiene acceso. Máximo 2.000 favoritos por cuenta.
 - `public.delete_my_account()` borra la cuenta de quien la llama (y en cascada sus favoritos y su ciudad).
+- Tarea diaria `planika-limpiar-sin-confirmar` (pg_cron, 03:17 UTC): borra a quien pidió el enlace y nunca entró,
+  pasados 7 días.
 - `public.ping()` devuelve la hora: el trabajo `cuentas-ping` de `update.yml` la llama a diario para que el proyecto
   gratuito no se pause tras una semana sin uso.
 - `site/app.js` habla directamente con la API de Supabase (sin librerías). La clave que lleva es la *publishable*,
