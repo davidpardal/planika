@@ -1103,7 +1103,11 @@
   if (state.view !== 'list') setView(state.view);
   if (openId) openModal(openId);
   paintAccount();
-  if (authBack && authBack.access_token) signedIn(authBack, 'link');
-  else if (authBack) { openAccount(); accMsg(authErrorText({ code: authBack.error }), true); }
-  else if (session) syncAll();
+  function onAuthBack(back) {
+    if (back.access_token) signedIn(back, 'link');
+    else { openAccount(); accMsg(authErrorText({ code: back.error }), true); }
+  }
+  if (authBack) onAuthBack(authBack); else if (session) syncAll();
+  // Si el enlace se abre en una pestaña que ya tenía Planika, solo cambia el #: no se recarga la página.
+  window.addEventListener('hashchange', function () { var back = readAuthReturn(); if (back) onAuthBack(back); });
 })();
