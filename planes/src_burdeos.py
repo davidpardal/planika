@@ -48,16 +48,19 @@ def translations():
 
 
 def spanish(uid, title, desc, price):
-    """(título en castellano o "", descripción, precio): la traducción guardada si el francés no ha cambiado."""
+    """(título, título en castellano o "", descripción, precio) con la traducción guardada si el francés no ha cambiado.
+    Si solo cambian signos («Monet ! Monet !» → «¡Monet! ¡Monet!»), se corrige el título sin repetir el original."""
     tr = translations().get(str(uid))
     if not tr or norm(tr.get("fr")) != norm(title):
-        return "", desc, price
+        return title, "", desc, price
     title_es = tr["es"] if norm(tr["es"]) != norm(title) else ""
+    if not title_es:
+        title = tr["es"] or title
     if norm(tr.get("fr_desc"))[:50] == norm(strip_html(desc))[:50]:
         desc = tr.get("es_desc") or ""
     if tr.get("fr_price") == price:
         price = tr.get("es_price") or ""
-    return title_es, desc, price
+    return title, title_es, desc, price
 
 _RECURRING = re.compile(r"\b(certains|chaque|tous les|toutes les|les (lundis|mardis|mercredis|jeudis|vendredis|samedis|dimanches))\b| et \d")
 _EXPO = re.compile(r"\b(expo|exposition|exposicion|exhibition)\b")
@@ -210,7 +213,7 @@ def to_events(rows):
         url = links[0] if links else "https://openagenda.com/agendas/%s/events/%s" % (r.get("originagenda_uid"), r.get("uid"))
         price, free = price_fr(r.get("conditions_fr"))
         category = category_fr(title, kws, strip_html(desc), r.get("age_max"))  # con el francés, antes de traducir
-        title_es, desc, price = spanish(r.get("uid"), title, desc, price)
+        title, title_es, desc, price = spanish(r.get("uid"), title, desc, price)
         fam = re.search(r"\b(famille|familles|familial|jeune public|enfants?)\b", norm(" ".join(kws + [title])))
         for d0, d1, hour in dates:
             ev = event(
