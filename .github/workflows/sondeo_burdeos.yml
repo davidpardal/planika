@@ -11,30 +11,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: burdeos-diciembre
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install -q -r requirements.txt
       - run: |
           python3 - <<'PY'
-          import collections, json, sys
+          import json, sys
+          from datetime import timedelta
           sys.path.insert(0, ".")
           from planes import src_burdeos as s
-          evs = s.fetch(print)
-          json.dump(evs, open("burdeos.json", "w"), ensure_ascii=False)
-          C = collections.Counter
-          print("CAT", C(e["category"] for e in evs).most_common())
-          print("CITY", C(e["city"] for e in evs).most_common(8))
-          print("DAYS", C((e["start"], e["end"]) for e in evs).most_common(12))
-          print("FREE", sum(1 for e in evs if e["free"]), "NOCOORD", sum(1 for e in evs if e["lat"] is None))
-          for e in evs:
-              print("JSONLINE " + json.dumps(e, ensure_ascii=False))
-          for e in sorted(evs, key=lambda e: (e["start"], e["time"]))[:400]:
-              print("EV | %s | %s-%s %s | %s | %s | %s | %s | %s" % (e["category"], e["start"][5:], e["end"][5:], e["time"], e["title"][:55], (e["venue"] or "")[:28], e["city"], (e["price"] or "")[:25], e["url"][:60]))
+          from planes.util import http_json, strip_html
+          a, b = s.WINDOW[0] - timedelta(days=1), s.WINDOW[1] + timedelta(days=1)
+          where = "firstdate_begin <= '%sT23:59:59' and lastdate_end >= '%s'" % (b.isoformat(), a.isoformat())
+          rows = http_json(s.API, params={"where": where, "lang": "fr"})
+          seen = set()
+          for r in rows:
+              if not s.to_events([r]) or r["uid"] in seen:
+                  continue
+              seen.add(r["uid"])
+              desc = strip_html(r.get("description_fr") or r.get("longdescription_fr") or "", 260)
+              print("ROW " + json.dumps({"u": r["uid"], "t": strip_html(r["title_fr"], 200), "d": desc, "p": s.price_fr(r.get("conditions_fr"))[0]}, ensure_ascii=False))
+          print("TOTAL", len(seen))
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: burdeos
-          path: burdeos.json
-# 1795464723
