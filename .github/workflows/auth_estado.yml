@@ -1,0 +1,14 @@
+name: Estado del inicio de sesión (rama sondeo, no desplegar)
+on:
+  push:
+    branches: [sondeo]
+    paths: [".github/workflows/auth_estado.yml"]
+permissions:
+  contents: read
+jobs:
+  estado:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS "https://jygalcbsfrntavhqahpx.supabase.co/auth/v1/settings" -H "apikey: sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4" | python3 -c "import json,sys; d=json.load(sys.stdin); print('ESTADO google=%s email=%s signup_off=%s' % (d['external'].get('google'), d['external'].get('email'), d.get('disable_signup')))"
+          curl -s -o /dev/null -w "ESTADO authorize=%{http_code} -> %{redirect_url}\n" "https://jygalcbsfrntavhqahpx.supabase.co/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Fplanikaapp.com%2F" | cut -c1-200
