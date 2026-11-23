@@ -80,6 +80,29 @@ class SourceTest(unittest.TestCase):
         self.assertEqual(bx.price_fr("5 € par enfant. Gratuit avec la Carte Jeune"), ("5 € par enfant", False))
         self.assertFalse(bx.price_fr("Tarif libre à partir de 2€")[1])
 
+    def test_spanish_translation_applied_only_if_french_unchanged(self):
+        saved = bx._ES
+        bx._ES = {"11": {"fr": "Concert de Noël", "es": "Concierto de Navidad", "fr_desc": "Chants de Noël et chants du monde",
+                         "es_desc": "Villancicos y canciones del mundo", "fr_price": "Tarif normal : 15€", "es_price": "Tarifa general: 15 €"}}
+        try:
+            base = row("11", "Concert de Noël", "2026-12-06T15:00:00+00:00", "2026-12-06T15:00:00+00:00",
+                       description_fr="Chants de Noël et chants du monde", conditions_fr="Tarif normal : 15€ / Tarif réduit : 10€")
+            (e,) = self.one(base)
+            self.assertEqual((e["title"], e["title_es"]), ("Concert de Noël", "Concierto de Navidad"))
+            self.assertEqual((e["description"], e["price"], e["category"]), ("Villancicos y canciones del mundo", "Tarifa general: 15 €", "navidad"))
+            # Si la agenda cambia el título, sale en francés (mejor que una traducción de otro texto)
+            (e,) = self.one(dict(base, title_fr="Concert de Noël annulé et remplacé"))
+            self.assertNotIn("title_es", e)
+            self.assertEqual(e["description"], "Chants de Noël et chants du monde")
+        finally:
+            bx._ES = saved
+
+    def test_translation_file_covers_titles(self):
+        table = bx.translations()
+        self.assertGreaterEqual(len(table), 150)
+        for uid, tr in table.items():
+            self.assertTrue(tr["fr"] and tr["es"], uid)
+
     def test_window_is_december_5_to_8(self):
         self.assertEqual(bx.WINDOW, (date(2026, 12, 5), date(2026, 12, 8)))
 
