@@ -94,6 +94,7 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Ajuntament de Barcelona | Barcelona ciudad (agenda cultural completa, con sesiones) | JSON |
 | Axenda de Cultura de Galicia (Xunta) | las 4 provincias gallegas | iCalendar |
 | Ayuntamiento de Cartagena | Cartagena (Murcia) | CSV |
+| Agenda de Bordeaux Métropole (OpenAgenda, datos abiertos) | Burdeos y su metrópoli (Francia), solo del 5 al 8 de diciembre de 2026 | Opendatasoft JSON |
 | Cabildo de Tenerife | eventos deportivos de la isla | JSON |
 | TheSportsDB | partidos de LaLiga 2, ACB, ASOBAL, Liga Femenina de baloncesto, Copa del Rey y Supercopa (ACB, ASOBAL y Liga F: consulta día a día los próximos 14 días; horas convertidas de UTC a Madrid) | API JSON (clave pública de pruebas; `THESPORTSDB_KEY` para una propia) |
 | Ayuntamiento de Zaragoza | Zaragoza ciudad (agenda de actividades completa) | API JSON paginada |
