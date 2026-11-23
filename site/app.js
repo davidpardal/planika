@@ -843,8 +843,8 @@
   // La clave es la «publishable», pública por diseño: lo que cada persona puede leer o escribir lo deciden
   // las políticas RLS de la base de datos (solo sus propias filas). Sin sesión, todo sigue como siempre:
   // los favoritos viven en este navegador (planika_favs).
-  var SB_URL = 'https://jygalcbsfrntavhqahpx.supabase.co';
-  var SB_KEY = 'sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4';
+  var SB_URL = 'https://rqjrrdtdscvcimwzrwxj.supabase.co';
+  var SB_KEY = 'sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF';
   var ACCOUNTS_PUBLIC = false;  // mientras sea false, las cuentas solo se ven con ?cuentas=1 (pruebas)
   var GOOGLE_LOGIN = true;      // «Continuar con Google» (proveedor Google configurado en Supabase)
   var EMAIL_LOGIN = false;      // entrar con enlace/código por email: necesita SMTP propio (Brevo) en Supabase
