@@ -10,5 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -fsS "https://jygalcbsfrntavhqahpx.supabase.co/auth/v1/settings" -H "apikey: sb_publishable_rBesGXlh8l4CO2oFtJOqjw_wkS03xl4" | python3 -c "import json,sys; d=json.load(sys.stdin); print('ESTADO google=%s email=%s signup_off=%s' % (d['external'].get('google'), d['external'].get('email'), d.get('disable_signup')))"
-          curl -s -o /dev/null -w "ESTADO authorize=%{http_code} -> %{redirect_url}\n" "https://jygalcbsfrntavhqahpx.supabase.co/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Fplanikaapp.com%2F" | cut -c1-200
+          SB=https://rqjrrdtdscvcimwzrwxj.supabase.co
+          KEY=sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF
+          curl -fsS "$SB/auth/v1/settings" -H "apikey: $KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print('ESTADO google=%s email=%s signup_off=%s' % (d['external'].get('google'), d['external'].get('email'), d.get('disable_signup')))"
+          loc=$(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" "$SB/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Fplanikaapp.com%2F")
+          echo "ESTADO authorize=${loc%% *}"
+          url=${loc#* }
+          python3 - "$url" <<'PY'
+          import sys, urllib.parse as u
+          url = sys.argv[1]
+          if not url.startswith("http"): print("ESTADO sin redirección a Google"); sys.exit()
+          q = u.parse_qs(u.urlparse(url).query)
+          print("ESTADO host=%s redirect_uri=%s client_id_termina=%s scope=%s" % (u.urlparse(url).netloc, q.get("redirect_uri", ["?"])[0], q.get("client_id", ["?"])[0][-28:], q.get("scope", ["?"])[0]))
+          PY
+          if [ "${url#http}" != "$url" ]; then
+            page=$(curl -s -L -A "Mozilla/5.0 (X11; Linux x86_64) Chrome/130 Safari/537.36" "$url")
+            for k in redirect_uri_mismatch invalid_client deleted_client org_internal access_denied disabled_client "Error 400" "Error 401" "Error 403"; do
+              echo "$page" | grep -q "$k" && echo "ESTADO google_error=$k"
+            done
+            echo "ESTADO google_pagina_bytes=${#page}"
+            echo "$page" | grep -o '<title>[^<]*</title>' | head -1 | sed 's/^/ESTADO titulo=/'
+          fi
