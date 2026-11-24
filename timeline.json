@@ -1616,6 +1616,518 @@
 "dur": 0.08333333333333333,
 "cap": "5 · Toca uno y mira el plan",
 "tap": null
+},
+{
+"reel": "dias",
+"img": "dias/000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/001.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/002.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/008.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/009.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/010.jpg",
+"dur": 0.45,
+"cap": "1 · Abre el calendario",
+"tap": [
+161.4,
+320.7
+]
+},
+{
+"reel": "dias",
+"img": "dias/011.jpg",
+"dur": 0.5,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/012.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/013.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/014.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/015.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/016.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/017.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/018.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/019.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/020.jpg",
+"dur": 0.45,
+"cap": "1 · Abre el calendario",
+"tap": [
+343.0,
+53.2
+]
+},
+{
+"reel": "dias",
+"img": "dias/021.jpg",
+"dur": 0.6,
+"cap": "1 · Abre el calendario",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/022.jpg",
+"dur": 0.45,
+"cap": "2 · Toca los días que quieras",
+"tap": [
+292.1,
+195.7
+]
+},
+{
+"reel": "dias",
+"img": "dias/023.jpg",
+"dur": 0.7,
+"cap": "2 · Toca los días que quieras",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/024.jpg",
+"dur": 0.45,
+"cap": "2 · Toca los días que quieras",
+"tap": [
+97.9,
+253.7
+]
+},
+{
+"reel": "dias",
+"img": "dias/025.jpg",
+"dur": 0.7,
+"cap": "2 · Toca los días que quieras",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/026.jpg",
+"dur": 0.45,
+"cap": "2 · Toca los días que quieras",
+"tap": [
+292.1,
+253.7
+]
+},
+{
+"reel": "dias",
+"img": "dias/027.jpg",
+"dur": 0.7,
+"cap": "2 · Toca los días que quieras",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/028.jpg",
+"dur": 0.9,
+"cap": "2 · Toca los días que quieras",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/033.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/034.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/035.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/036.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/037.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/038.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/039.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/040.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/041.jpg",
+"dur": 1.3,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/045.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/046.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/047.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/048.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/049.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/050.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/051.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/052.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/053.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/054.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/055.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/056.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/057.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/058.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/059.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/060.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/061.jpg",
+"dur": 0.6,
+"cap": "3 · Tus planes, día a día",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/062.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/063.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/064.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/065.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/066.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/067.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/068.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/069.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
+},
+{
+"reel": "dias",
+"img": "dias/070.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · O todos en la lista",
+"tap": null
 }
 ]
 }
