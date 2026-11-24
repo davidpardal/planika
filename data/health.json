@@ -50,6 +50,11 @@
     "date": "2026-11-23",
     "count": 1139,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 1119,
+    "error": ""
    }
   ],
   "barcelona": [
@@ -101,6 +106,11 @@
    {
     "date": "2026-11-23",
     "count": 4598,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 4535,
     "error": ""
    }
   ],
@@ -154,6 +164,11 @@
     "date": "2026-11-23",
     "count": 3487,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 3470,
+    "error": ""
    }
   ],
   "catalunya": [
@@ -205,6 +220,11 @@
    {
     "date": "2026-11-23",
     "count": 1213,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 1211,
     "error": ""
    }
   ],
@@ -258,6 +278,11 @@
     "date": "2026-11-23",
     "count": 447,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 438,
+    "error": ""
    }
   ],
   "gva": [
@@ -309,6 +334,11 @@
    {
     "date": "2026-11-23",
     "count": 113,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 112,
     "error": ""
    }
   ],
@@ -362,6 +392,11 @@
     "date": "2026-11-23",
     "count": 59,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 57,
+    "error": ""
    }
   ],
   "andalucia": [
@@ -414,6 +449,11 @@
     "date": "2026-11-23",
     "count": 30,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 28,
+    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
    }
   ],
   "galicia": [
@@ -466,6 +506,11 @@
     "date": "2026-11-23",
     "count": 113,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 112,
+    "error": ""
    }
   ],
   "cartagena": [
@@ -517,6 +562,11 @@
    {
     "date": "2026-11-23",
     "count": 44,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 43,
     "error": ""
    }
   ],
@@ -607,6 +657,11 @@
     "date": "2026-11-23",
     "count": 16,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 15,
+    "error": ""
    }
   ],
   "sportsdb": [
@@ -657,6 +712,11 @@
    },
    {
     "date": "2026-11-23",
+    "count": 15,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
     "count": 15,
     "error": ""
    }
@@ -711,6 +771,11 @@
     "date": "2026-11-23",
     "count": 0,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 0,
+    "error": ""
    }
   ],
   "curated": [
@@ -756,6 +821,11 @@
    },
    {
     "date": "2026-11-23",
+    "count": 173,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
     "count": 173,
     "error": ""
    }
@@ -805,6 +875,11 @@
     "date": "2026-11-23",
     "count": 654,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 654,
+    "error": ""
    }
   ],
   "diba": [
@@ -850,6 +925,11 @@
    },
    {
     "date": "2026-11-23",
+    "count": 332,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
     "count": 332,
     "error": ""
    }
@@ -899,6 +979,11 @@
     "date": "2026-11-23",
     "count": 761,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 754,
+    "error": ""
    }
   ],
   "murcia": [
@@ -944,6 +1029,11 @@
    },
    {
     "date": "2026-11-23",
+    "count": 50,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
     "count": 50,
     "error": ""
    }
@@ -993,6 +1083,11 @@
     "date": "2026-11-23",
     "count": 136,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 132,
+    "error": ""
    }
   ],
   "vitoria": [
@@ -1029,6 +1124,11 @@
    {
     "date": "2026-11-23",
     "count": 18,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 20,
     "error": ""
    }
   ],
@@ -1067,6 +1167,11 @@
     "date": "2026-11-23",
     "count": 291,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 300,
+    "error": ""
    }
   ],
   "destacados": [
@@ -1099,6 +1204,11 @@
     "date": "2026-11-23",
     "count": 10,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 10,
+    "error": ""
    }
   ],
   "tribe": [
@@ -1119,6 +1229,11 @@
    },
    {
     "date": "2026-11-23",
+    "count": 12,
+    "error": ""
+   },
+   {
+    "date": "2026-11-24",
     "count": 12,
     "error": ""
    }
@@ -1143,6 +1258,11 @@
     "date": "2026-11-23",
     "count": 66,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 66,
+    "error": ""
    }
   ],
   "burdeos": [
@@ -1150,11 +1270,16 @@
     "date": "2026-11-23",
     "count": 173,
     "error": ""
+   },
+   {
+    "date": "2026-11-24",
+    "count": 179,
+    "error": ""
    }
   ]
  },
- "updated_at": "2026-11-23T21:20",
+ "updated_at": "2026-11-24T05:50",
  "alerts": [
-  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-23"
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-23"
  ]
 }
