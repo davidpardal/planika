@@ -28,7 +28,9 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var state = { q: '', ccaa: '', prov: '', city: '', from: '', to: '', free: false, tickets: false, cats: {}, tod: '', aud: '', pmax: '',
-                favs: false, geo: null, radius: 25, view: 'list', shown: PAGE, month: null, selDay: null };
+                favs: false, geo: null, radius: 25, view: 'list', shown: PAGE, month: null, days: [] };
+  // days: días sueltos elegidos en el calendario ("2026-12-05"…), ordenados. Si hay alguno, es el filtro de fechas
+  // de toda la web (lista, mapa, enlace) en lugar de from/to.
   var favSet = loadFavs();
 
   // ---------- utilidades
@@ -42,6 +44,7 @@
   var fmtShort = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' });
   var fmtLong = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   var fmtMonth = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' });
+  var fmtDayName = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   function fmtD(s) { return fmtDay.format(fromIso(s)) + (s.slice(0, 4) !== thisYear ? ' ' + s.slice(0, 4) : ''); }
   // updated_at va en hora de Madrid ("2026-11-24T06:50"): «Actualizado hoy a las 6:50», «ayer a las…», «el lun 22 nov a las…»
   function updatedText(s) {
@@ -99,6 +102,7 @@
   function nextSession(e) {
     var from = state.from && state.from > TODAY ? state.from : TODAY;
     if (!e.sessions) return e.start;
+    if (state.days.length) { var sd = firstSelDay(e); if (sd) return sd; }
     for (var i = 0; i < e.sessions.length; i++) if (e.sessions[i] >= from) return e.sessions[i];
     return e.sessions[e.sessions.length - 1];
   }
@@ -137,6 +141,9 @@
     state.from = p.get('from') || ''; state.to = p.get('to') || ''; state.free = p.get('free') === '1'; state.tickets = p.get('tickets') === '1';
     state.tod = p.get('tod') || ''; state.aud = p.get('aud') || ''; state.pmax = p.get('pmax') || ''; state.favs = p.get('favs') === '1';
     (p.get('cat') || '').split(',').filter(Boolean).forEach(function (c) { state.cats[c] = true; });
+    state.days = (p.get('dias') || '').split(',').filter(function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= TODAY; }).sort()
+      .filter(function (d, i, a) { return a.indexOf(d) === i; });
+    if (state.days.length) { state.from = ''; state.to = ''; }
     if (p.get('view')) state.view = p.get('view');
     return p.get('e');
   }
@@ -146,6 +153,7 @@
     if (state.from) p.set('from', state.from); if (state.to) p.set('to', state.to); if (state.free) p.set('free', '1'); if (state.tickets) p.set('tickets', '1');
     if (state.tod) p.set('tod', state.tod); if (state.aud) p.set('aud', state.aud); if (state.pmax) p.set('pmax', state.pmax); if (state.favs) p.set('favs', '1');
     var cats = Object.keys(state.cats).filter(function (k) { return state.cats[k]; }); if (cats.length) p.set('cat', cats.join(','));
+    if (state.days.length) p.set('dias', state.days.join(','));
     if (state.view !== 'list') p.set('view', state.view);
     var qs = p.toString();
     try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '')); } catch (e) { /* file:// */ }
@@ -329,7 +337,7 @@
   }
   function anyFilter() {
     var quickAll = $('quick').querySelector('button.on[data-range="all"]');
-    return !!(state.q || state.ccaa || state.prov || state.city || state.free || anyCat() || advCount() || (!quickAll && (state.from || state.to)));
+    return !!(state.q || state.ccaa || state.prov || state.city || state.free || anyCat() || advCount() || state.days.length || (!quickAll && (state.from || state.to)));
   }
   function syncUI() {
     $('what').querySelectorAll('a.chip').forEach(function (a) {
@@ -361,7 +369,8 @@
     parts.push((parts.length ? 'en ' : 'En ') + where);
     var q = $('quick').querySelector('button.on');
     var labels = { today: 'hoy', weekend: 'este fin de semana', '7': 'en los próximos 7 días', '30': 'en los próximos 30 días' };
-    if (q && labels[q.dataset.range]) parts.push(labels[q.dataset.range]);
+    if (state.days.length) parts.push(daysLabel(4));
+    else if (q && labels[q.dataset.range]) parts.push(labels[q.dataset.range]);
     else if (!q && (state.from || state.to)) {
       parts.push((state.from ? 'del ' + fmtDay.format(fromIso(state.from)) : 'desde hoy') + (state.to ? ' al ' + fmtDay.format(fromIso(state.to)) : ''));
     }
@@ -374,9 +383,24 @@
     return parts.join(' · ');
   }
   function anyCat() { for (var k in state.cats) if (state.cats[k]) return true; return false; }
+  function onDay(e, d) {
+    if (isPermanent(e)) return false;
+    return e.sessions ? e.sessions.indexOf(d) >= 0 : (e.start <= d && e.end >= d);
+  }
+  // Primer día elegido en el calendario en que se puede ir al plan ('' si ninguno)
+  function firstSelDay(e) {
+    for (var i = 0; i < state.days.length; i++) if (onDay(e, state.days[i])) return state.days[i];
+    return '';
+  }
+  // «sáb 5 dic, mar 8 dic y 2 más»
+  function daysLabel(max) {
+    var d = state.days, shown = d.slice(0, max).map(function (x) { return fmtD(x).replace(',', ''); });
+    return shown.join(', ') + (d.length > max ? ' y ' + (d.length - max) + ' más' : '');
+  }
   function inDates(e) {
     // Sin un día concreto: se pueden visitar dentro de cualquier filtro de fechas.
     if (isPermanent(e)) return true;
+    if (state.days.length) return !!firstSelDay(e);
     if (!state.from && !state.to) return true;
     if (e.sessions) return e.sessions.some(function (d) { return (!state.from || d >= state.from) && (!state.to || d <= state.to); });
     if (state.from && e.end < state.from) return false;
@@ -414,7 +438,8 @@
   function sortKey(e) {
     if (isPermanent(e)) return '9999-12-31|99|' + e.title;
     var from = state.from && state.from > TODAY ? state.from : TODAY;
-    var s = nextSession(e);
+    var s = state.days.length ? (firstSelDay(e) || nextSession(e)) : nextSession(e);
+    if (state.days.length) from = s;
     return (s > from ? s : from) + '|' + pad(Math.min(99, e.sessions ? 0 : spanDays(e))) + '|' + (e.time || '99');
   }
   function sorted(list) {
@@ -492,33 +517,80 @@
     for (var i = 0; i < 42; i++) {
       var ds = isoDate(cur); var out = cur.getMonth() !== m.getMonth();
       var s = starts[ds] || 0, o = ongoing[ds] || 0;
-      html += '<button type="button" class="day' + (out ? ' out' : '') + (s || o ? ' has' : '') + (ds === TODAY ? ' today' : '') + (ds === state.selDay ? ' sel' : '') + '" data-day="' + ds + '"' + (out ? ' tabindex="-1"' : '') + '>' +
+      var sel = state.days.indexOf(ds) >= 0, past = ds < TODAY;
+      html += '<button type="button" class="day' + (out ? ' out' : '') + (past ? ' past' : '') + (s || o ? ' has' : '') + (ds === TODAY ? ' today' : '') + (sel ? ' sel' : '') + '" data-day="' + ds + '"' +
+        (out || past ? ' tabindex="-1"' : ' aria-pressed="' + sel + '"') + '>' +
         '<span class="n">' + cur.getDate() + '</span>' + (s ? '<span class="starts">' + s + '</span>' : '') + (o ? '<span class="ongoing">+' + o + ' en curso</span>' : '') + '</button>';
       cur.setDate(cur.getDate() + 1);
       if (i === 34 && cur.getMonth() !== m.getMonth()) break;
     }
     $('calGrid').innerHTML = html;
+    var n = filtered().length;  // con los días elegidos, el contador dice cuántos planes hay esos días
+    setCount(n, n !== EVENTS.length ? 'de ' + EVENTS.length.toLocaleString('es-ES') : '', '');
     renderDay();
   }
-  function onDay(e, d) {
-    if (isPermanent(e)) return false;
-    return e.sessions ? e.sessions.indexOf(d) >= 0 : (e.start <= d && e.end >= d);
-  }
+  // Panel bajo el calendario: los planes de los días elegidos, por día. Un plan que dura varios días o que tiene
+  // sesiones en varios de ellos sale una sola vez (en el primero).
   function renderDay() {
     var p = $('dayPanel');
-    if (!state.selDay) { p.hidden = true; return; }
-    var d = state.selDay;
-    var list = filtered(true).filter(function (e) { return onDay(e, d); });
-    var st = sorted(list.filter(function (e) { return e.sessions || e.start === d; }));
-    var on = list.filter(function (e) { return !e.sessions && e.start !== d && spanDays(e) <= LONG_DAYS; }).sort(function (a, b) { return a.end < b.end ? -1 : 1; });
-    var longOnes = list.length - st.length - on.length;
-    var h = '<h3>' + cap(fmtLong.format(fromIso(d))) + ' · ' + (st.length + on.length) + ' planes</h3>';
-    if (!st.length && !on.length) h += '<p class="empty">Nada registrado ese día con los filtros actuales.</p>';
-    if (st.length) h += '<h4>Este día (' + st.length + ')</h4><div class="mini">' + st.slice(0, 120).map(function (e, i) { return card(e, { noOngoing: true, i: i }); }).join('') + (st.length > 120 ? '<p class="empty">… y ' + (st.length - 120) + ' más. Afina los filtros o usa la vista de lista.</p>' : '') + '</div>';
-    if (on.length) h += '<h4>En curso (' + on.length + ')</h4><div class="mini">' + on.slice(0, 60).map(function (e, i) { return card(e, { noOngoing: true, i: i + 2 }); }).join('') + (on.length > 60 ? '<p class="empty">… y ' + (on.length - 60) + ' más. Usa la vista de lista para verlos todos.</p>' : '') + '</div>';
-    if (longOnes > 0) h += '<p class="hint">Además hay ' + longOnes + ' planes de larga duración activos ese día (exposiciones, temporadas…) que no se cuentan en el calendario. <button type="button" class="linklike" data-golist="' + d + '">Verlos en la lista</button></p>';
-    need(st.slice(0, 120)); need(on.slice(0, 60));
+    var days = state.days;
+    if (!days.length) { p.hidden = true; return; }
+    var one = days.length === 1, limit = one ? 120 : 40;
+    var list = filtered(true).filter(function (e) { return !!firstSelDay(e); });
+    var byDay = {}, on = [], longOnes = 0;
+    list.forEach(function (e) {
+      var d = firstSelDay(e);
+      if (e.sessions || e.start === d) (byDay[d] = byDay[d] || []).push(e);
+      else if (spanDays(e) <= LONG_DAYS) on.push(e);
+      else longOnes++;
+    });
+    on.sort(function (a, b) { return a.end < b.end ? -1 : 1; });
+    var total = list.length - longOnes;
+    var h = '<h3>' + (one ? cap(fmtLong.format(fromIso(days[0]))) : days.length + ' días elegidos: ' + esc(daysLabel(6))) + ' · ' +
+      total.toLocaleString('es-ES') + (total === 1 ? ' plan' : ' planes') + '</h3>' +
+      '<div class="day-actions"><button type="button" class="btn primary" data-goview="list">Ver en la lista</button>' +
+      '<button type="button" class="btn" data-goview="map">Ver en el mapa</button>' +
+      '<button type="button" class="btn" data-cleardays="1">✕ Quitar ' + (one ? 'día' : 'días') + '</button></div>';
+    if (!total) h += '<p class="empty">Nada registrado ' + (one ? 'ese día' : 'esos días') + ' con los filtros actuales.</p>';
+    var k = 0;
+    days.forEach(function (d) {
+      var st = sorted(byDay[d] || []);
+      if (!st.length) return;
+      h += '<h4>' + (one ? 'Este día' : esc(cap(fmtDayName.format(fromIso(d))))) + ' (' + st.length + ')</h4><div class="mini">' +
+        st.slice(0, limit).map(function (e) { return card(e, { noOngoing: true, i: k++ }); }).join('') +
+        (st.length > limit ? '<p class="empty">… y ' + (st.length - limit) + ' más. Pulsa «Ver en la lista» para verlos todos.</p>' : '') + '</div>';
+      need(st.slice(0, limit));
+    });
+    if (on.length) {
+      h += '<h4>En curso (' + on.length + ')</h4><div class="mini">' + on.slice(0, 60).map(function (e) { return card(e, { noOngoing: true, i: k++ }); }).join('') +
+        (on.length > 60 ? '<p class="empty">… y ' + (on.length - 60) + ' más. Pulsa «Ver en la lista» para verlos todos.</p>' : '') + '</div>';
+      need(on.slice(0, 60));
+    }
+    // La lista y el contador suman también estos, que el panel no enseña: se dice para que las cifras cuadren
+    var perms = filtered(true).filter(isPermanent).length;
+    var extra = [longOnes ? longOnes + (longOnes === 1 ? ' plan' : ' planes') + ' de larga duración (exposiciones, temporadas…)' : '',
+                 perms ? perms + (perms === 1 ? ' visita permanente' : ' visitas permanentes') : ''].filter(Boolean).join(' y ');
+    if (extra) h += '<p class="hint">Además, ' + extra + '. <button type="button" class="linklike" data-goview="list">Verlos en la lista</button></p>';
     p.innerHTML = h; p.hidden = false;
+  }
+  // Toque en un día del calendario: lo añade o lo quita de los elegidos (días sueltos, no hace falta que sean seguidos)
+  function toggleDay(d) {
+    var i = state.days.indexOf(d);
+    if (i >= 0) state.days.splice(i, 1); else { state.days.push(d); state.days.sort(); }
+    if (state.days.length) { state.from = ''; state.to = ''; $('from').value = ''; $('to').value = ''; }
+    syncQuick();
+    refresh();
+  }
+  function clearDays() { state.days = []; syncQuick(); }
+  // Botón «Fechas…» de la barra rápida: con días elegidos dice «3 días» y queda marcado
+  function syncQuick() {
+    var b = $('quick').querySelector('[data-range="dates"]');
+    if (state.days.length) {
+      $('quick').querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on'); b.textContent = state.days.length === 1 ? '📅 1 día' : '📅 ' + state.days.length + ' días';
+    } else {
+      b.classList.remove('on'); b.textContent = 'Fechas…';
+    }
   }
 
   // ---------- mapa
@@ -699,10 +771,11 @@
     if (s) { var e2 = byId(s.dataset.share); if (e2) shareLink(e2); return; }
     var o = ev.target.closest('[data-open]');
     if (o) { ev.preventDefault(); openModal(o.dataset.open); return; }
-    var gl = ev.target.closest('[data-golist]');
-    if (gl) { state.from = gl.dataset.golist; state.to = gl.dataset.golist; $('from').value = state.from; $('to').value = state.to; $('quick').querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); }); setView('list'); window.scrollTo({ top: $('list').offsetTop - 80, behavior: 'smooth' }); return; }
+    var gv = ev.target.closest('[data-goview]');
+    if (gv) { var to = gv.dataset.goview === 'map' ? 'mapView' : 'list'; setView(gv.dataset.goview); window.scrollTo({ top: $(to).offsetTop - 80, behavior: 'smooth' }); return; }
+    if (ev.target.closest('[data-cleardays]')) { clearDays(); refresh(); return; }
     var d = ev.target.closest('.day');
-    if (d && !d.classList.contains('out')) { state.selDay = state.selDay === d.dataset.day ? null : d.dataset.day; renderCalendar(); }
+    if (d && !d.classList.contains('out') && !d.classList.contains('past')) toggleDay(d.dataset.day);
   });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { closeMenu(); } });
   $('modalClose').addEventListener('click', closeModal);
@@ -718,6 +791,7 @@
   }
   function clearQuick() { $('quick').querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); }); }
   function setRange(key) {
+    clearDays();
     $('quick').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.range === key); });
     var from = TODAY, to = '';
     if (key === 'all') from = '';
@@ -786,8 +860,8 @@
     setRange('all');
   });
   $('prov').addEventListener('change', function () { state.prov = this.value; refresh(); });
-  $('from').addEventListener('change', function () { state.from = this.value; clearQuick(); refresh(); });
-  $('to').addEventListener('change', function () { state.to = this.value; clearQuick(); refresh(); });
+  $('from').addEventListener('change', function () { state.from = this.value; clearDays(); clearQuick(); refresh(); });
+  $('to').addEventListener('change', function () { state.to = this.value; clearDays(); clearQuick(); refresh(); });
   ['free', 'tickets', 'favs'].forEach(function (id) { $(id).addEventListener('change', function () { state[id] = this.checked; refresh(); }); });
   ['tod', 'aud', 'pmax'].forEach(function (id) { $(id).addEventListener('change', function () { state[id] = this.value; refresh(); }); });
   $('pmax').addEventListener('input', function () { clearTimeout(qt); var v = this.value; qt = setTimeout(function () { state.pmax = v; refresh(); }, 300); });
@@ -802,14 +876,17 @@
   });
   $('quick').addEventListener('click', function (ev) {
     var b = ev.target.closest('button'); if (!b) return;
-    if (b.dataset.range === 'dates') { $('adv').open = true; $('from').focus(); return; }
+    if (b.dataset.range === 'dates') {
+      if (state.days.length) { setView('cal'); window.scrollTo({ top: $('calendar').offsetTop - 80, behavior: 'smooth' }); return; }
+      $('adv').open = true; $('from').focus(); return;
+    }
     setRange(b.dataset.range);
   });
   $('view').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setView(b.dataset.view); });
   $('more').addEventListener('click', function () { state.shown += PAGE; renderList(); });
-  $('prevM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); state.selDay = null; renderCalendar(); });
-  $('nextM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); state.selDay = null; renderCalendar(); });
-  $('todayM').addEventListener('click', function () { state.month = fromIso(TODAY); state.selDay = TODAY; renderCalendar(); });
+  $('prevM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); renderCalendar(); });
+  $('nextM').addEventListener('click', function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); renderCalendar(); });
+  $('todayM').addEventListener('click', function () { state.month = fromIso(TODAY); renderCalendar(); });
 
   // ---------- app instalable (PWA) y sin conexión
   function track(name, params) { try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) { /* sin analítica */ } }
@@ -851,7 +928,8 @@
   (window.PLANIKA_Q || []).forEach(function (a) { applyChunk(a[0], a[1], a[2]); });
   window.PLANIKA_Q = [];
   populate();
-  if (state.from || state.to) { clearQuick(); refresh(); } else setRange('all');
+  if (state.days.length) { syncQuick(); state.month = fromIso(state.days[0]); refresh(); }
+  else if (state.from || state.to) { clearQuick(); refresh(); } else setRange('all');
   if (advCount()) $('adv').open = true;
   if (state.view !== 'list') setView(state.view);
   if (openId) openModal(openId);
