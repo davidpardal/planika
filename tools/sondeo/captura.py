@@ -64,6 +64,8 @@ def new_page(browser, geo=None):
                               geolocation=geo, permissions=["geolocation"] if geo else [])
     # Sin analítica: las capturas no deben contar como visitas.
     ctx.route("**/*", lambda r: r.abort() if any(h in r.request.url for h in ("googletagmanager", "google-analytics", "analytics.google")) else r.continue_())
+    # Sin el aviso de cookies tapando la mitad de abajo (se da por rechazado, como quien ya contestó)
+    ctx.add_init_script("try { localStorage.setItem('planika_analytics_consent', 'rejected'); } catch (e) {}")
     page = ctx.new_page()
     return ctx, page
 
