@@ -48,6 +48,18 @@ def log(msg):
     print("[%s] %s" % (datetime.now().strftime("%H:%M:%S"), msg), flush=True)
 
 
+RETRY_WAIT = 120  # segundos mínimos entre el primer fallo de una fuente y su segundo intento
+
+
+def transient(exc):
+    """Corte de red o error del servidor (5xx, 429): vale la pena volver a intentarlo más tarde."""
+    import requests
+    if isinstance(exc, (requests.ConnectionError, requests.Timeout, requests.exceptions.ChunkedEncodingError)):
+        return True
+    resp = getattr(exc, "response", None)
+    return isinstance(exc, requests.HTTPError) and resp is not None and (resp.status_code >= 500 or resp.status_code == 429)
+
+
 def load_previous(path):
     """Eventos de la ejecución anterior agrupados por fuente, para cubrir fallos puntuales."""
     out = {"by_source": {}, "date": "", "age_days": 999}
@@ -203,7 +215,7 @@ def main():
         moved = salas.apply(payload["events"])
         payload["sources"] = sources
         payload["provinces"] = [{"code": c, "name": n, "ccaa": a} for c, n, a in PROVINCIAS]  # por si se ha añadido alguna
-        payload["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
+        payload["updated_at"] = util.stamp()
         with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
         write_site(args, site_dir, payload)
@@ -218,18 +230,18 @@ def main():
     all_events = []
     source_meta = []
 
-    for name in [s.strip() for s in args.sources.split(",") if s.strip()]:
-        try:
-            mod = importlib.import_module("planes.src_%s" % name)
-        except ImportError:
-            log("fuente desconocida: %s" % name)
-            continue
+    def run_source(name, mod, retry_later):
+        """Descarga una fuente. retry_later: lista donde dejar la fuente si falla por un corte de red pasajero."""
         started = time.time()
         error = ""
         try:
             evs = mod.fetch(log) if name not in ("ticketmaster", "sportsdb") else mod.fetch(log, days=args.days)
         except Exception as exc:  # noqa: BLE001 - una fuente caída no debe tumbar el resto
             log("%s: ERROR %s: %s" % (mod.NAME, exc.__class__.__name__, exc))
+            if retry_later is not None and transient(exc):
+                log("  -> %s: se reintenta al final, cuando hayan terminado las demás fuentes" % mod.NAME)
+                retry_later.append((name, mod, time.time()))
+                return
             evs = []
             error = "%s: %s" % (exc.__class__.__name__, str(exc)[:120])
         kept = [e for e in evs if e["end"] >= iso(t0) and e["start"] <= iso(t_max)]
@@ -253,6 +265,21 @@ def main():
         source_meta.append({"key": name, "name": mod.NAME, "home": mod.HOME, "count": len(kept),
                             "seconds": round(time.time() - started, 1), "error": error, "stale_from": stale})
         log("  -> %d dentro del horizonte (%.1fs)" % (len(kept), time.time() - started))
+
+    retry = []
+    for name in [s.strip() for s in args.sources.split(",") if s.strip()]:
+        try:
+            mod = importlib.import_module("planes.src_%s" % name)
+        except ImportError:
+            log("fuente desconocida: %s" % name)
+            continue
+        run_source(name, mod, retry)
+    # Segundo intento de las fuentes que cortaron la conexión (la Junta de Andalucía lo hace algunas mañanas):
+    # unos minutos después suelen responder; si no, se reutiliza la última descarga buena.
+    for name, mod, failed_at in retry:
+        time.sleep(max(0.0, RETRY_WAIT - (time.time() - failed_at)))
+        log("Segundo intento: %s" % mod.NAME)
+        run_source(name, mod, None)
 
     renamed = util.canon_cities(all_events)
     if renamed:
@@ -283,7 +310,7 @@ def main():
 
     os.makedirs(args.out, exist_ok=True)
     payload = {
-        "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M"),
+        "updated_at": util.stamp(),
         "from": iso(t0), "to": iso(t_max), "days": args.days,
         "categories": [{"key": k, "name": n, "icon": i} for k, n, i in CATEGORIES],
         "provinces": [{"code": c, "name": n, "ccaa": a} for c, n, a in PROVINCIAS],

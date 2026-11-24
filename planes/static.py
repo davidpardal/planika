@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover - Python < 3.9
 
 from . import seo
 from .classify import CATEGORIES
-from .util import country, is_permanent, iso, today
+from .util import SMALL_WORDS, clean_title, country, display_title, is_permanent, iso, norm, series_split, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
 # GA4 se carga desde consent.js únicamente tras aceptación explícita.
@@ -94,6 +94,13 @@ def safe_url(u):
     return u if re.match(r"^https?://", u, re.I) else ""
 
 
+def _shown_title(e):
+    """Título limpio para la web (r[18]) solo cuando difiere del que ya viaja: e["title"] no se cambia porque de él
+    sale el nombre del archivo de la ficha (slug() de app.js), que Google ya tiene indexado."""
+    t = display_title(e)
+    return "" if t == (e.get("title_es") or e["title"]) else t
+
+
 def _trim(row):
     while row and row[-1] in ("", 0, None):
         row.pop()
@@ -123,36 +130,131 @@ def short_when(e, t0):
     return _dshort(e["start"])
 
 
+_CLIP_TAIL = re.compile(r"(?:\s+(?:%s))+$" % "|".join(sorted(SMALL_WORDS, key=len, reverse=True)), re.I)
+
+
 def clip(s, n):
-    """Recorta en una palabra sin pasar de n caracteres (con "…")."""
+    """Recorta en una palabra sin pasar de n caracteres (con "…"), sin dejar un paréntesis o unas comillas
+    abiertos ni una palabra suelta al final («Concierto de la Orquesta de…» -> «Concierto de la Orquesta…»)."""
     s = " ".join(str(s or "").split())
     if len(s) <= n:
         return s
-    cut = s[: n - 1].rsplit(" ", 1)[0].rstrip(" ,.;:-–·")
+    cut = s[: n - 1].rsplit(" ", 1)[0] if " " in s[: n - 1] else ""
+    if cut.count("(") > cut.count(")") and cut.rfind("(") > 8:  # «Museo San Telmo (exposición…» -> «Museo San Telmo…»
+        cut = cut[:cut.rfind("(")]
+    # Comillas abiertas: se quitan solo si queda casi todo (lo entrecomillado suele ser el título de verdad)
+    for o, c in (("«", "»"), ("“", "”"), ('"', None)):
+        open_ = cut.count(o) % 2 if c is None else cut.count(o) > cut.count(c)
+        if open_ and cut.rfind(o) >= 0.6 * n:
+            cut = cut[:cut.rfind(o)]
+    cut = _CLIP_TAIL.sub("", cut.rstrip(" ,.;:-–·+&/")).rstrip(" ,.;:-–·+&/")
+    first = cut[:1]
+    if (first in "\"'" and cut.count(first) % 2) or (first in "«“" and not any(x in cut for x in "»”")):
+        cut = cut[1:]  # comillas abiertas al principio que ya no se cierran
     return (cut or s[: n - 1]) + "…"
 
 
-TITLE_MAX = 62   # caracteres del título de la ficha sin " · Planika"
-NAME_MIN = 40    # el nombre del plan es lo que se busca: no se recorta por debajo de esto
+TITLE_MAX = 65   # caracteres del título de la ficha sin " | Planika" (Google corta hacia los 60-65)
+NAME_MIN = 30    # el nombre del plan es lo que se busca: no se recorta por debajo de esto
+
+
+def title_when(e, t0):
+    """Fecha del <title>: «sáb 27 feb» (con el día de la semana, que es lo que se mira al elegir plan),
+    «21 nov–3 dic», «hasta el 15 ene»; vacío en visitas permanentes."""
+    s = short_when(e, t0)
+    if s and "–" not in s and not s.startswith("hasta"):
+        day = next_session(e, t0) if e.get("sessions") else e["start"]
+        s = "%s %s" % (DIAS[datetime.strptime(day, "%Y-%m-%d").weekday()], s)
+    return s
+
+
+# Primera palabra de los nombres de ciclo, club o tipo de acto: «Curso de Derechos Humanos: "Islam y democracia"»,
+# «Documental: "Gaza"», «Conferència "Egipte…"». Lo concreto es lo que va detrás.
+_GENERIC = set("""curso cursos ciclo cicle club taller talleres tallers concierto conciertos concert concerts conferencia
+conferencias documental documentales exposicion exposicio exposiciones expo festival fest jaialdia tertulia tertulias
+visita visitas charla charlas xerrada xerrades cine cinema cineforum ballet teatro teatre proyeccion presentacion
+presentacio mesa jornada jornadas jornades encuentro encuentros seminario temporada programa muestra mostra feria fira
+mercado mercat ruta recital espectaculo espectacle obra opera musical danza dansa monologo monologos lectura
+cuentacuentos contacontes ipuin kontzertua kontzertuak erakusketa hitzaldia tailerra zinema antzerkia bisita gala
+homenaje candlelight cinefórum""".split())
+_OPEN_Q = {'"': '"', "«": "»", "“": "”", "'": "'’", "‘": "’'", "`": "´'"}
+
+
+def _series_label(prefix, place):
+    """¿Lo de antes de los dos puntos o de las comillas es un ciclo, un club o el tipo de acto, y no un artista?
+    «Ciclo Bernaola 2026-2027», «Club de lectura infantil», «CANDLELIGHT Vitoria-Gasteiz», «Documental» sí;
+    «Jordi Meca», «Ainara Ortega & Joaquín Chacón» no (es lo que se busca)."""
+    words = re.findall(r"[^\W\d_]+", prefix)
+    if not words:
+        return True
+    if re.search(r"\b(?:19|20)\d\d\b", prefix) or (place and norm(place) in norm(prefix)) or norm(words[0]) in _GENERIC:
+        return True
+    return any(w.islower() and w not in SMALL_WORDS for w in words)
+
+
+def _quoted(name):
+    """«Conferència "Egipte. Deir El-Medina"» -> ("Conferència", "Egipte. Deir El-Medina", resto)."""
+    for i, ch in enumerate(name):
+        if ch in _OPEN_Q and (i == 0 or name[i - 1] in " :"):
+            for j in range(i + 1, len(name)):
+                if name[j] in _OPEN_Q[ch] and (j + 1 == len(name) or not name[j + 1].isalpha()):
+                    q = name[i + 1:j].strip()
+                    return (name[:i].strip(" :-–"), q, name[j + 1:].strip()) if len(q) >= 4 else None
+            return None
+    return None
+
+
+def _short_names(name, place):
+    """Nombres más cortos y concretos para el <title> cuando el entero no cabe, del mejor al peor."""
+    out = []
+    parts = series_split(name)
+    if parts and _series_label(parts[0], place) and not parts[1][:1].islower():
+        out.append(parts[1])
+    q = _quoted(name)
+    if q and _series_label(q[0], place) and not q[1][:1].islower():
+        post = q[2]
+        out.append(q[1] + (" " + post if re.fullmatch(r"\([^()]{2,40}\)", post) else ""))
+        out.append(q[1])
+    out = [clean_title(x) for x in out]  # «EIDOLON. ENTRE LA REALIDAD Y LOS SUEÑOS» -> «Eidolon. Entre la Realidad…»
+    return [x for x in out if x and x != name]
 
 
 def seo_title(e, t0, place, full=False):
-    """Título de la ficha: plan · fecha corta · lugar, en unos 60 caracteres (más " · Planika").
+    """Título de la ficha: «Ara Malikian en Vitoria-Gasteiz · sáb 27 feb» (más " | Planika"), en unos 60 caracteres.
 
-    El nombre va primero y casi entero: es lo que la gente busca y lo que distingue un plan de otro
-    («Taller per a la gent gran: Humanitats» frente a «…: Sardanes»). Si no cabe todo, se recorta antes el lugar.
+    Lo que se busca es el nombre y la ciudad («ara malikian vitoria»), así que van primero y nunca se cortan a
+    media palabra. Si no cabe todo, por orden: se quita el día de la semana; de «Ciclo Bernaola 2026-2027: Trío
+    Zukan» queda «Trío Zukan»; se recorta el final del nombre (no por debajo de NAME_MIN); y, en último caso, se
+    quita la fecha. La ciudad no se repite si el nombre ya la lleva («Feria de Navidad de Bilbao»).
     full: el nombre no se recorta nunca (planes que solo se distinguen por el final del nombre)."""
-    when = short_when(e, t0)
-    base = " ".join(str(e.get("title_es") or e["title"]).split())
+    when, day = title_when(e, t0), short_when(e, t0)
     place = " ".join(str(place or "").split())
-    tail = " · ".join(x for x in (when, place) if x)
-    if len(base) + (3 + len(tail) if tail else 0) <= TITLE_MAX:
-        return " · ".join(x for x in (base, tail) if x)
-    name = base if full else clip(base, max(NAME_MIN, TITLE_MAX - 3 - len(tail)))
-    room = TITLE_MAX - len(name) - 3 - (len(when) + 3 if when else 0)
-    if place and len(place) > room:
-        place = clip(place, max(12, room))
-    return " · ".join(x for x in (name, when, place) if x)
+
+    def tails(name):
+        where = (" en " + place) if place and norm(place) not in norm(name) else ""
+        return where, [where + ((" · " + w) if w else "") for w in (when, day)]  # con y sin día de la semana
+
+    name = " ".join(display_title(e).split())
+    where, ts = tails(name)
+    if full:
+        return name + ts[0]
+    for tail in ts:
+        if len(name) + len(tail) <= TITLE_MAX:
+            return name + tail
+    alts = _short_names(name, place)
+    for alt in alts:
+        where, ts = tails(alt)
+        for tail in ts:
+            if len(alt) + len(tail) <= TITLE_MAX:
+                return alt + tail
+    if alts:  # tampoco cabe: se recorta el nombre concreto, no el del ciclo
+        name = alts[-1]
+    where, ts = tails(name)
+    room = TITLE_MAX - len(ts[-1])
+    if room >= NAME_MIN:
+        short = clip(name, room)
+        return short + (ts[0] if len(short) + len(ts[0]) <= TITLE_MAX else ts[-1])
+    return clip(name, max(NAME_MIN, TITLE_MAX - len(where))) + where
 
 
 def price_num(e):
@@ -184,7 +286,7 @@ def write_data(out_dir, payload):
             e.get("city") or "", e.get("venue") or "",
             None if e.get("lat") is None else round(e["lat"], 5), None if e.get("lon") is None else round(e["lon"], 5),
             e.get("price") or "", flags, e.get("audience") or "", src_names.index(e["source"]),
-            e.get("sessions") or 0, e.get("title_es") or ""]))
+            e.get("sessions") or 0, e.get("title_es") or "", _shown_title(e)]))
     version = payload["updated_at"]
     core = {k: payload[k] for k in ("updated_at", "from", "to", "days", "categories", "provinces", "sources")}
     core.update({"v": version, "chunk": CHUNK, "srcNames": src_names, "events": rows})
@@ -243,7 +345,7 @@ def event_jsonld(e, canonical, t0=None):
     if e.get("lat") is not None and e.get("lon") is not None:
         place["geo"] = {"@type": "GeoCoordinates", "latitude": e["lat"], "longitude": e["lon"]}
     ld = {"@context": "https://schema.org", "@type": LD_TYPE.get(e["category"], "Event"),
-          "name": e.get("title_es") or e["title"], "startDate": _ld_date(e, start), "endDate": end,
+          "name": display_title(e), "startDate": _ld_date(e, start), "endDate": end,
           "eventStatus": "https://schema.org/EventScheduled",
           "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
           "location": place, "url": canonical}
@@ -272,7 +374,7 @@ def place_jsonld(e, canonical):
         addr["addressLocality"] = e["city"]
     if e.get("province"):
         addr["addressRegion"] = e["province"]
-    ld = {"@context": "https://schema.org", "@type": "TouristAttraction", "name": e.get("title_es") or e["title"],
+    ld = {"@context": "https://schema.org", "@type": "TouristAttraction", "name": display_title(e),
           "url": canonical, "address": addr}
     if e.get("lat") is not None and e.get("lon") is not None:
         ld["geo"] = {"@type": "GeoCoordinates", "latitude": e["lat"], "longitude": e["lon"]}
@@ -318,7 +420,7 @@ def stamp_index(site_dir):
 
 _EVENT_PAGE = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>%(seo_title)s · Planika</title><meta name="description" content="%(desc)s">
+<title>%(seo_title)s | Planika</title><meta name="description" content="%(desc)s">
 <link rel="canonical" href="%(canonical)s">
 <meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
 <meta name="robots" content="%(robots)s">
@@ -389,7 +491,7 @@ def _gcal(e, t0):
         f = d2.fromordinal(d2.toordinal() + 1).strftime("%Y%m%d")
     loc = ", ".join(x for x in (e.get("venue"), e.get("address"), e.get("city"), e.get("province")) if x)
     return ("https://calendar.google.com/calendar/render?action=TEMPLATE&text=%s&dates=%s/%s&location=%s&ctz=Europe/Madrid"
-            % (quote(e.get("title_es") or e["title"]), s, f, quote(loc)))
+            % (quote(display_title(e)), s, f, quote(loc)))
 
 
 def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None, updated="", indexable=None, title_full=False):
@@ -398,7 +500,7 @@ def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None
     <title> lleva el nombre entero (planes que solo se distinguen por el final del nombre)."""
     t0 = t0 or iso(today())
     esc = html.escape
-    title = e.get("title_es") or e["title"]
+    title = display_title(e)
     canonical = "%s/e/%s" % (SITE_URL, event_file(e))
     if indexable is None:
         indexable = seo.is_indexable(e)
@@ -429,7 +531,7 @@ def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None
     rel = ""
     if related:
         rel = "<ul>%s</ul>" % "".join('<li><a href="%s">%s</a> · %s%s</li>' % (
-            esc(event_file(r)), esc(r.get("title_es") or r["title"]), esc(_when(r, t0)),
+            esc(event_file(r)), esc(display_title(r)), esc(_when(r, t0)),
             (" · " + esc(r["city"])) if r.get("city") else "") for r in related)
     ld_event = event_jsonld(e, canonical, t0)
     ld_event.pop("@context", None)
@@ -468,7 +570,8 @@ def _event_digest(e, t0, indexable):
     """Huella de lo que muestra la ficha del propio plan (no de la lista de "Más planes", que rota a diario)."""
     keys = ("title", "title_es", "start", "end", "time", "venue", "address", "city", "province", "description",
             "price", "free", "image", "url", "tickets_url", "category", "source")
-    core = [e.get(k) for k in keys] + [_when(e, t0), [d for d in e.get("sessions") or [] if d >= t0], indexable]
+    core = [e.get(k) for k in keys] + [_when(e, t0), [d for d in e.get("sessions") or [] if d >= t0], indexable,
+                                       display_title(e), title_when(e, t0)]
     return seo.digest(json.dumps(core, ensure_ascii=False, sort_keys=True))
 
 
@@ -573,7 +676,7 @@ def gone_page(fn, m, t0, upcoming=(), prov_slug="", city=None, moved_to=None):
     Si el plan sigue en la agenda con otra dirección (cambió el título), redirige a su ficha nueva."""
     from .util import norm
     esc = html.escape
-    title = m["t"]
+    title = clean_title(m["t"], m.get("v") or "", m.get("c") or "")
     cat = "%s %s" % (CAT_ICON.get(m["k"], "✨"), CAT_NAME.get(m["k"], "Otros planes"))
     where = " · ".join(x for x in (m.get("v"), m.get("c"), m.get("p") if m.get("p") != m.get("c") else "") if x) or "España"
     canonical, refresh = "%s/e/%s" % (SITE_URL, fn), ""
@@ -606,7 +709,7 @@ def gone_page(fn, m, t0, upcoming=(), prov_slug="", city=None, moved_to=None):
     related = ""
     if pool:
         related = "<ul>%s</ul>" % "".join('<li><a href="%s">%s</a> · %s%s</li>' % (
-            esc(event_file(r)), esc(r.get("title_es") or r["title"]), esc(_when(r, t0)),
+            esc(event_file(r)), esc(display_title(r)), esc(_when(r, t0)),
             (" · " + esc(r["city"])) if r.get("city") else "") for r in pool)
     links = []
     if city:

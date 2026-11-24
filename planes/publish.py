@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from . import legal, seo, static
 from .classify import CATEGORIES
-from .util import PROVINCIAS, is_permanent, iso, norm, today
+from .util import PROVINCIAS, display_title, is_permanent, iso, norm, now_madrid, stamp, today
 
 SITE_URL = static.SITE_URL  # configurable con la variable de entorno PLANIKA_SITE_URL
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
@@ -89,7 +89,7 @@ def update_health(path, source_meta):
                 alerts.append("%s: %d eventos, un %d%% menos que los últimos días (%d)" % (s["name"], s["count"], round(100 - 100.0 * s["count"] / ref), ref))
         elif s.get("error"):
             alerts.append("%s: error %s" % (s["name"], s["error"]))
-    health["updated_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M")
+    health["updated_at"] = stamp()
     health["alerts"] = alerts
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(health, fh, ensure_ascii=False, indent=1)
@@ -111,12 +111,12 @@ def _rss(title, link, desc, items):
         body = "%s%s. %s%s" % (when, " " + e["time"] if e.get("time") else "", where, (". " + e["description"]) if e.get("description") else "")
         return ("<item><title>%s</title><link>%s</link><guid isPermaLink=\"false\">%s</guid><category>%s</category>"
                 "<description>%s</description></item>") % (
-            html.escape(e["title"]), html.escape(e.get("url") or e.get("tickets_url") or SITE_URL + "/?e=" + e["id"]),
+            html.escape(display_title(e)), html.escape(e.get("url") or e.get("tickets_url") or SITE_URL + "/?e=" + e["id"]),
             e["id"], html.escape(CAT_NAME.get(e["category"], "Otros")), html.escape(body))
     return ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rss version=\"2.0\"><channel><title>%s</title><link>%s</link>"
             "<description>%s</description><language>es</language><lastBuildDate>%s</lastBuildDate>%s</channel></rss>\n") % (
         html.escape(title), html.escape(link), html.escape(desc),
-        datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0100"), "".join(item(e) for e in items))
+        now_madrid().strftime("%a, %d %b %Y %H:%M:%S %z"), "".join(item(e) for e in items))
 
 
 def write_feeds(out_dir, events, days=30):
@@ -287,7 +287,7 @@ def _sources_page(sources, updated_at=""):
     total = sum(int(s.get("count") or 0) for s in sources)
     upd = ""
     if updated_at:
-        upd = " &nbsp; Actualizado el %s" % html.escape(updated_at.replace("T", " a las "))
+        upd = " &nbsp; Actualizado el %s" % html.escape(_upd_text(updated_at, hour=True))
     return _SOURCES % dict(site=SITE_URL, analytics=static.BEACON, items="".join(items), n=len(sources),
                            total="{:,}".format(total).replace(",", "."), updated=upd)
 
@@ -417,7 +417,7 @@ def _join_es(xs):
 def _itemlist(items, limit=20):
     """ItemList con los primeros planes de la página, enlazando a la ficha de cada plan."""
     els = [{"@type": "ListItem", "position": i, "url": "%s/e/%s" % (SITE_URL, static.event_file(e)),
-            "name": e.get("title_es") or e["title"]} for i, e in enumerate(items[:limit], 1)]
+            "name": display_title(e)} for i, e in enumerate(items[:limit], 1)]
     return {"@type": "ItemList", "numberOfItems": len(items), "itemListElement": els}
 
 
@@ -457,7 +457,7 @@ def _card(e, up="../", t0=None):
             "<div class=\"where\">📍 %s</div>%s%s</div></article>") % (
         CAT_ICON.get(e["category"], "✨"), html.escape(CAT_NAME.get(e["category"], "Otros")),
         badges,
-        html.escape(link), html.escape(e.get("title_es") or e["title"]), html.escape(when), "",
+        html.escape(link), html.escape(display_title(e)), html.escape(when), "",
         html.escape(where), ("<p class=\"desc\">%s</p>" % html.escape(desc)) if desc else "",
         ("<div class=\"src\">Fuente: %s</div>" % html.escape(e["source"])) if e.get("source") else "")
 
@@ -497,7 +497,7 @@ def _compact(items, up, t0):
     for e in items:
         where = e.get("city") or e.get("province") or ""
         rows.append("<li><a href=\"%se/%s\">%s</a> · %s%s</li>" % (
-            up, html.escape(static.event_file(e)), html.escape(e.get("title_es") or e["title"]),
+            up, html.escape(static.event_file(e)), html.escape(display_title(e)),
             html.escape(static._when(e, t0)), (" · " + html.escape(where)) if where else ""))
     return "<ul class=\"compact\">%s</ul>" % "".join(rows)
 
@@ -644,12 +644,15 @@ def find_cities(events):
     return out
 
 
-def _upd_text(updated_at):
+def _upd_text(updated_at, hour=False):
+    """"24 nov 2026" (hour: "24 nov 2026 a las 6:50"). updated_at va en hora de Madrid."""
     try:
         d = datetime.strptime((updated_at or "")[:10], "%Y-%m-%d")
     except ValueError:
         d = datetime.combine(today(), datetime.min.time())
-    return "%d %s %d" % (d.day, _MES_CORTO[d.month - 1], d.year)
+    out = "%d %s %d" % (d.day, _MES_CORTO[d.month - 1], d.year)
+    m = re.match(r"\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})", updated_at or "")
+    return out + (" a las %d:%s" % (int(m.group(1)), m.group(2)) if hour and m else "")
 
 
 # ---------------------------------------------------------------- todas las páginas

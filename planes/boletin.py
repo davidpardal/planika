@@ -19,7 +19,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import seo, static
 from .classify import CATEGORIES
-from .util import country, is_permanent, iso, norm
+from .util import country, display_title, is_permanent, iso, norm
 
 SITE_URL = static.SITE_URL
 CONFIG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "boletin.json")
@@ -167,7 +167,7 @@ def _row_event(e, ed, campaign, bg, big=False):
             '<div style="font-size:%dpx;line-height:1.25;font-weight:800;margin:8px 0 6px"><a href="%s" style="color:%s;text-decoration:none">%s</a></div>'
             '<div style="font-size:14px;font-weight:700">📅 %s</div><div style="font-size:14px">📍 %s</div>'
             '</td></tr></table></td></tr>'
-            % (bg, INK, img, INK, badges, 20 if big else 17, _esc(_link(e, campaign)), INK, _esc(e["title"]),
+            % (bg, INK, img, INK, badges, 20 if big else 17, _esc(_link(e, campaign)), INK, _esc(display_title(e)),
                _esc(_when(e, ed)), _esc(_where(e))))
 
 
@@ -186,7 +186,7 @@ def _section(title, items, ed, campaign, big=False, more=None):
 
 
 def subject(ed):
-    star = ed["top"][0]["title"] if ed["top"] else ""
+    star = display_title(ed["top"][0]) if ed["top"] else ""
     s = "Planes del finde %s" % short_range(ed["fri"], ed["sun"])
     return s + (": %s y más" % star if star and len(star) <= 50 else "")
 
