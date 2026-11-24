@@ -203,11 +203,41 @@ def reel_cerca(browser):
     ctx.close()
 
 
+def reel_dias(browser):
+    """Novedad: elegir varios días sueltos en el calendario (sáb 5, mar 8 y sáb 12 de diciembre en Madrid)."""
+    ctx, page = new_page(browser)
+    r = Reel(page, "dias")
+    open_site(page, SITE + "?prov=28&city=Madrid")
+    r.shot(1.8, "intro")
+    calv = page.locator('#view [data-view="cal"]')
+    r.glide_to(calv, 300, 0.8, "1 · Abre el calendario")
+    r.tap(calv, "1 · Abre el calendario", wait=1200, hold=0.5)
+    r.glide_to(page.locator("#calendar"), 20, 0.7, "1 · Abre el calendario")
+    nxt = page.locator("#nextM")
+    r.tap(nxt, "1 · Abre el calendario", wait=700, hold=0.6)
+    for d in ("2026-12-05", "2026-12-08", "2026-12-12"):
+        r.tap(page.locator('.day[data-day="%s"]' % d), "2 · Toca los días que quieras", wait=700, hold=0.7)
+    r.shot(0.9, "2 · Toca los días que quieras")
+    panel = page.locator("#dayPanel")
+    r.glide_to(panel, 40, 1.0, "3 · Tus planes, día a día")
+    r.shot(1.3, "3 · Tus planes, día a día")
+    r.glide(page.evaluate("window.scrollY") + 520, 1.6, "3 · Tus planes, día a día")
+    r.shot(0.6, "3 · Tus planes, día a día")
+    r.glide_to(panel, 40, 0.8, "4 · O todos en la lista")
+    lst = page.locator('#dayPanel [data-goview="list"]')
+    r.tap(lst, "4 · O todos en la lista", wait=1500, hold=0.5)
+    r.glide_to(page.locator("#count"), 90, 0.8, "4 · O todos en la lista")
+    r.shot(1.3, "4 · O todos en la lista")
+    r.glide(page.evaluate("window.scrollY") + 460, 1.4, "4 · O todos en la lista")
+    r.shot(0.8, "4 · O todos en la lista")
+    ctx.close()
+
+
 def main():
     import shutil
     os.makedirs(OUT, exist_ok=True)
     only = [x for x in os.environ.get("REELS", "buscar,guardar,cerca").split(",") if x]
-    fns = {"buscar": reel_buscar, "guardar": reel_guardar, "cerca": reel_cerca}
+    fns = {"buscar": reel_buscar, "guardar": reel_guardar, "cerca": reel_cerca, "dias": reel_dias}
     old = []
     try:  # se conservan las capturas de los reels que no se repiten
         with open(os.path.join(OUT, "timeline.json"), encoding="utf-8") as fh:
@@ -227,7 +257,7 @@ def main():
     FRAMES[:0] = old
     with open(os.path.join(OUT, "timeline.json"), "w", encoding="utf-8") as fh:
         json.dump({"vw": VW, "vh": VH, "frames": FRAMES}, fh, ensure_ascii=False, indent=0)
-    for name in ("buscar", "guardar", "cerca"):
+    for name in ("buscar", "guardar", "cerca", "dias"):
         fr = [f for f in FRAMES if f["reel"] == name]
         print(name, len(fr), "capturas, %.1f s" % sum(f["dur"] for f in fr))
 
