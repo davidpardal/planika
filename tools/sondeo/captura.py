@@ -224,7 +224,7 @@ def reel_dias(browser):
     r.glide(page.evaluate("window.scrollY") + 520, 1.6, "3 · Tus planes, día a día")
     r.shot(0.6, "3 · Tus planes, día a día")
     r.glide_to(panel, 40, 0.8, "4 · O todos en la lista")
-    lst = page.locator('#dayPanel [data-goview="list"]')
+    lst = page.locator('#dayPanel .day-actions [data-goview="list"]')
     r.tap(lst, "4 · O todos en la lista", wait=1500, hold=0.5)
     r.glide_to(page.locator("#count"), 90, 0.8, "4 · O todos en la lista")
     r.shot(1.3, "4 · O todos en la lista")
