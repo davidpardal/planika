@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Utilidades comunes: HTTP, fechas, limpieza de texto y provincias."""
+import functools
 import hashlib
 import html
 import json
@@ -127,6 +128,158 @@ def clean_url(u):
         u = "https://" + u.lstrip("/")
     return u
 
+
+# ---------------------------------------------------------------- Títulos para mostrar
+
+# El título original (e["title"]) no se toca: de él sale el nombre del archivo de la ficha, que Google ya tiene
+# indexado. display_title() solo cambia lo que se lee en la web, en Google y en las tarjetas.
+
+_MES_RX = (r"(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|sept?iembre|octubre|noviembre|diciembre"
+           r"|gener|febrer|març|maig|juny|juliol|agost|setembre|novembre|desembre)")
+_PAREN_END = re.compile(r"\s*\(([^()]*)\)\s*$")
+_PAREN_DATE = re.compile(r"\b\d{1,2}\s+(?:de\s+)?%s\b" % _MES_RX, re.I)
+_PAREN_MONTHS = re.compile(r"\s*%s\s*[-–/]\s*%s\s*$" % (_MES_RX, _MES_RX), re.I)
+_ENTRADAS = re.compile(r"^(\s*\(suspendid[oa]\)\s*|[^:()]{3,40}:\s*)?entradas(?:\s+(?:para|de|del))?\s*[:\-–]?\s+(?!(?:y|e|o|u|a)\s)", re.I)
+_QUOTES = {'"': '"', "«": "»", "“": "”", "'": "'", "‘": "’"}
+SMALL_WORDS = _SMALL = {
+    # castellano
+    "a", "al", "ante", "bajo", "con", "contra", "de", "del", "desde", "e", "el", "en", "entre", "hacia", "hasta",
+    "la", "las", "lo", "los", "o", "para", "por", "que", "se", "sin", "sobre", "su", "sus", "tras", "u", "un",
+    "una", "unas", "unos", "y", "tu", "tus", "mi", "mis", "como",
+    # catalán y valenciano, euskera, francés e inglés
+    "amb", "als", "dels", "els", "les", "per", "pel", "pels", "eta", "des", "du", "et", "aux", "and", "of", "the", "for",
+}
+_ACRONYMS = {"UD", "CD", "SD", "FC", "CF", "CB", "CE", "ACB", "NBA", "UEFA", "ONU", "UE", "EH", "BBK", "MUSAC", "BIBAT",
+             "ABC", "USA", "UK", "EEUU", "LP", "EP", "IA", "AI", "DJ", "DJS", "TV"}
+_ROMAN = re.compile(r"^(?:X{0,3})(?:IX|IV|V?I{0,3})$")
+_WORD = re.compile(r"[^\W\d_](?:[^\W\d_]|@)*(?:['’][^\W\d_]+)?")
+_SEG_START = set(":.!?¿¡\"«“‘'(-–—/+&|")
+
+
+def _shouty(t):
+    """Título entero en mayúsculas (al menos dos palabras de 3+ letras): «CONCIERTO DE NAVIDAD»."""
+    letters = [c for c in t if c.isalpha()]
+    if len(letters) < 6:
+        return False
+    caps = [w for w in re.findall(r"[^\W\d_]{3,}", t) if w.isupper()]
+    return len(caps) >= 2 and sum(c.isupper() for c in letters) >= 0.8 * len(letters)
+
+
+def _cap(w, start=True):
+    w = w.lower()
+    if len(w) > 2 and w[1] in "'’":  # l'oncle -> L'Oncle, o'brien -> O'Brien; en medio: «Festival d'Orquestres»
+        return (w[0].upper() if start or w[0] not in "dl" else w[0]) + w[1] + w[2:3].upper() + w[3:]
+    return w[:1].upper() + w[1:]
+
+
+def _decap(t):
+    """«CONCIERTO DE NAVIDAD EN EL ARRIAGA» -> «Concierto de Navidad en el Arriaga» (siglas y números romanos, igual)."""
+    out, pos = [], 0
+    words = list(_WORD.finditer(t))
+    for i, m in enumerate(words):
+        w = m.group(0)
+        before = t[:m.start()].rstrip()
+        start = not before or before[-1] in _SEG_START
+        lead = not before or before[-1] != "("  # «(o viceversa)»: tras un paréntesis, la palabra corta va en minúscula
+        after = t[m.end():].lstrip()
+        low = w.lower()
+        if w == "I":  # número romano o la «i» catalana
+            new = "I" if start or not after or not after[0].isalpha() else "i"
+        elif low in _SMALL and not (start and lead):
+            new = low
+        elif not w.isupper():
+            new = w
+        elif w in _ACRONYMS or (len(w) >= 2 and _ROMAN.match(w)) or (len(w) >= 2 and not re.search(r"[AEIOUYÁÉÍÓÚÀÈÌÒÙÜ]", w)):
+            new = w
+        else:
+            new = _cap(w, start)
+        out.append(t[pos:m.start()] + new)
+        pos = m.end()
+    out.append(t[pos:])
+    return "".join(out)
+
+
+_PLACE_STOP = {"de", "del", "la", "las", "el", "los", "y", "sala", "teatro", "en"}
+
+
+def _place_words(*parts):
+    return {w for p in parts for w in norm(p).replace("/", " ").split() if len(w) >= 3 and w not in _PLACE_STOP}
+
+
+def _same_place(inner, place, loose=False):
+    """¿El paréntesis solo repite el sitio? «(Dabadaba)», «(Jimmy Jazz Gasteiz)», «(Bilbao - Campos Elíseos)».
+    loose (títulos «Entradas …», que son fichas de venta): basta con que nombre una parte del sitio."""
+    words = _place_words(inner)
+    if not words:
+        return False
+    hit = words & place
+    return bool(hit) and (loose or hit == words)
+
+
+def unquote(t):
+    """«"Vaquero"» -> «Vaquero» (solo si las comillas envuelven todo el texto)."""
+    if len(t) > 2 and t[0] in _QUOTES and t[-1] == _QUOTES[t[0]]:
+        inner = t[1:-1].strip()
+        if inner and t[0] not in inner and t[-1] not in inner:
+            return inner
+    return t
+
+
+_QUOTE_MARK = re.compile(r"[\"«»“”]|(?<![^\W\d_])['‘’]|['‘’](?![^\W\d_])")
+
+
+def series_split(name):
+    """«Ciclo Bernaola 2026-2027: Trío Zukan» -> ("Ciclo Bernaola 2026-2027", "Trío Zukan"). None si no hay «: »
+    fuera de comillas («Taller 'Astronomia: secrets de l'univers'») o si alguna parte es muy corta."""
+    for m in re.finditer(r":\s+", name):
+        before = name[:m.start()]
+        marks = _QUOTE_MARK.findall(before)
+        if len(marks) % 2:
+            continue
+        pre, rest = before.strip(), name[m.end():].strip()
+        if len(pre) >= 4 and len(rest) >= 8:
+            return pre, unquote(rest)
+        return None
+    return None
+
+
+@functools.lru_cache(maxsize=None)
+def clean_title(title, venue="", city="", address=""):
+    """Título para mostrar, sin el ruido de algunas fuentes:
+    - «Entradas Malú (28 de noviembre - Baluarte, Pamplona)» -> «Malú» (fecha y sala ya se ven en la ficha);
+    - «Sho-Hai (Jimmy Jazz Gasteiz)» -> «Sho-Hai» (paréntesis que solo repite la sala o la ciudad);
+    - «"Vaquero"» -> «Vaquero»; «HEAD HOLES + THE HOT DOGS» -> «Head Holes + The Hot Dogs».
+    Los paréntesis que dicen algo («(exposición permanente)», «(+18)», «(Edición febrero)») se quedan."""
+    raw = " ".join(str(title or "").split())
+    t = raw
+    ticket = _ENTRADAS.match(t)
+    place = _place_words(venue, city, address)
+    for i in range(2):
+        m = _PAREN_END.search(t)
+        if not m:
+            break
+        inner = m.group(1)
+        if _PAREN_DATE.search(inner) or _PAREN_MONTHS.match(inner) or _same_place(inner, place, bool(ticket) and i == 0):
+            t = t[:m.start()].rstrip(" -–:,")
+        else:
+            break
+    m = _ENTRADAS.match(t)
+    if m:
+        keep = m.group(1) or ""
+        rest = t[m.end():]
+        t = keep + rest[:1].upper() + rest[1:]
+    t = unquote(t)
+    if _shouty(t):
+        t = _decap(t)
+    t = " ".join(t.split()).strip(" -–:,")
+    return t if len(t) >= 2 else raw
+
+
+def display_title(e):
+    """Título que se muestra de un plan: el traducido si lo hay, si no el original limpio."""
+    return clean_title(e.get("title_es") or e.get("title") or "", e.get("venue") or "", e.get("city") or "",
+                       e.get("address") or "")
+
 # ---------------------------------------------------------------- Fechas
 
 _DATE_PATTERNS = (
@@ -178,6 +331,18 @@ try:
     _MADRID = ZoneInfo("Europe/Madrid")
 except Exception:  # sin base de zonas horarias: hora del servidor
     _MADRID = None
+
+
+def now_madrid():
+    """Fecha y hora en España peninsular (con zona horaria), para «Actualizado hoy a las 6:50»."""
+    if _MADRID is not None:
+        return datetime.now(_MADRID)
+    return datetime.now()
+
+
+def stamp():
+    """Marca de actualización en hora de Madrid: "2026-11-24T06:50" (antes iba en UTC, la hora de los servidores)."""
+    return now_madrid().strftime("%Y-%m-%dT%H:%M")
 
 
 def today():

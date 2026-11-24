@@ -15,7 +15,7 @@
     var e = { i: i, id: r[0], title: r[1], category: c.key || 'otros', subtype: r[3] || '', start: r[4], end: r[5], time: r[6] || '',
       province_code: r[7], province: p.name || '', ccaa: p.ccaa || '', city: r[8] || '', venue: r[9] || '',
       lat: r[10] == null ? null : r[10], lon: r[11] == null ? null : r[11], price: r[12] || '', free: !!(r[13] & 1), tk: !!(r[13] & 2), xm: !!(r[13] & 4),
-      audience: r[14] || '', source: DATA.srcNames[r[15]] || '', sessions: r[16] || null, title_es: r[17] || '',
+      audience: r[14] || '', source: DATA.srcNames[r[15]] || '', sessions: r[16] || null, title_es: r[17] || '', tc: r[18] || '',
       description: '', url: '', tickets_url: '', image: '', address: '', _d: false };
     BY_ID[e.id] = e;
     return e;
@@ -43,12 +43,20 @@
   var fmtLong = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   var fmtMonth = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' });
   function fmtD(s) { return fmtDay.format(fromIso(s)) + (s.slice(0, 4) !== thisYear ? ' ' + s.slice(0, 4) : ''); }
+  // updated_at va en hora de Madrid ("2026-11-24T06:50"): «Actualizado hoy a las 6:50», «ayer a las…», «el lun 22 nov a las…»
+  function updatedText(s) {
+    var m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(s || '');
+    if (!m) return 'Actualizado';
+    var day = m[1] === TODAY ? 'hoy' : m[1] === addDays(TODAY, -1) ? 'ayer' : 'el ' + fmtD(m[1]);
+    return 'Actualizado ' + day + ' a las ' + (+m[2]) + ':' + m[3];
+  }
   function spanDays(e) { return Math.round((fromIso(e.end) - fromIso(e.start)) / 864e5); }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function norm(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
   function slug(s) { return norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
-  function title(e) { return e.title_es || e.title; }
+  // tc: título limpio (sin «Entradas…», fechas entre paréntesis ni MAYÚSCULAS); e.title queda intacto para evFile()
+  function title(e) { return e.tc || e.title_es || e.title; }
   function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
   // Página propia del plan (site/e/), con el mismo nombre de archivo que genera planes/static.py
   function evFile(e) { var s = slug(e.title).slice(0, 60).replace(/^-|-$/g, ''); return 'e/' + (s ? s + '-' : '') + e.id + '.html'; }
@@ -179,7 +187,7 @@
       b.addEventListener('click', function () { state.cats[c.key] = !state.cats[c.key]; b.classList.toggle('on', !!state.cats[c.key]); refresh(); });
       chips.appendChild(b);
     });
-    $('meta').textContent = 'Actualizado el ' + (DATA.updated_at || '').replace('T', ' a las ') + ' · ' + EVENTS.length.toLocaleString('es-ES') + ' planes del ' + fmtDay.format(fromIso(DATA.from)) + ' al ' + fmtDay.format(fromIso(DATA.to));
+    $('meta').textContent = updatedText(DATA.updated_at) + ' · ' + EVENTS.length.toLocaleString('es-ES') + ' planes del ' + fmtDay.format(fromIso(DATA.from)) + ' al ' + fmtDay.format(fromIso(DATA.to));
     var pc = provCounts();
     $('seoLinks').innerHTML = DATA.provinces.filter(function (p) { return pc[p.code]; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); })
       .map(function (p) { return '<a href="p/' + slug(p.name) + '.html">' + esc(p.name) + '</a>'; }).join(' · ') + '<br>' +
