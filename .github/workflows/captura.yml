@@ -20,7 +20,7 @@ jobs:
         run: git clone -q --depth 1 -b capturas "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" capturas || mkdir capturas
       - run: python3 tools/sondeo/captura.py
         env:
-          REELS: dias
+          REELS: miplan,misplanes,idiomas
       - name: Subir las capturas a la rama capturas
         run: |
           cd capturas

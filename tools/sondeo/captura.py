@@ -9,7 +9,7 @@ import traceback
 
 from playwright.sync_api import sync_playwright
 
-SITE = "https://planikaapp.com/"
+SITE = os.environ.get("SITE", "https://planikaapp.com/")
 OUT = "capturas"
 VW, VH = 390, 700
 FRAMES = []
@@ -41,6 +41,22 @@ class Reel:
             self.page.wait_for_timeout(30)
             self.shot(1 / fps, cap)
 
+    def glide_in(self, sel, y_target, secs, cap, fps=12):
+        """Como glide, pero dentro de un elemento con scroll propio (la ventana del plan)."""
+        y0 = self.page.evaluate("s => document.querySelector(s).scrollTop", sel)
+        n = max(1, int(secs * fps))
+        for i in range(1, n + 1):
+            k = i / n
+            k = k * k * (3 - 2 * k)
+            self.page.evaluate("a => { document.querySelector(a[0]).scrollTop = a[1]; }", [sel, y0 + (y_target - y0) * k])
+            self.page.wait_for_timeout(30)
+            self.shot(1 / fps, cap)
+
+    def glide_in_to(self, sel, loc, at_y, secs, cap):
+        b = loc.bounding_box()
+        y = self.page.evaluate("s => document.querySelector(s).scrollTop", sel) + b["y"] - at_y
+        self.glide_in(sel, max(0, y), secs, cap)
+
     def glide_to(self, loc, at_y, secs, cap):
         b = loc.bounding_box()
         y = self.page.evaluate("window.scrollY") + b["y"] - at_y
@@ -61,7 +77,7 @@ def new_page(browser, geo=None):
     ctx = browser.new_context(viewport={"width": VW, "height": VH}, device_scale_factor=2, is_mobile=True, has_touch=True,
                               locale="es-ES", timezone_id="Europe/Madrid",
                               user_agent="Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Mobile Safari/537.36",
-                              geolocation=geo, permissions=["geolocation"] if geo else [])
+                              geolocation=geo, permissions=(["geolocation"] if geo else []) + ["clipboard-read", "clipboard-write"])
     # Sin analítica: las capturas no deben contar como visitas.
     ctx.route("**/*", lambda r: r.abort() if any(h in r.request.url for h in ("googletagmanager", "google-analytics", "analytics.google")) else r.continue_())
     # Sin el aviso de cookies tapando la mitad de abajo (se da por rechazado, como quien ya contestó)
@@ -235,11 +251,145 @@ def reel_dias(browser):
     ctx.close()
 
 
+def pick_cards(page, n=3, gap=150, limit=40):
+    """Tarjetas de la lista a horas distintas (desde las 10:30 y con `gap` minutos entre una y otra)."""
+    import re
+    cards = page.locator("#list article[data-id]")
+    picked, last = [], -999
+    for k in range(min(cards.count(), limit)):
+        m = re.search(r"(\d{1,2}):(\d{2})", cards.nth(k).locator(".when").inner_text())
+        if not m:
+            continue
+        t = int(m.group(1)) * 60 + int(m.group(2))
+        if t >= 630 and t - last >= gap:
+            picked.append(k)
+            last = t
+        if len(picked) == n:
+            break
+    for k in range(min(cards.count(), limit)):  # si no hay bastantes horas distintas, se completa por orden
+        if len(picked) >= n:
+            break
+        if k not in picked:
+            picked.append(k)
+    return sorted(picked)
+
+
+def reel_miplan(browser):
+    """Novedad: crear tu plan del sábado 28 de noviembre en Bilbao: añadir, nombre, nota, calendario y compartir."""
+    ctx, page = new_page(browser)
+    r = Reel(page, "miplan")
+    open_site(page, SITE + "?prov=48&city=Bilbao&dias=2026-11-28")
+    r.shot(1.8, "intro")
+    cards = page.locator("#list article[data-id]")
+    cap = "1 · Pulsa «＋ Mi plan»"
+    for k in pick_cards(page):
+        b = cards.nth(k).locator(".addplan")
+        r.glide_to(b, 470, 0.7, cap)
+        r.tap(b, cap, wait=600, hold=0.7)
+    cap = "2 · Ábrelo y ponle nombre"
+    r.tap(page.locator("#planPill"), cap, wait=900, hold=0.6)
+    r.tap(page.locator("#planName"), cap, wait=300, hold=0.3)
+    for chunk in ("Sába", "do en ", "Bilbao"):
+        page.keyboard.type(chunk, delay=40)
+        r.shot(0.35, cap)
+    r.shot(0.9, cap)
+    dlg = "#planDlg"
+    cap = "3 · Todo ordenado por hora"
+    r.glide_in_to(dlg, page.locator("#planNoteForm"), 560, 1.6, cap)
+    r.shot(0.9, cap)
+    cap = "4 · Añade tus notas"
+    t = page.locator("#planNoteTime")
+    r.tap(t, cap, wait=200, hold=0.2)
+    t.fill("14:00")
+    r.shot(0.4, cap)
+    r.tap(page.locator("#planNoteText"), cap, wait=200, hold=0.2)
+    page.keyboard.type("Comer de pintxos", delay=30)
+    r.shot(0.5, cap)
+    r.tap(page.locator("#planNoteForm button[type=submit]"), cap, wait=600, hold=0.3)
+    r.glide_in_to(dlg, page.locator("#planList .plan-item.note"), 300, 0.8, cap)
+    r.shot(1.1, cap)
+    cap = "5 · A tu calendario, de una vez"
+    ics = page.locator("#planIcs")
+    r.glide_in_to(dlg, ics, 420, 0.8, cap)
+    r.tap(ics, cap, wait=1800, hold=1.0)
+    r.glide_in_to(dlg, page.locator("#planCal"), 120, 0.8, cap)
+    r.shot(1.3, cap)
+    cap = "6 · Y compártelo con tu gente"
+    cp = page.locator("#planCopy")
+    r.glide_in_to(dlg, cp, 380, 0.8, cap)
+    r.tap(cp, cap, wait=500, hold=1.8)
+    ctx.close()
+
+
+def reel_misplanes(browser):
+    """Novedad: varios planes. Ya hay uno («Sábado en Bilbao»); se crea «Puente de diciembre» y se elige a cuál va cada cosa."""
+    ctx, page = new_page(browser)
+    r = Reel(page, "misplanes")
+    # Plan de partida con planes reales del sábado 28 en Bilbao, como si ya lo hubieras hecho
+    open_site(page, SITE + "?prov=48&city=Bilbao&dias=2026-11-28")
+    cards = page.locator("#list article[data-id]")
+    ids = [cards.nth(k).get_attribute("data-id") for k in pick_cards(page)]
+    page.evaluate("""ids => { var p = { id: 'sabado', n: 'Sábado en Bilbao', i: ids.map(function (x) { return [x, '2026-11-28']; }), o: [] };
+      localStorage.setItem('planika_plans', JSON.stringify({ a: 'sabado', p: [p] })); }""", ids)
+    open_site(page, SITE + "?prov=48&city=Bilbao&dias=2026-12-05,2026-12-06,2026-12-07,2026-12-08")
+    r.shot(1.8, "intro")
+    cap = "1 · Abre «Mis planes» en el menú"
+    r.tap(page.locator("#menuBtn"), cap, wait=600, hold=0.5)
+    r.tap(page.locator('#sidemenu [data-menu="plan"]'), cap, wait=800, hold=1.0)
+    cap = "2 · Crea otro plan"
+    r.tap(page.locator("#plansNew"), cap, wait=500, hold=0.3)
+    for chunk in ("Puente ", "de dic", "iembre"):
+        page.keyboard.type(chunk, delay=40)
+        r.shot(0.35, cap)
+    r.shot(0.8, cap)
+    r.tap(page.locator("#planClose"), cap, wait=500, hold=0.4)
+    cap = "3 · Elige a qué plan va cada cosa"
+    for k in pick_cards(page, n=2, gap=240):
+        b = cards.nth(k).locator(".addplan")
+        r.glide_to(b, 470, 0.7, cap)
+        r.tap(b, cap, wait=700, hold=0.9)
+        r.tap(page.locator("#pickList .plans-row", has_text="Puente de diciembre"), cap, wait=700, hold=0.8)
+    cap = "4 · Todos tus planes, a mano"
+    r.tap(page.locator("#menuBtn"), cap, wait=600, hold=0.4)
+    r.tap(page.locator('#sidemenu [data-menu="plan"]'), cap, wait=800, hold=1.8)
+    cap = "5 · Cada uno, con su enlace"
+    r.tap(page.locator("#plansList .plans-row", has_text="Puente de diciembre"), cap, wait=800, hold=1.0)
+    cp = page.locator("#planCopy")
+    r.glide_in_to("#planDlg", cp, 380, 0.9, cap)
+    r.tap(cp, cap, wait=500, hold=1.8)
+    ctx.close()
+
+
+def reel_idiomas(browser):
+    """Novedad: la web en euskera, catalán, gallego e inglés (selector de arriba a la derecha)."""
+    ctx, page = new_page(browser)
+    r = Reel(page, "idiomas")
+    open_site(page)
+    r.shot(1.8, "intro")
+    pill = page.locator(".lang-pill")
+    prev = "1 · Toca el idioma, arriba"
+    for code, cap in (("eu", "Euskaraz"), ("ca", "En català"), ("gl", "En galego"), ("en", "In English")):
+        r.shot(0.5, prev, tap=r.center(pill))
+        with page.expect_navigation(timeout=60000):
+            page.locator(".lang-pill .lang-sel").select_option(code)
+        page.wait_for_function("document.querySelector('#list article[data-id]')", timeout=60000)
+        page.wait_for_timeout(1800)
+        page.evaluate("window.scrollTo(0, 0)")
+        page.wait_for_timeout(200)
+        r.shot(1.1, cap)
+        r.glide_to(page.locator(".sticker").first, 90, 0.9, cap)
+        r.shot(0.9, cap)
+        prev = cap
+    r.tap(page.locator("#menuBtn"), prev, wait=700, hold=1.6)
+    ctx.close()
+
+
 def main():
     import shutil
     os.makedirs(OUT, exist_ok=True)
     only = [x for x in os.environ.get("REELS", "buscar,guardar,cerca").split(",") if x]
-    fns = {"buscar": reel_buscar, "guardar": reel_guardar, "cerca": reel_cerca, "dias": reel_dias}
+    fns = {"buscar": reel_buscar, "guardar": reel_guardar, "cerca": reel_cerca, "dias": reel_dias,
+           "miplan": reel_miplan, "misplanes": reel_misplanes, "idiomas": reel_idiomas}
     old = []
     try:  # se conservan las capturas de los reels que no se repiten
         with open(os.path.join(OUT, "timeline.json"), encoding="utf-8") as fh:
@@ -259,7 +409,7 @@ def main():
     FRAMES[:0] = old
     with open(os.path.join(OUT, "timeline.json"), "w", encoding="utf-8") as fh:
         json.dump({"vw": VW, "vh": VH, "frames": FRAMES}, fh, ensure_ascii=False, indent=0)
-    for name in ("buscar", "guardar", "cerca", "dias"):
+    for name in fns:
         fr = [f for f in FRAMES if f["reel"] == name]
         print(name, len(fr), "capturas, %.1f s" % sum(f["dur"] for f in fr))
 
