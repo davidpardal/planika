@@ -759,10 +759,19 @@
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
   var menu = $('menu');
+  // Qué dispositivo es: en iPhone y Android lo mejor es el archivo .ics (todo de una vez, con aviso; Google Calendar
+  // para Android lo abre desde octubre de 2025); en el ordenador, primero Google Calendar.
+  var DEVICE = (function () {
+    var ua = navigator.userAgent || '';
+    if (/Android/i.test(ua)) return 'android';
+    if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+    return 'desktop';
+  })();
   function openMenu(btn, e) {
-    var l = links(e);
-    menu.innerHTML = '<a href="' + l.google + '" target="_blank" rel="noopener">Google Calendar</a>' +
-      '<button type="button" data-act="ics">Apple Calendar / iCal (.ics) 🔔</button>' +
+    var l = links(e), mobile = DEVICE !== 'desktop';
+    var ics = '<button type="button" data-act="ics">' + (mobile ? '📱 ' + tr('Calendario del móvil (.ics)') : 'Apple Calendar / iCal (.ics)') + ' 🔔</button>';
+    var google = '<a href="' + l.google + '" target="_blank" rel="noopener">Google Calendar</a>';
+    menu.innerHTML = (mobile ? ics + google : google + ics) +
       '<a href="' + l.outlook + '" target="_blank" rel="noopener">Outlook.com</a>' +
       '<a href="' + l.office + '" target="_blank" rel="noopener">Microsoft 365</a>' +
       '<a href="' + l.yahoo + '" target="_blank" rel="noopener">Yahoo Calendar</a>';
@@ -1324,23 +1333,26 @@
     var rows = calRows(), box = $('planCal');
     if (!rows.length) { box.hidden = true; toast(tr('Añade algo a tu plan primero')); return; }
     need(rows.filter(function (r) { return r.e; }).map(function (r) { return r.e; }));
-    var last = '';
-    box.innerHTML = '<p class="plan-cal-h">📱 ' + tr('Todo el plan de una vez (iPhone, Apple Calendar, Outlook)') + '</p>' +
-      '<button type="button" class="btn primary" data-plan-ics="1">📅 ' + tr('Descargar el plan (.ics)') + '</button>' +
-      '<p class="plan-cal-note">🔔 ' + tr('Con aviso 2 horas antes de cada plan') + '</p>' +
-      '<p class="plan-cal-h">' + tr('Google Calendar: un toque por cada plan (Google no deja añadir varios a la vez)') + '</p><div class="plan-gcal">' +
+    var last = '', mobile = DEVICE !== 'desktop';
+    // En el móvil, primero todo el plan de una vez (.ics); en el ordenador, primero Google Calendar
+    var ics = '<div class="plan-cal-sec"><p class="plan-cal-h">📱 ' + tr('Todo el plan de una vez: iPhone, Android, Apple Calendar y Outlook') + '</p>' +
+      '<button type="button" class="btn' + (mobile ? ' primary' : '') + '" data-plan-ics="1">📅 ' + tr('Descargar el plan (.ics)') + '</button>' +
+      (DEVICE === 'android' ? '<p class="plan-cal-note">👉 ' + tr('En Android: abre el archivo descargado y elige Google Calendar') + '</p>' : '') +
+      '<p class="plan-cal-note">🔔 ' + tr('Con aviso 2 horas antes de cada plan') + '</p></div>';
+    var gcal = '<div class="plan-cal-sec"><p class="plan-cal-h">' + (mobile ? tr('O con Google Calendar, un toque por plan') : tr('Con Google Calendar, un toque por plan')) + '</p><div class="plan-gcal">' +
       rows.map(function (r) {
         var head = r.d !== last ? '<p class="plan-gcal-day">' + esc(cap(fmtDayName.format(fromIso(r.d)))) + '</p>' : '';
         last = r.d;
         var url = r.e ? links(planEvent(r)).google : gcalNote(r);
         var what = r.e ? title(r.e) : r.note;
         return head + '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener" data-gcal="1">＋ ' + (r.t ? r.t + ' · ' : '') + esc(what) + '</a>';
-      }).join('') + '</div>';
+      }).join('') + '</div></div>';
+    box.innerHTML = mobile ? ics + gcal : gcal + ics;
     box.hidden = false;
     box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   $('planCal').addEventListener('click', function (ev) {
-    if (ev.target.closest('[data-plan-ics]')) { planIcs(); return; }
+    if (ev.target.closest('[data-plan-ics]')) { planIcs(); track('plan_ics_' + DEVICE); return; }
     if (ev.target.closest('[data-gcal]')) track('plan_gcal');
   });
   // ?miplan=… (plan compartido: se enseña y se puede guardar como uno más) y ?add=<id> (botón «＋ Mi plan» de las fichas)

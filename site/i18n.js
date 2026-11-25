@@ -681,12 +681,6 @@
 "Gastronomía, feiras e mercados en {x}",
 "Food, fairs and markets in {x}"
 ],
-"Google Calendar: un toque por cada plan (Google no deja añadir varios a la vez)": [
-"Google Calendar: ukitu bat plan bakoitzeko (Googlek ez du hainbat batera gehitzen uzten)",
-"Google Calendar: un toc per cada pla (Google no deixa afegir-ne diversos alhora)",
-"Google Calendar: un toque por cada plan (Google non deixa engadir varios á vez)",
-"Google Calendar: one tap per plan (Google doesn't let you add several at once)"
-],
 "Gratis": [
 "Doan",
 "Gratuït",
@@ -1461,12 +1455,6 @@
 "Todo o día",
 "All day"
 ],
-"Todo el plan de una vez (iPhone, Apple Calendar, Outlook)": [
-"Plan osoa batera (iPhone, Apple Calendar, Outlook)",
-"Tot el pla de cop (iPhone, Apple Calendar, Outlook)",
-"Todo o plan dunha vez (iPhone, Apple Calendar, Outlook)",
-"The whole plan at once (iPhone, Apple Calendar, Outlook)"
-],
 "Todos": [
 "Guztiak",
 "Tots",
@@ -1970,6 +1958,36 @@
 "Amb avís 2 hores abans de cada pla",
 "Con aviso 2 horas antes de cada plan",
 "With a reminder 2 hours before each plan"
+],
+"Todo el plan de una vez: iPhone, Android, Apple Calendar y Outlook": [
+"Plan osoa batera: iPhone, Android, Apple Calendar eta Outlook",
+"Tot el pla d'una vegada: iPhone, Android, Apple Calendar i Outlook",
+"Todo o plan dunha vez: iPhone, Android, Apple Calendar e Outlook",
+"The whole plan at once: iPhone, Android, Apple Calendar and Outlook"
+],
+"En Android: abre el archivo descargado y elige Google Calendar": [
+"Androiden: ireki deskargatutako fitxategia eta aukeratu Google Calendar",
+"A Android: obre el fitxer baixat i tria Google Calendar",
+"En Android: abre o ficheiro descargado e escolle Google Calendar",
+"On Android: open the downloaded file and choose Google Calendar"
+],
+"O con Google Calendar, un toque por plan": [
+"Edo Google Calendar-ekin, ukitu bat plan bakoitzeko",
+"O amb Google Calendar, un toc per pla",
+"Ou con Google Calendar, un toque por plan",
+"Or with Google Calendar, one tap per plan"
+],
+"Con Google Calendar, un toque por plan": [
+"Google Calendar-ekin, ukitu bat plan bakoitzeko",
+"Amb Google Calendar, un toc per pla",
+"Con Google Calendar, un toque por plan",
+"With Google Calendar, one tap per plan"
+],
+"Calendario del móvil (.ics)": [
+"Mugikorreko egutegia (.ics)",
+"Calendari del mòbil (.ics)",
+"Calendario do móbil (.ics)",
+"Phone calendar (.ics)"
 ]
 };
   /*END*/
