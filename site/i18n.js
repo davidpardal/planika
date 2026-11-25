@@ -1970,6 +1970,12 @@
 "Al mapa només surten els plans de «{p}»",
 "No mapa só saen os plans de «{p}»",
 "The map only shows what is in “{p}”"
+],
+"Con aviso 2 horas antes de cada plan": [
+"Abisua plan bakoitza baino 2 ordu lehenago",
+"Amb avís 2 hores abans de cada pla",
+"Con aviso 2 horas antes de cada plan",
+"With a reminder 2 hours before each plan"
 ]
 };
   /*END*/

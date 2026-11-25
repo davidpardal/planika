@@ -733,6 +733,10 @@
     return { google: google, outlook: 'https://outlook.live.com/calendar/0/action/compose?rru=addevent' + ol, office: 'https://outlook.office.com/calendar/0/action/compose?rru=addevent' + ol,
       yahoo: 'https://calendar.yahoo.com/?v=60&title=' + enc(tt) + '&st=' + t.start + (t.allDay ? '&dur=allday' : '&et=' + t.end) + '&desc=' + enc(det) + '&in_loc=' + enc(loc) };
   }
+  // Aviso en el móvil: 2 horas antes; si es de todo el día, a las 9:00 de ese día
+  function icsAlarm(allDay, what) {
+    return ['BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + what, 'TRIGGER:' + (allDay ? 'PT9H' : '-PT2H'), 'END:VALARM'];
+  }
   function icsText(e) {
     var t = calTimes(e);
     var f = function (s) { return String(s).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, function (c) { return '\\' + c; }); };
@@ -744,6 +748,7 @@
       'SUMMARY:' + f(title(e)), 'DESCRIPTION:' + f(details(e)), 'LOCATION:' + f(location_(e))];
     if (e.url || e.tickets_url) lines.push('URL:' + (e.tickets_url || e.url));
     if (e.lat != null && e.lon != null) lines.push('GEO:' + e.lat + ';' + e.lon);
+    lines = lines.concat(icsAlarm(t.allDay, f(title(e))));
     lines.push('END:VEVENT', 'END:VCALENDAR');
     return lines.join('\r\n');
   }
@@ -757,7 +762,7 @@
   function openMenu(btn, e) {
     var l = links(e);
     menu.innerHTML = '<a href="' + l.google + '" target="_blank" rel="noopener">Google Calendar</a>' +
-      '<button type="button" data-act="ics">Apple Calendar / iCal (.ics)</button>' +
+      '<button type="button" data-act="ics">Apple Calendar / iCal (.ics) 🔔</button>' +
       '<a href="' + l.outlook + '" target="_blank" rel="noopener">Outlook.com</a>' +
       '<a href="' + l.office + '" target="_blank" rel="noopener">Microsoft 365</a>' +
       '<a href="' + l.yahoo + '" target="_blank" rel="noopener">Yahoo Calendar</a>';
@@ -1299,7 +1304,7 @@
       return ['BEGIN:VEVENT', 'UID:nota-' + r.d + '-' + (r.t || '').replace(':', '') + '-' + slug(r.note).slice(0, 30) + '@planikaapp.com', 'DTSTAMP:' + stamp,
         nt.allDay ? 'DTSTART;VALUE=DATE:' + nt.start : 'DTSTART;TZID=Europe/Madrid:' + nt.start,
         nt.allDay ? 'DTEND;VALUE=DATE:' + nt.end : 'DTEND;TZID=Europe/Madrid:' + nt.end,
-        'SUMMARY:' + f(r.note), 'DESCRIPTION:' + f(noteDetails()), 'END:VEVENT', ''].join('\r\n');
+        'SUMMARY:' + f(r.note), 'DESCRIPTION:' + f(noteDetails())].concat(icsAlarm(nt.allDay, f(r.note)), ['END:VEVENT', '']).join('\r\n');
     }).join('');
     var txt = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Planika//planikaapp.com//ES\r\nCALSCALE:GREGORIAN\r\n' + all + 'END:VCALENDAR';
     var blob = new Blob([txt], { type: 'text/calendar;charset=utf-8' });
@@ -1322,6 +1327,7 @@
     var last = '';
     box.innerHTML = '<p class="plan-cal-h">📱 ' + tr('Todo el plan de una vez (iPhone, Apple Calendar, Outlook)') + '</p>' +
       '<button type="button" class="btn primary" data-plan-ics="1">📅 ' + tr('Descargar el plan (.ics)') + '</button>' +
+      '<p class="plan-cal-note">🔔 ' + tr('Con aviso 2 horas antes de cada plan') + '</p>' +
       '<p class="plan-cal-h">' + tr('Google Calendar: un toque por cada plan (Google no deja añadir varios a la vez)') + '</p><div class="plan-gcal">' +
       rows.map(function (r) {
         var head = r.d !== last ? '<p class="plan-gcal-day">' + esc(cap(fmtDayName.format(fromIso(r.d)))) + '</p>' : '';
