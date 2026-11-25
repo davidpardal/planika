@@ -494,6 +494,21 @@ class TestAssets(unittest.TestCase):
             self.assertFalse(publish.prerender_index(tmp, evs))  # sin cambios: no reescribe
             self.assertEqual(page.count('<section id="list"'), 1)
 
+    def test_index_links_december_long_weekend_only_in_season(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = '<h2 class="count" id="count" aria-live="polite"></h2><section id="list" class="list" aria-live="polite"></section>' \
+                   '<p>Planes destacados: <span id="puenteLink"></span><a href="planes-gratis.html">Planes gratis</a></p>'
+            with open(os.path.join(tmp, "index.html"), "w", encoding="utf-8") as fh:
+                fh.write(base)
+            evs = [util.event("Agenda", str(i), "Plan %d" % i, "2026-12-0%d" % (5 + i % 4), city="Bilbao", province_code="48")
+                   for i in range(publish.PUENTE_MIN)]
+            publish.prerender_index(tmp, evs, t0="2026-11-25")
+            self.assertIn('<span id="puenteLink"><a href="puente-diciembre.html">Puente de diciembre</a> · </span>', read(tmp, "index.html"))
+            publish.prerender_index(tmp, evs, t0="2026-12-09")  # pasado el puente: el enlace se quita
+            self.assertIn('<span id="puenteLink"></span>', read(tmp, "index.html"))
+            publish.prerender_index(tmp, evs[:-1], t0="2026-11-25")  # pocos planes: tampoco se enlaza
+            self.assertIn('<span id="puenteLink"></span>', read(tmp, "index.html"))
+
     def test_stamp_index_versions_assets(self):
         with tempfile.TemporaryDirectory() as tmp:
             os.makedirs(os.path.join(tmp, "data", "d"))
