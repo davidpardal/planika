@@ -7,3 +7,5 @@ __pycache__/
 site/data/core.js
 site/data/d/
 site/e/
+# Carruseles de Instagram del finde: se dibujan en cada publicación (tools/instagram.py)
+site/ig/
