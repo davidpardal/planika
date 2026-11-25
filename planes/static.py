@@ -18,7 +18,8 @@ from .util import SMALL_WORDS, clean_title, country, display_title, is_permanent
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
 # GA4 se carga desde consent.js únicamente tras aceptación explícita.
-BEACON = '<script defer src="/consent.js"></script>'
+# i18n.js: idioma de la interfaz (menús, botones y pie) en las páginas generadas; el contenido sigue en español
+BEACON = '<script defer src="/consent.js"></script><script defer src="/i18n.js"></script>'
 CHUNK = 250  # planes por bloque de detalles
 CAT_NAME = {k: n for k, n, _ in CATEGORIES}
 CAT_ICON = {k: i for k, _, i in CATEGORIES}
@@ -403,7 +404,7 @@ def stamp_index(site_dir):
     except OSError:
         return False
     out = page
-    for name in ("styles.css", "app.js", "data/core.js", "data/d/0.js"):
+    for name in ("styles.css", "i18n.js", "app.js", "data/core.js", "data/d/0.js"):
         try:
             with open(os.path.join(site_dir, name), "rb") as fh:
                 v = hashlib.sha1(fh.read()).hexdigest()[:10]

@@ -397,3 +397,12 @@ body.menu-open { overflow: hidden; }
 .plan-note input, .plan-note select { font: inherit; border: var(--b2); border-radius: 10px; padding: 6px 8px; background: var(--white); color: var(--ink); }
 .plan-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; align-items: center; }
 body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi plan» */
+
+/* ---------- idioma */
+.lang-pill { position: fixed; top: 12px; right: 12px; z-index: 60; display: inline-flex; align-items: center; gap: 4px; background: var(--white);
+  border: var(--b); border-radius: 999px; padding: 4px 6px 4px 12px; box-shadow: var(--sh); font-weight: 800; }
+.lang-sel { font: inherit; font-weight: 800; font-size: 15px; border: 0; background: transparent; color: var(--ink); padding: 4px 2px; cursor: pointer; }
+.sm-lang { display: flex; align-items: center; gap: 8px; font-weight: 800; padding: 6px 4px; }
+.sm-lang .lang-sel { border: var(--b2); border-radius: 999px; padding: 6px 10px; background: var(--white); }
+.lang-row { margin-top: 14px; }
+.lang-row .lang-sel { border: var(--b2); border-radius: 999px; padding: 6px 10px; background: var(--white); }
