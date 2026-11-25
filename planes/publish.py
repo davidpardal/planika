@@ -395,6 +395,16 @@ def puente_estado(t0):
     return y, a, b, False
 
 
+def puente_planes(events, t0):
+    """Planes del puente si estamos en temporada y hay al menos PUENTE_MIN; si no, lista vacía.
+    Decide a la vez si la página del puente se indexa y si se enlaza (hubs y portada)."""
+    _, a, b, season = puente_estado(t0)
+    if not season:
+        return []
+    items = [e for e in events if in_window(e, iso(a), iso(b))]
+    return items if len(items) >= PUENTE_MIN else []
+
+
 def puente_rango(a, b):
     """«del sábado 5 al martes 8 de diciembre»."""
     return "del %s %d al %s %d de diciembre" % (_DIAS_LARGOS[a.weekday()], a.day, _DIAS_LARGOS[b.weekday()], b.day)
@@ -481,6 +491,10 @@ def prerender_index(site_dir, events, t0=None, n=24):
                  lambda m: m.group(1) + cards + m.group(2), page, count=1, flags=re.S)
     out = re.sub(r'(<h2 class="count" id="count" aria-live="polite">).*?(</h2>)',
                  lambda m: m.group(1) + "%s planes" % fmt_n(len(items)) + m.group(2), out, count=1, flags=re.S)
+    # Enlace a la página del puente de diciembre solo en temporada: la portada es lo que Google visita cada día,
+    # así descubre la página a tiempo (si no, solo la enlazan las páginas de provincia).
+    puente = '<a href="puente-diciembre.html">Puente de diciembre</a> · ' if puente_planes(events, t0) else ""
+    out = re.sub(r'(<span id="puenteLink">).*?(</span>)', lambda m: m.group(1) + puente + m.group(2), out, count=1, flags=re.S)
     if out != page:
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(out)
@@ -729,8 +743,8 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
     # Puente de diciembre: página propia desde octubre hasta el último día del puente, enlazada desde todos los hubs.
     p_year, p_a, p_b, p_season = puente_estado(t0)
     pa, pb = iso(p_a), iso(p_b)
-    puente_items = [e for e in upcoming(events) if in_window(e, pa, pb)] if p_season else []
-    puente_on = len(puente_items) >= PUENTE_MIN
+    puente_items = upcoming(puente_planes(events, t0))
+    puente_on = bool(puente_items)
     if puente_on:
         nat_links.insert(2, '<a href="%spuente-diciembre.html">Puente de diciembre</a>')
     festivals = [e for e in upcoming(events) if not is_permanent(e) and FESTIVAL_RX.search(norm(e.get("title_es") or e["title"]))]
