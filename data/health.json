@@ -182,7 +182,7 @@
    },
    {
     "date": "2026-11-25",
-    "count": 3667,
+    "count": 3677,
     "error": ""
    }
   ],
@@ -244,7 +244,7 @@
    },
    {
     "date": "2026-11-25",
-    "count": 1280,
+    "count": 1287,
     "error": ""
    }
   ],
@@ -1067,7 +1067,7 @@
    },
    {
     "date": "2026-11-25",
-    "count": 793,
+    "count": 802,
     "error": ""
    }
   ],
@@ -1403,7 +1403,7 @@
    }
   ]
  },
- "updated_at": "2026-11-25T12:25",
+ "updated_at": "2026-11-25T12:58",
  "alerts": [
   "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-25"
  ]
