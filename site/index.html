@@ -27,7 +27,7 @@
 <link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="alternate" type="application/rss+xml" title="Planika · próximos planes" href="feeds/todos.xml">
-<link rel="stylesheet" href="styles.css?v=20d7b5e8b7">
+<link rel="stylesheet" href="styles.css?v=187aa07d59">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://planikaapp.com/#web","name":"Planika","url":"https://planikaapp.com/","inLanguage":"es","description":"Agenda de planes de ocio en toda España: conciertos, teatro, exposiciones, deporte, ferias y fiestas por provincia, con calendario, entradas y un clic para guardarlos en tu agenda.","publisher":{"@id":"https://planikaapp.com/#org"}},{"@type":"Organization","@id":"https://planikaapp.com/#org","name":"Planika","url":"https://planikaapp.com/","logo":"https://planikaapp.com/icon.svg","sameAs":["https://www.instagram.com/planikaapp/"]}]}</script>
 <!-- GA4 solo se carga tras consentimiento explícito. -->
 <script defer src="/consent.js"></script>
@@ -56,7 +56,7 @@
     <a href="planes-hoy.html">Qué hacer hoy</a>
     <a href="planes-este-fin-de-semana.html">Este fin de semana</a>
     <a href="puente-diciembre.html">Puente de diciembre</a>
-    <span class="sm-dyn" id="temporadaMenu"></span>
+    <span class="sm-dyn" id="temporadaMenu"><a href="encendido-luces-navidad.html">Encendido de luces de Navidad</a><a href="cabalgatas-reyes.html">Cabalgatas de Reyes</a><a href="nochevieja.html">Nochevieja y Año Nuevo</a></span>
     <a href="planes-gratis.html">Planes gratis</a>
     <a href="t/navidad.html">Navidad</a>
     <a href="festivales.html">Festivales</a>
@@ -163,7 +163,7 @@
 
   <section class="bar">
     <div class="countbox">
-      <div class="countwrap"><h2 class="count" id="count" aria-live="polite">13.503 planes</h2><button type="button" class="linkbtn" id="clearAll" hidden>Borrar filtros</button></div>
+      <div class="countwrap"><h2 class="count" id="count" aria-live="polite">13.505 planes</h2><button type="button" class="linkbtn" id="clearAll" hidden>Borrar filtros</button></div>
       <p class="count-ctx" id="countCtx"></p>
     </div>
     <div class="barbtns">
@@ -200,7 +200,7 @@
 
 <footer class="wrap foot">
   <p class="brandfoot"><strong>Planika</strong> · <a href="https://planikaapp.com">planikaapp.com</a> · <a href="feeds/todos.xml">RSS</a> · <a href="fuentes.html">Fuentes de datos</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a> · <a href="https://github.com/davidpardal/planika">Código</a></p>
-  <p>Planes destacados: <a href="planes-hoy.html">Qué hacer hoy</a> · <a href="planes-este-fin-de-semana.html">Planes este fin de semana</a> · <span id="puenteLink"><a href="puente-diciembre.html">Puente de diciembre</a> · </span><span id="temporadaLinks"></span><a href="planes-gratis.html">Planes gratis</a> · <a href="t/navidad.html">Navidad</a> · <a href="t/infantil.html">Planes con niños</a> · <a href="t/musica.html">Conciertos</a> · <a href="t/escena.html">Teatro y danza</a> · <a href="t/expos.html">Exposiciones</a></p>
+  <p>Planes destacados: <a href="planes-hoy.html">Qué hacer hoy</a> · <a href="planes-este-fin-de-semana.html">Planes este fin de semana</a> · <span id="puenteLink"><a href="puente-diciembre.html">Puente de diciembre</a> · </span><span id="temporadaLinks"><a href="encendido-luces-navidad.html">Encendido de luces de Navidad</a> · <a href="cabalgatas-reyes.html">Cabalgatas de Reyes</a> · <a href="nochevieja.html">Nochevieja y Año Nuevo</a> · </span><a href="planes-gratis.html">Planes gratis</a> · <a href="t/navidad.html">Navidad</a> · <a href="t/infantil.html">Planes con niños</a> · <a href="t/musica.html">Conciertos</a> · <a href="t/escena.html">Teatro y danza</a> · <a href="t/expos.html">Exposiciones</a></p>
   <p>Páginas por provincia y tipo de plan: <span id="seoLinks"><a href="p/a-coruna.html">A Coruña</a> · <a href="p/albacete.html">Albacete</a> · <a href="p/alicante.html">Alicante</a> · <a href="p/almeria.html">Almería</a> · <a href="p/asturias.html">Asturias</a> · <a href="p/badajoz.html">Badajoz</a> · <a href="p/barcelona.html">Barcelona</a> · <a href="p/bizkaia.html">Bizkaia</a> · <a href="p/burgos.html">Burgos</a> · <a href="p/cantabria.html">Cantabria</a> · <a href="p/castellon.html">Castellón</a> · <a href="p/ceuta.html">Ceuta</a> · <a href="p/ciudad-real.html">Ciudad Real</a> · <a href="p/cuenca.html">Cuenca</a> · <a href="p/caceres.html">Cáceres</a> · <a href="p/cadiz.html">Cádiz</a> · <a href="p/cordoba.html">Córdoba</a> · <a href="p/gipuzkoa.html">Gipuzkoa</a> · <a href="p/girona.html">Girona</a> · <a href="p/granada.html">Granada</a> · <a href="p/guadalajara.html">Guadalajara</a> · <a href="p/huelva.html">Huelva</a> · <a href="p/huesca.html">Huesca</a> · <a href="p/illes-balears.html">Illes Balears</a> · <a href="p/jaen.html">Jaén</a> · <a href="p/la-rioja.html">La Rioja</a> · <a href="p/las-palmas.html">Las Palmas</a> · <a href="p/leon.html">León</a> · <a href="p/lleida.html">Lleida</a> · <a href="p/lugo.html">Lugo</a> · <a href="p/madrid.html">Madrid</a> · <a href="p/melilla.html">Melilla</a> · <a href="p/murcia.html">Murcia</a> · <a href="p/malaga.html">Málaga</a> · <a href="p/navarra.html">Navarra</a> · <a href="p/ourense.html">Ourense</a> · <a href="p/palencia.html">Palencia</a> · <a href="p/pontevedra.html">Pontevedra</a> · <a href="p/salamanca.html">Salamanca</a> · <a href="p/santa-cruz-de-tenerife.html">Santa Cruz de Tenerife</a> · <a href="p/segovia.html">Segovia</a> · <a href="p/sevilla.html">Sevilla</a> · <a href="p/soria.html">Soria</a> · <a href="p/tarragona.html">Tarragona</a> · <a href="p/teruel.html">Teruel</a> · <a href="p/toledo.html">Toledo</a> · <a href="p/valencia.html">Valencia</a> · <a href="p/valladolid.html">Valladolid</a> · <a href="p/zamora.html">Zamora</a> · <a href="p/zaragoza.html">Zaragoza</a> · <a href="p/alava.html">Álava</a> · <a href="p/avila.html">Ávila</a><br><a href="t/musica.html">🎵 Música y conciertos</a> · <a href="t/escena.html">🎭 Teatro y danza</a> · <a href="t/expos.html">🖼️ Exposiciones y museos</a> · <a href="t/cine.html">🎬 Cine</a> · <a href="t/deporte.html">⚽ Deporte</a> · <a href="t/gastro.html">🍷 Gastronomía, ferias y mercados</a> · <a href="t/infantil.html">🧒 Infantil y familiar</a> · <a href="t/fiestas.html">🎉 Fiestas y tradiciones</a> · <a href="t/naturaleza.html">🥾 Naturaleza, rutas y visitas</a> · <a href="t/charlas.html">📚 Charlas, libros y talleres</a> · <a href="t/otros.html">✨ Otros planes</a></span></p>
   <p>Los datos proceden de portales de datos abiertos y APIs públicas. <a href="fuentes.html">Ver las fuentes de datos</a>. Comprueba siempre fechas, horarios y precios en la fuente original.</p>
 </footer>
@@ -256,9 +256,9 @@
 <p id="installIosApp" class="install-note" data-i18n-html="install_ios_app">¿Estás dentro de Instagram? Abre antes la página en Safari (menú ··· → «Abrir en el navegador»).</p>
 <p id="installOther" hidden data-i18n-html="install_other">Abre el menú del navegador <strong>⋮</strong> y elige <strong>Añadir a pantalla de inicio</strong> (o <strong>Instalar app</strong>) y después <strong>Instalar</strong>. Planika aparecerá con su icono, como una app más.</p>
 </dialog>
-<script defer src="i18n.js?v=4ed25c676f"></script>
-<script defer src="data/core.js?v=86ae61ef90"></script>
-<script defer src="data/d/0.js?v=cc6a3ca7f6"></script>
+<script defer src="i18n.js?v=9a8026997c"></script>
+<script defer src="data/core.js?v=d7a639cad0"></script>
+<script defer src="data/d/0.js?v=2acdd43060"></script>
 <script defer src="app.js?v=a6ff4bbebf"></script>
 </body>
 </html>

@@ -471,6 +471,7 @@
 "48|bilbao|arkeologi museoa": {"checked": "2026-11-21", "ok": false},
 "48|bilbao|az azkuna zentroa": {"checked": "2026-11-21", "lat": 43.259695, "lon": -2.937119, "nombre": "Azkuna Zentroa", "ok": true, "osm": "way/96337695", "q": "azkuna zentroa", "tipo": "amenity=arts_centre"},
 "48|bilbao|azkena": {"checked": "2026-11-21", "lat": 43.263649, "lon": -2.929837, "nombre": "Azkena Bilbao", "ok": true, "osm": "node/5052041756", "q": "Azkena", "tipo": "amenity=pub"},
+"48|bilbao|bbk kuna": {"checked": "2026-11-25", "ok": false},
 "48|bilbao|biblioteca de bilbao begona": {"checked": "2026-11-21", "lat": 43.256277, "lon": -2.926536, "nombre": "Biblioteca de San Francisco", "ok": true, "osm": "node/10307691910", "q": "Biblioteca de Bilbao", "tipo": "amenity=library"},
 "48|bilbao|biblioteca de bilbao biblioteca central de bidebarrieta": {"checked": "2026-11-23", "lat": 43.256277, "lon": -2.926536, "nombre": "Biblioteca de San Francisco", "ok": true, "osm": "node/10307691910", "q": "Biblioteca de Bilbao", "tipo": "amenity=library"},
 "48|bilbao|biblioteca de bilbao deusto": {"checked": "2026-11-21", "lat": 43.256277, "lon": -2.926536, "nombre": "Biblioteca de San Francisco", "ok": true, "osm": "node/10307691910", "q": "Biblioteca de Bilbao", "tipo": "amenity=library"},
