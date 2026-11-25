@@ -123,11 +123,11 @@
 "Aviso legal",
 "Legal notice"
 ],
-"Añade algún plan de la agenda primero": [
-"Gehitu lehenik agendako planen bat",
-"Afegeix primer algun pla de l'agenda",
-"Engade primeiro algún plan da axenda",
-"Add a plan from the listings first"
+"Añade algo a tu plan primero": [
+"Gehitu zerbait zure planera lehenik",
+"Afegeix primer alguna cosa al teu pla",
+"Engade primeiro algo ao teu plan",
+"Add something to your plan first"
 ],
 "Añadido a tu plan ({d})": [
 "Zure planera gehituta ({d})",
@@ -411,6 +411,12 @@
 "Deporte en {x}",
 "Sport in {x}"
 ],
+"Descargar el plan (.ics)": [
+"Deskargatu plana (.ics)",
+"Descarrega el pla (.ics)",
+"Descargar o plan (.ics)",
+"Download the plan (.ics)"
+],
 "Desde": [
 "Noiztik",
 "Des de",
@@ -680,6 +686,12 @@
 "Gastronomia, fires i mercats a {x}",
 "Gastronomía, feiras e mercados en {x}",
 "Food, fairs and markets in {x}"
+],
+"Google Calendar: un toque por cada plan (Google no deja añadir varios a la vez)": [
+"Google Calendar: ukitu bat plan bakoitzeko (Googlek ez du hainbat batera gehitzen uzten)",
+"Google Calendar: un toc per cada pla (Google no deixa afegir-ne diversos alhora)",
+"Google Calendar: un toque por cada plan (Google non deixa engadir varios á vez)",
+"Google Calendar: one tap per plan (Google doesn't let you add several at once)"
 ],
 "Gratis": [
 "Doan",
@@ -998,6 +1010,12 @@
 "Nota",
 "Nota",
 "Note"
+],
+"Nota de tu plan": [
+"Zure planeko oharra",
+"Nota del teu pla",
+"Nota do teu plan",
+"Note from your plan"
 ],
 "Nota tuya": [
 "Zure oharra",
@@ -1448,6 +1466,12 @@
 "Tot el dia",
 "Todo o día",
 "All day"
+],
+"Todo el plan de una vez (iPhone, Apple Calendar, Outlook)": [
+"Plan osoa batera (iPhone, Apple Calendar, Outlook)",
+"Tot el pla de cop (iPhone, Apple Calendar, Outlook)",
+"Todo o plan dunha vez (iPhone, Apple Calendar, Outlook)",
+"The whole plan at once (iPhone, Apple Calendar, Outlook)"
 ],
 "Todos": [
 "Guztiak",

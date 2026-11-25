@@ -408,3 +408,9 @@ body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi p
 .sm-lang .lang-sel { border: var(--b2); border-radius: 999px; padding: 6px 10px; background: var(--white); }
 .lang-row { margin-top: 14px; }
 .lang-row .lang-sel { border: var(--b2); border-radius: 999px; padding: 6px 10px; background: var(--white); }
+.plan-cal { margin: 14px 0 0; padding: 12px; border: var(--b2); border-radius: 14px; background: var(--white); }
+.plan-cal-h { margin: 0 0 8px; font-weight: 800; font-size: 14px; }
+.plan-cal-h:not(:first-child) { margin-top: 16px; }
+.plan-gcal { display: flex; flex-direction: column; gap: 6px; }
+.plan-gcal .btn { justify-content: flex-start; text-align: left; white-space: normal; }
+.plan-gcal-day { margin: 6px 0 0; font-size: 13px; font-weight: 800; color: var(--ink-2); }
