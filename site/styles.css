@@ -429,6 +429,7 @@ body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi p
 .lang-row { margin-top: 14px; }
 .lang-row .lang-sel { border: var(--b2); border-radius: 999px; padding: 6px 10px; background: var(--white); }
 .plan-cal { margin: 14px 0 0; padding: 12px; border: var(--b2); border-radius: 14px; background: var(--white); }
+.plan-cal-note { margin: 8px 0 0; font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .plan-cal-h { margin: 0 0 8px; font-weight: 800; font-size: 14px; }
 .plan-cal-h:not(:first-child) { margin-top: 16px; }
 .plan-gcal { display: flex; flex-direction: column; gap: 6px; }
