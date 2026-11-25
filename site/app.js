@@ -1057,7 +1057,7 @@
   }
   function renderPlan() {
     var p = sharedPlan || plan, shared = !!sharedPlan;
-    var rows = planRows(p), h = '', lastDay = '', prev = null;
+    var rows = planRows(p), h = '', lastDay = '', prev = null, pop = 0;  // pop: los mismos 4 colores que las tarjetas, en orden
     $('planName').value = p.n; $('planName').readOnly = shared;
     $('planShared').hidden = !shared;
     if (!rows.length) {
@@ -1086,7 +1086,7 @@
       } else {
         var e = r.e, where = [e.venue, e.city].filter(Boolean).join(' · ');
         var price = e.free ? tr('Gratis') : e.price;
-        h += '<div class="plan-item"><span class="tm">' + (r.t || tr('Todo el día')) + '</span><div><a href="' + esc(evFile(e)) + '"><b>' + esc(title(e)) + '</b></a>' +
+        h += '<div class="plan-item pop' + (pop++ % 4) + '"><span class="tm">' + (r.t || tr('Todo el día')) + '</span><div><a href="' + esc(evFile(e)) + '"><b>' + esc(title(e)) + '</b></a>' +
           '<span>' + esc([where, price].filter(Boolean).join(' · ')) + '</span></div>' +
           (shared ? '' : '<button type="button" class="plan-x" data-plan-del="' + e.id + '" aria-label="' + tr('Quitar del plan') + '">✕</button>') + '</div>';
       }
