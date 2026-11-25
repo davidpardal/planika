@@ -1,0 +1,1368 @@
+[
+ {
+  "device": "iPhone 15",
+  "engine": "webkit",
+  "viewport": {
+   "width": 393,
+   "height": 659
+  },
+  "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E1",
+  "steps": [
+   {
+    "step": "portada",
+    "first_cards_secs": 3.0,
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "card_actions": {
+     "clipped": 0,
+     "total": 48,
+     "example": ""
+    },
+    "small_targets": [],
+    "ok": true,
+    "shot": "iphone-15_00_portada.jpg",
+    "secs": 3.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "buscar",
+    "suggestions": 1,
+    "count": "675\nplanes\nde 13.560",
+    "url": "https://planikaapp.com/?prov=48&city=Bilbao",
+    "ok": true,
+    "shot": "iphone-15_01_buscar.jpg",
+    "secs": 3.2,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "tarjetas",
+    "card_actions": {
+     "clipped": 0,
+     "total": 48,
+     "example": ""
+    },
+    "ok": true,
+    "shot": "iphone-15_02_tarjetas.jpg",
+    "secs": 0.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "calendario",
+    "days_with_plans": 30,
+    "panel_visible": true,
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-15_03_calendario.jpg",
+    "secs": 2.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mapa",
+    "tiles": 7,
+    "markers": 1,
+    "ok": true,
+    "shot": "iphone-15_04_mapa.jpg",
+    "secs": 6.8,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "menu",
+    "open": true,
+    "box": {
+     "x": 0,
+     "y": 0,
+     "width": 337.96875,
+     "height": 659
+    },
+    "closed": true,
+    "ok": true,
+    "shot": "iphone-15_06_menu.jpg",
+    "secs": 1.4,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mi-plan",
+    "button": "✓ En tu plan",
+    "pill": "🗓 Mi plan · 1",
+    "dialog_open": true,
+    "items": 2,
+    "small_fonts_in_plan": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "dialog_box": {
+     "x": 16,
+     "y": 18,
+     "width": 361,
+     "height": 623
+    },
+    "calendar_buttons": 2,
+    "plans_listed": 1,
+    "ok": true,
+    "shot": "iphone-15_09_mi-plan.jpg",
+    "secs": 5.9,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "anadir-al-calendario",
+    "menu_visible": true,
+    "menu_box": {
+     "x": 109.578125,
+     "y": 354.796875,
+     "width": 230,
+     "height": 223
+    },
+    "options": 5,
+    "ok": true,
+    "shot": "iphone-15_11_anadir-al-calendario.jpg",
+    "secs": 2.1,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "idioma",
+    "sticker": "🔎 Plan baten bila?",
+    "html_lang": "eu",
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-15_12_idioma.jpg",
+    "secs": 2.0,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "ficha",
+    "url": "https://planikaapp.com/e/congreso-internacional-de-las-generaciones-del-presente-y-de-e8d69b56798c4e.html",
+    "h1": "Congreso Internacional de las Generaciones del Presente y del Futuro de Euskadi",
+    "add_plan_link": 1,
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-15_13_ficha.jpg",
+    "secs": 3.4,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-bizkaia",
+    "title": "Qué hacer en Bizkaia: planes y eventos (noviembre 2026) · Planika",
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-15_14_pagina-bizkaia.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-musica",
+    "title": "Conciertos en España: agenda por provincia · Planika",
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-15_15_pagina-musica.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-planes-este-fin-de-semana",
+    "title": "Qué hacer este fin de semana en España (27–29 nov) · Planika",
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-15_16_pagina-planes-este-fin-de-semana.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-puente-diciembre",
+    "title": "Puente de diciembre 2026: qué hacer del 5 al 8 de diciembre · Planika",
+    "layout": {
+     "docW": 393,
+     "W": 393,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-15_17_pagina-puente-diciembre.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pwa",
+    "manifest": true,
+    "sw_api": true,
+    "sw_controller": 1,
+    "ok": true,
+    "shot": "iphone-15_18_pwa.jpg",
+    "secs": 2.9,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   }
+  ]
+ },
+ {
+  "device": "iPhone SE",
+  "engine": "webkit",
+  "viewport": {
+   "width": 320,
+   "height": 568
+  },
+  "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/27.2 Mobile/14",
+  "steps": [
+   {
+    "step": "portada",
+    "first_cards_secs": 1.9,
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "card_actions": {
+     "clipped": 47,
+     "total": 48,
+     "example": "Más info ↗ | ＋ Calendario | ↗ Compartir | ＋ Mi plan"
+    },
+    "small_targets": [],
+    "ok": true,
+    "shot": "iphone-se_00_portada.jpg",
+    "secs": 2.4,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "buscar",
+    "suggestions": 1,
+    "count": "675\nplanes\nde 13.560",
+    "url": "https://planikaapp.com/?prov=48&city=Bilbao",
+    "ok": true,
+    "shot": "iphone-se_01_buscar.jpg",
+    "secs": 3.1,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "tarjetas",
+    "card_actions": {
+     "clipped": 30,
+     "total": 48,
+     "example": "Más info ↗ | ＋ Calendario | ↗ Compartir | ＋ Mi plan"
+    },
+    "ok": true,
+    "shot": "iphone-se_02_tarjetas.jpg",
+    "secs": 0.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "calendario",
+    "days_with_plans": 30,
+    "panel_visible": true,
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-se_03_calendario.jpg",
+    "secs": 2.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mapa",
+    "tiles": 6,
+    "markers": 1,
+    "ok": true,
+    "shot": "iphone-se_04_mapa.jpg",
+    "secs": 6.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "menu",
+    "open": true,
+    "box": {
+     "x": 0,
+     "y": 0,
+     "width": 275.1875,
+     "height": 568
+    },
+    "closed": true,
+    "ok": true,
+    "shot": "iphone-se_06_menu.jpg",
+    "secs": 1.3,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mi-plan",
+    "button": "✓ En tu plan",
+    "pill": "🗓 Mi plan · 1",
+    "dialog_open": true,
+    "items": 2,
+    "small_fonts_in_plan": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "dialog_box": {
+     "x": 16,
+     "y": 18,
+     "width": 288,
+     "height": 532
+    },
+    "calendar_buttons": 2,
+    "plans_listed": 1,
+    "ok": true,
+    "shot": "iphone-se_09_mi-plan.jpg",
+    "secs": 5.8,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "anadir-al-calendario",
+    "menu_visible": true,
+    "menu_box": {
+     "x": 82,
+     "y": 309.984375,
+     "width": 230,
+     "height": 223
+    },
+    "options": 5,
+    "ok": true,
+    "shot": "iphone-se_11_anadir-al-calendario.jpg",
+    "secs": 2.0,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "idioma",
+    "sticker": "🔎 Plan baten bila?",
+    "html_lang": "eu",
+    "layout": {
+     "docW": 334,
+     "W": 320,
+     "wide": [
+      "div.hero-text → 334px",
+      "div.brand → 334px",
+      "p.lead → 334px",
+      "p#meta.meta → 334px",
+      "p.social → 334px",
+      "a.ig → 334px",
+      "p#installWrap.install → 334px",
+      "span.install-note → 325px",
+      "source → 334px",
+      "img.hero-img → 334px"
+     ],
+     "nWide": 10
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-se_12_idioma.jpg",
+    "secs": 2.2,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "ficha",
+    "url": "https://planikaapp.com/e/congreso-internacional-de-las-generaciones-del-presente-y-de-e8d69b56798c4e.html",
+    "h1": "Congreso Internacional de las Generaciones del Presente y del Futuro de Euskadi",
+    "add_plan_link": 1,
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-se_13_ficha.jpg",
+    "secs": 3.5,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-bizkaia",
+    "title": "Qué hacer en Bizkaia: planes y eventos (noviembre 2026) · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-se_14_pagina-bizkaia.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-musica",
+    "title": "Conciertos en España: agenda por provincia · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-se_15_pagina-musica.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-planes-este-fin-de-semana",
+    "title": "Qué hacer este fin de semana en España (27–29 nov) · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-se_16_pagina-planes-este-fin-de-semana.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-puente-diciembre",
+    "title": "Puente de diciembre 2026: qué hacer del 5 al 8 de diciembre · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "iphone-se_17_pagina-puente-diciembre.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pwa",
+    "manifest": true,
+    "sw_api": true,
+    "sw_controller": 1,
+    "ok": true,
+    "shot": "iphone-se_18_pwa.jpg",
+    "secs": 2.8,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   }
+  ]
+ },
+ {
+  "device": "Pixel 7",
+  "engine": "chromium",
+  "viewport": {
+   "width": 412,
+   "height": 839
+  },
+  "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/159.0.8154.6 Mobile Safari/537.36",
+  "steps": [
+   {
+    "step": "portada",
+    "first_cards_secs": 1.5,
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "card_actions": {
+     "clipped": 0,
+     "total": 48,
+     "example": ""
+    },
+    "small_targets": [
+     "EspañolEuskaraCatalàGale 79×28",
+     "Exposición: \"No a la gue 218×21"
+    ],
+    "ok": true,
+    "shot": "pixel-7_00_portada.jpg",
+    "secs": 2.0,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "buscar",
+    "suggestions": 1,
+    "count": "12\nplanes\nde 13.560",
+    "url": "https://planikaapp.com/?prov=07",
+    "ok": true,
+    "shot": "pixel-7_01_buscar.jpg",
+    "secs": 3.0,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "tarjetas",
+    "card_actions": {
+     "clipped": 0,
+     "total": 12,
+     "example": ""
+    },
+    "ok": true,
+    "shot": "pixel-7_02_tarjetas.jpg",
+    "secs": 0.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "calendario",
+    "days_with_plans": 1,
+    "panel_visible": true,
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "pixel-7_03_calendario.jpg",
+    "secs": 2.5,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mapa",
+    "tiles": 6,
+    "markers": 1,
+    "ok": true,
+    "shot": "pixel-7_04_mapa.jpg",
+    "secs": 6.7,
+    "js_errors": [],
+    "failed_requests": [
+     "https://a.tile.openstreetmap.org/6/31/23.png net::ERR_ABORTED",
+     "https://b.tile.openstreetmap.org/6/31/24.png net::ERR_ABORTED",
+     "https://c.tile.openstreetmap.org/6/30/23.png net::ERR_ABORTED",
+     "https://b.tile.openstreetmap.org/6/32/23.png net::ERR_ABORTED",
+     "https://a.tile.openstreetmap.org/6/30/24.png net::ERR_ABORTED"
+    ],
+    "http_errors": []
+   },
+   {
+    "step": "menu",
+    "open": true,
+    "box": {
+     "x": 0,
+     "y": 0,
+     "width": 354.3125,
+     "height": 839
+    },
+    "closed": true,
+    "ok": true,
+    "shot": "pixel-7_06_menu.jpg",
+    "secs": 1.5,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mi-plan",
+    "button": "✓ En tu plan",
+    "pill": "🗓 Mi plan · 1",
+    "dialog_open": true,
+    "items": 2,
+    "small_fonts_in_plan": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "dialog_box": {
+     "x": 16,
+     "y": 119.5,
+     "width": 380,
+     "height": 600
+    },
+    "calendar_buttons": 2,
+    "plans_listed": 1,
+    "ok": true,
+    "shot": "pixel-7_09_mi-plan.jpg",
+    "secs": 5.8,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "anadir-al-calendario",
+    "menu_visible": true,
+    "menu_box": {
+     "x": 113.859375,
+     "y": 688.328125,
+     "width": 230,
+     "height": 223
+    },
+    "options": 5,
+    "ok": true,
+    "shot": "pixel-7_11_anadir-al-calendario.jpg",
+    "secs": 2.1,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "idioma",
+    "sticker": "🔎 Plan baten bila?",
+    "html_lang": "eu",
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "pixel-7_12_idioma.jpg",
+    "secs": 1.5,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "ficha",
+    "url": "https://planikaapp.com/e/congreso-internacional-de-las-generaciones-del-presente-y-de-e8d69b56798c4e.html",
+    "h1": "Congreso Internacional de las Generaciones del Presente y del Futuro de Euskadi",
+    "add_plan_link": 1,
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "pixel-7_13_ficha.jpg",
+    "secs": 3.3,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-bizkaia",
+    "title": "Qué hacer en Bizkaia: planes y eventos (noviembre 2026) · Planika",
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "pixel-7_14_pagina-bizkaia.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-musica",
+    "title": "Conciertos en España: agenda por provincia · Planika",
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "pixel-7_15_pagina-musica.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-planes-este-fin-de-semana",
+    "title": "Qué hacer este fin de semana en España (27–29 nov) · Planika",
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "pixel-7_16_pagina-planes-este-fin-de-semana.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-puente-diciembre",
+    "title": "Puente de diciembre 2026: qué hacer del 5 al 8 de diciembre · Planika",
+    "layout": {
+     "docW": 412,
+     "W": 412,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "pixel-7_17_pagina-puente-diciembre.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pwa",
+    "manifest": true,
+    "sw_api": true,
+    "sw_controller": 1,
+    "ok": true,
+    "shot": "pixel-7_18_pwa.jpg",
+    "secs": 2.8,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   }
+  ]
+ },
+ {
+  "device": "Galaxy S9+",
+  "engine": "chromium",
+  "viewport": {
+   "width": 320,
+   "height": 658
+  },
+  "ua": "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/159.0.8154.6 Mobi",
+  "steps": [
+   {
+    "step": "portada",
+    "first_cards_secs": 1.5,
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "card_actions": {
+     "clipped": 47,
+     "total": 48,
+     "example": "Más info ↗ | ＋ Calendario | ↗ Compartir | ＋ Mi plan"
+    },
+    "small_targets": [
+     "EspañolEuskaraCatalàGale 79×28"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_00_portada.jpg",
+    "secs": 2.0,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "buscar",
+    "suggestions": 1,
+    "count": "12\nplanes\nde 13.560",
+    "url": "https://planikaapp.com/?prov=07",
+    "ok": true,
+    "shot": "galaxy-s9plus_01_buscar.jpg",
+    "secs": 3.1,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "tarjetas",
+    "card_actions": {
+     "clipped": 12,
+     "total": 12,
+     "example": "Más info ↗ | ＋ Calendario | ↗ Compartir | ＋ Mi plan"
+    },
+    "ok": true,
+    "shot": "galaxy-s9plus_02_tarjetas.jpg",
+    "secs": 0.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "calendario",
+    "days_with_plans": 1,
+    "panel_visible": true,
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_03_calendario.jpg",
+    "secs": 2.5,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mapa",
+    "tiles": 6,
+    "markers": 1,
+    "ok": true,
+    "shot": "galaxy-s9plus_04_mapa.jpg",
+    "secs": 6.8,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "menu",
+    "open": true,
+    "box": {
+     "x": 0,
+     "y": 0,
+     "width": 275.1875,
+     "height": 658
+    },
+    "closed": true,
+    "ok": true,
+    "shot": "galaxy-s9plus_06_menu.jpg",
+    "secs": 1.5,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "mi-plan",
+    "button": "✓ En tu plan",
+    "pill": "🗓 Mi plan · 1",
+    "dialog_open": true,
+    "items": 2,
+    "small_fonts_in_plan": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "dialog_box": {
+     "x": 16,
+     "y": 18,
+     "width": 288,
+     "height": 622
+    },
+    "calendar_buttons": 2,
+    "plans_listed": 1,
+    "ok": true,
+    "shot": "galaxy-s9plus_09_mi-plan.jpg",
+    "secs": 5.9,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "anadir-al-calendario",
+    "menu_visible": true,
+    "menu_box": {
+     "x": 82,
+     "y": 568.71875,
+     "width": 230,
+     "height": 223
+    },
+    "options": 5,
+    "ok": true,
+    "shot": "galaxy-s9plus_11_anadir-al-calendario.jpg",
+    "secs": 2.1,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "idioma",
+    "sticker": "🔎 Plan baten bila?",
+    "html_lang": "eu",
+    "layout": {
+     "docW": 333,
+     "W": 333,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px",
+     "lang-sel 15px",
+     "q 15px",
+     "where 15px",
+     "city 15px",
+     "ccaa 13.3333px",
+     "prov 13.3333px",
+     "from 15px",
+     "to 15px",
+     "tod 15px",
+     "aud 15px",
+     "pmax 15px",
+     "radius 14px",
+     "planNoteDay 15px",
+     "planNoteTime 15px",
+     "planNoteText 15px"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_12_idioma.jpg",
+    "secs": 1.6,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "ficha",
+    "url": "https://planikaapp.com/e/congreso-internacional-de-las-generaciones-del-presente-y-de-e8d69b56798c4e.html",
+    "h1": "Congreso Internacional de las Generaciones del Presente y del Futuro de Euskadi",
+    "add_plan_link": 1,
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_13_ficha.jpg",
+    "secs": 3.3,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-bizkaia",
+    "title": "Qué hacer en Bizkaia: planes y eventos (noviembre 2026) · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_14_pagina-bizkaia.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-musica",
+    "title": "Conciertos en España: agenda por provincia · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_15_pagina-musica.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-planes-este-fin-de-semana",
+    "title": "Qué hacer este fin de semana en España (27–29 nov) · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_16_pagina-planes-este-fin-de-semana.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pagina-puente-diciembre",
+    "title": "Puente de diciembre 2026: qué hacer del 5 al 8 de diciembre · Planika",
+    "layout": {
+     "docW": 320,
+     "W": 320,
+     "wide": [],
+     "nWide": 0
+    },
+    "small_fonts": [
+     "lang-sel 15px"
+    ],
+    "ok": true,
+    "shot": "galaxy-s9plus_17_pagina-puente-diciembre.jpg",
+    "secs": 1.7,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   },
+   {
+    "step": "pwa",
+    "manifest": true,
+    "sw_api": true,
+    "sw_controller": 1,
+    "ok": true,
+    "shot": "galaxy-s9plus_18_pwa.jpg",
+    "secs": 2.8,
+    "js_errors": [],
+    "failed_requests": [],
+    "http_errors": []
+   }
+  ]
+ }
+]
