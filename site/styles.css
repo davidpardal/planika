@@ -387,7 +387,9 @@ body.menu-open { overflow: hidden; }
 .plan-item b { display: block; font-size: 15px; line-height: 1.3; }
 .plan-item span { display: block; font-size: 13px; color: var(--ink-2); }
 .plan-item a { text-decoration: none; }
-.plan-item.note { background: #fff8dc; }
+.plan-item[class*="pop"] { background: var(--c); border: var(--b); box-shadow: var(--sh); }  /* como las tarjetas de la lista */
+.plan-item[class*="pop"] span { color: var(--ink); }
+.plan-item.note { background: var(--white); border-style: dashed; box-shadow: none; }
 .plan-item.gone { background: #f3f1f6; opacity: .8; }
 .plan-x { margin-left: auto; border: 0; background: none; font-size: 16px; cursor: pointer; padding: 2px 4px; color: var(--ink-2); }
 .plan-walk { font-size: 13px; color: var(--ink-2); padding: 6px 0 6px 64px; }
