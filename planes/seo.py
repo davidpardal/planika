@@ -111,5 +111,7 @@ def robots_txt(site_url):
             "# La app guarda búsqueda y filtros en parámetros (?e=, ?prov=, ?cat=, ?q=…) sobre la misma página,\n"
             "# que ya tiene canonical a la portada: son navegación facetada y no hace falta rastrearlos.\n"
             "Disallow: /?\n"
+            "# Imágenes para Instagram (site/ig/): no son páginas para buscadores\n"
+            "Disallow: /ig/\n"
             "\n"
             "Sitemap: %s/sitemap.xml\n" % site_url)
