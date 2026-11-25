@@ -359,6 +359,7 @@
 "31|estella lizarra|museo del carlismo": {"checked": "2026-11-21", "lat": 42.669946, "lon": -2.027691, "nombre": "Museo del Carlismo", "ok": true, "osm": "relation/7293020", "q": "Museo del Carlismo", "tipo": "tourism=museum"},
 "31|estella lizarra|museo gustavo de maeztu": {"checked": "2026-11-21", "lat": 42.669314, "lon": -2.029627, "nombre": "Museo Gustavo de Maeztu", "ok": true, "osm": "node/6516959285", "q": "Museo Gustavo de Maeztu", "tipo": "tourism=museum"},
 "31|estella lizarra|pena la bota": {"checked": "2026-11-21", "ok": false},
+"31|huarte / uharte|centro de arte contemporaneo huarte": {"checked": "2026-11-25", "lat": 42.83151, "lon": -1.594357, "nombre": "Centro del arte contemporaneo", "ok": true, "osm": "way/207399134", "q": "Centro de Arte Contemporáneo Huarte", "tipo": "amenity=arts_centre"},
 "31|leitza|leitzako herri aretoa": {"checked": "2026-11-21", "lat": 43.078602, "lon": -1.915721, "nombre": "Leitzako Herri Aretoa", "ok": true, "osm": "way/436375487", "q": "Leitzako Herri Aretoa", "tipo": "amenity=theatre"},
 "31|lesaka|casa de cultura harriondoa lesaka": {"checked": "2026-11-21", "lat": 43.242312, "lon": -1.699278, "nombre": "Casa rural Pikukoborda", "ok": true, "osm": "node/7175319188", "q": "Casa Lesaka", "tipo": "tourism=guest_house"},
 "31|lodosa|casa de cultura de lodosa": {"checked": "2026-11-21", "lat": 42.421826, "lon": -2.077152, "nombre": "casa de cultura", "ok": true, "osm": "way/332018506", "q": "Casa de Cultura de Lodosa", "tipo": "amenity=theatre"},
