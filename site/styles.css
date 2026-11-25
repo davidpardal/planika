@@ -364,9 +364,10 @@ a.chip.on { color: var(--white); }
 .sm-acc { display: flex; flex-direction: column; }
 .sm-acc[open] { gap: 8px; }
 .sm-acc[open] > summary { margin-bottom: 4px; }
-.sm-acc > a { margin-left: 12px; padding: 11px 14px; border-left: 4px solid var(--hot); background: #fff0f6; border-radius: 0 12px 12px 0;
+.sm-dyn { display: contents; }
+.sm-acc > a, .sm-dyn > a { margin-left: 12px; padding: 11px 14px; border-left: 4px solid var(--hot); background: #fff0f6; border-radius: 0 12px 12px 0;
   font-weight: 700; font-size: 15px; text-decoration: none; color: var(--ink); display: flex; gap: 10px; }
-.sm-acc.yellow > a { border-left-color: #e0b100; background: #fff8dc; }
+.sm-acc.yellow > a, .sm-acc.yellow .sm-dyn > a { border-left-color: #e0b100; background: #fff8dc; }
 .sm-foot { margin: auto 0 0; font-size: 13px; color: var(--ink-2); }
 body.menu-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .sidemenu { transition: none; } }
@@ -439,3 +440,14 @@ body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi p
 @media (max-width: 640px), (pointer: coarse) {
   input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size: 16px !important; }
 }
+
+/* ---------- temporada: día y hora por ciudad (luces, cabalgatas, Nochevieja) */
+.timetable { background: var(--white); border: var(--b); border-radius: var(--r); padding: 6px 16px 14px; margin: 18px 0 8px; box-shadow: var(--sh); }
+.tt-day { margin: 16px 0 6px; font-size: 17px; font-weight: 900; }
+.tt { list-style: none; margin: 0; padding: 0; }
+.tt li { display: flex; gap: 10px; align-items: baseline; padding: 7px 0; border-top: 1px dashed #d9d3e3; }
+.tt li:first-child { border-top: 0; }
+.tt-h { flex: 0 0 auto; min-width: 54px; text-align: center; font-weight: 900; font-size: 14px; background: var(--yellow); border: var(--b2); border-radius: 999px; padding: 2px 8px; }
+.tt-h.none { background: var(--white); font-weight: 700; font-size: 11px; min-width: 0; color: var(--ink-2); }
+.tt-w { font-size: 14.5px; line-height: 1.4; }
+.tt-w a { color: inherit; }

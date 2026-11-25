@@ -12,7 +12,7 @@ try:
 except ImportError:  # pragma: no cover - Python < 3.9
     ZoneInfo = None
 
-from . import seo
+from . import seo, temporada
 from .classify import CATEGORIES
 from .util import SMALL_WORDS, clean_title, country, display_title, is_permanent, iso, norm, series_split, today
 
@@ -446,7 +446,7 @@ _EVENT_PAGE = """<!doctype html>
 <div class="src">Fuente: %(source)s%(srclink)s. %(updated)sComprueba siempre fechas y precios en la web del organizador.</div>
 </div></article>
 <nav class="foot evnav"><h2 class="sticker">Más planes</h2>%(related)s
-<p>%(city_link)s<a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="../aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
+<p>%(season_link)s%(city_link)s<a href="../p/%(prov_file)s">Todos los planes en %(province)s</a> · <a href="../t/%(cat_key)s.html">%(cat)s en toda España</a> · <a href="../promociona-tu-evento.html">Publica tu evento gratis</a> · <a href="../">Buscar en Planika</a> · <a href="../privacidad.html">Privacidad y cookies</a> · <a href="../privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="../aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
 </main></body></html>
 """
 
@@ -495,7 +495,8 @@ def _gcal(e, t0):
             % (quote(display_title(e)), s, f, quote(loc)))
 
 
-def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None, updated="", indexable=None, title_full=False):
+def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None, updated="", indexable=None, title_full=False,
+               season=None):
     """city: (nombre, archivo sin .html) si la ciudad tiene página propia. title_place: lugar para el <title>
     (se usa la sala cuando hay varios planes con el mismo nombre y fecha en la misma ciudad). title_full: el
     <title> lleva el nombre entero (planes que solo se distinguen por el final del nombre)."""
@@ -554,6 +555,7 @@ def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None
         robots="index,follow,max-image-preview:large" if indexable else "noindex,follow",
         updated=('<span class="upd">Agenda actualizada el %s. </span>' % esc(updated)) if updated else "",
         city_link=('<a href="../c/%s.html">Planes en %s</a> · ' % (esc(city[1]), esc(city[0]))) if city else "",
+        season_link=('<a href="../%s"><b>%s: día y hora por ciudad</b></a> · ' % (esc(season[0]), esc(season[1]))) if season else "",
         og_image=esc(image or SITE_URL + "/og.jpg"), jsonld=ld, analytics=BEACON, cat=esc(cat), cat_key=esc(e["category"]),
         crumbs=('<nav class="crumbs" aria-label="Migas de pan"><a href="../">Inicio</a> › '
                 + ('<a href="../p/%s.html">%s</a> › ' % (esc(prov_slug), esc(e.get("province") or "Provincia")) if prov_slug else '')
@@ -593,6 +595,11 @@ def write_event_pages(site_dir, events, prov_slugs, cities=None, updated=""):
         return e.get("city") or e.get("province") or "España"
     seen_titles = Counter(seo_title(e, t0, where(e)) for e in events)
     seen_full = Counter(seo_title(e, t0, where(e), True) for e in events if seen_titles[seo_title(e, t0, where(e))] > 1)
+    # Fichas de un encendido de luces, una cabalgata o Nochevieja: enlace a la página con todas las ciudades
+    season_of = {}
+    for k, its in temporada.active(events, t0).items():
+        for x in its:
+            season_of.setdefault(x["id"], (temporada.PAGES[k][0], temporada.PAGES[k][1]))
     out_dir = os.path.join(site_dir, "e")
     os.makedirs(out_dir, exist_ok=True)
     for fn in os.listdir(out_dir):
@@ -626,7 +633,8 @@ def write_event_pages(site_dir, events, prov_slugs, cities=None, updated=""):
         city = cities.get((e["province_code"], norm(e.get("city") or "")))
         with open(os.path.join(out_dir, fn), "w", encoding="utf-8") as fh:
             fh.write(event_page(e, related, t0, prov_slugs.get(e["province_code"], ""), city=city,
-                                title_place=title_place, updated=updated, indexable=indexable, title_full=title_full))
+                                title_place=title_place, updated=updated, indexable=indexable, title_full=title_full,
+                                season=season_of.get(e["id"])))
         pages.append(("e/" + fn, indexable, _event_digest(e, t0, indexable)))
     return pages
 

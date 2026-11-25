@@ -6,7 +6,7 @@ import os
 import re
 from datetime import datetime, timedelta
 
-from . import legal, seo, static
+from . import legal, seo, static, temporada
 from .classify import CATEGORIES
 from .util import PROVINCIAS, display_title, is_permanent, iso, norm, now_madrid, stamp, today
 
@@ -495,6 +495,10 @@ def prerender_index(site_dir, events, t0=None, n=24):
     # así descubre la página a tiempo (si no, solo la enlazan las páginas de provincia).
     puente = '<a href="puente-diciembre.html">Puente de diciembre</a> · ' if puente_planes(events, t0) else ""
     out = re.sub(r'(<span id="puenteLink">).*?(</span>)', lambda m: m.group(1) + puente + m.group(2), out, count=1, flags=re.S)
+    season = "".join(l + " · " for l in season_links(events, t0))
+    out = re.sub(r'(<span id="temporadaLinks">).*?(</span>)', lambda m: m.group(1) + season + m.group(2), out, count=1, flags=re.S)
+    menu = "".join(season_links(events, t0))
+    out = re.sub(r'(<span[^>]*id="temporadaMenu">).*?(</span>)', lambda m: m.group(1) + menu + m.group(2), out, count=1, flags=re.S)
     if out != page:
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(out)
@@ -674,6 +678,60 @@ def _upd_text(updated_at, hour=False):
 LAST_RUN = {"gone": 0}  # cifras de la última generación, para el registro de fetch_events.py
 
 
+# ---------------------------------------------------------------- temporada: día y hora por ciudad
+
+SEASON_TEXT = {
+    # clave: (emoji, título SEO, intro, «qué» para la descripción)
+    "luces": ("✨", "Encendido de luces de Navidad %d: fechas y horas por ciudad",
+              "Día y hora del encendido de las luces de Navidad %d en %s, según las agendas oficiales que recoge Planika.",
+              "encendido de luces de Navidad"),
+    "cabalgatas": ("👑", "Cabalgatas de Reyes %d: horarios por ciudad",
+                   "Día y hora de las cabalgatas de Reyes %d en %s, según las agendas oficiales que recoge Planika.",
+                   "cabalgatas de Reyes"),
+    "nochevieja": ("🥂", "Nochevieja y Año Nuevo %d: qué hacer por ciudad",
+                   "Fiestas, conciertos y carreras de San Silvestre de Nochevieja y Año Nuevo %d en %s, según las agendas oficiales que recoge Planika.",
+                   "planes de Nochevieja y Año Nuevo"),
+}
+
+
+def _first_day(e, t0):
+    up = [d for d in (e.get("sessions") or []) if d >= t0]
+    return up[0] if up else max(e["start"], t0)
+
+
+def _day_long(d):
+    dt = datetime.strptime(d, "%Y-%m-%d")
+    return "%s %d de %s" % (_DIAS_LARGOS[dt.weekday()].capitalize(), dt.day, _MESES[dt.month - 1])
+
+
+def _timetable(items, t0, up=""):
+    """Horario por día: hora, ciudad, plan y lugar, con enlace a la ficha. Sin hora publicada, se dice."""
+    out, last = [], None
+    for e in items:
+        d = _first_day(e, t0)
+        if d != last:
+            if last is not None:
+                out.append("</ul>")
+            out.append('<h3 class="tt-day">%s</h3><ul class="tt">' % html.escape(_day_long(d)))
+            last = d
+        where = e.get("city") or e.get("province") or ""
+        venue = e.get("venue") or ""
+        hour = e.get("time") or ""
+        out.append('<li><span class="tt-h%s">%s</span><span class="tt-w"><a href="%se/%s"><b>%s</b> · %s</a>%s</span></li>' % (
+            "" if hour else " none", html.escape(hour or "Sin hora publicada"), up, html.escape(static.event_file(e)),
+            html.escape(where), html.escape(display_title(e)),
+            (" · " + html.escape(venue)) if venue and norm(venue) != norm(where) else ""))
+    if last is not None:
+        out.append("</ul>")
+    return '<section class="timetable"><h2 style="margin:22px 0 6px">Día y hora por ciudad</h2>%s</section>' % "".join(out)
+
+
+def season_links(events, t0, up=""):
+    """Enlaces a las páginas de temporada que hoy se publican (portada, hubs y menú)."""
+    on = temporada.active(events, t0)
+    return ['<a href="%s%s">%s</a>' % (up, temporada.PAGES[k][0], temporada.PAGES[k][1]) for k in temporada.ORDER if k in on]
+
+
 def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, fichas_path=None):
     """Genera hubs, fichas, sitemaps y robots.txt. state_path: archivo donde se guarda la huella de cada URL
     para que el lastmod del sitemap solo cambie cuando cambia la página (None: sin memoria entre ejecuciones).
@@ -747,6 +805,11 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
     puente_on = bool(puente_items)
     if puente_on:
         nat_links.insert(2, '<a href="%spuente-diciembre.html">Puente de diciembre</a>')
+    # Temporada de Navidad (luces, cabalgatas, Nochevieja): enlazadas desde todos los hubs mientras se publican
+    season_on = temporada.active(events, t0)
+    for k in reversed(temporada.ORDER):
+        if k in season_on:
+            nat_links.insert(3 if puente_on else 2, '<a href="%%s%s">%s</a>' % (temporada.PAGES[k][0], temporada.PAGES[k][1]))
     festivals = [e for e in upcoming(events) if not is_permanent(e) and FESTIVAL_RX.search(norm(e.get("title_es") or e["title"]))]
     if len(festivals) >= 20:
         nat_links.append('<a href="%sfestivales.html">Festivales</a>')
@@ -945,9 +1008,12 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
                     for e in it:
                         byp[e.get("province") or "España"] = byp.get(e.get("province") or "España", 0) + 1
                     provs = " · ".join("%s (%d)" % (html.escape(n), c) for n, c in sorted(byp.items(), key=lambda x: -x[1])[:8])
+                    sk = {"luces": "luces", "olentzero-y-reyes": "cabalgatas", "nochevieja": "nochevieja"}.get(k)
+                    tt = (' · <a href="../%s"><b>Día y hora por ciudad: %s</b></a>' % (temporada.PAGES[sk][0], html.escape(temporada.PAGES[sk][1].lower()))
+                          if sk in season_on else "")
                     blocks.append('<section id="%s"><h2 style="margin:26px 0 10px">%s (%s)</h2><div class="list">%s</div>'
-                                  '<p class="hint">Por provincia: %s</p></section>'
-                                  % (k, html.escape(t), fmt_n(len(it)), "".join(_card(e, "../", t0) for e in it[:9]), provs))
+                                  '<p class="hint">Por provincia: %s%s</p></section>'
+                                  % (k, html.escape(t), fmt_n(len(it)), "".join(_card(e, "../", t0) for e in it[:9]), provs, tt))
                 intro += '<nav class="pages" aria-label="Secciones"><p>En esta página: %s</p></nav>%s' % (nav, "".join(blocks))
         page = _render(site_dir, fn, "../", seo_title=seo_t, h1=h1, desc=desc,
                        items=items, crumbs=[("Inicio", ""), (intent, fn)], params="cat=%s" % key, t0=t0, updated=upd,
@@ -1066,6 +1132,42 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
                 items=[], crumbs=[("Inicio", ""), ("Puente de diciembre", fn)], params="", t0=t0, updated=upd,
                 robots="noindex,follow", intro="", cards=_p(nat("") + ['<a href="t/navidad.html">Planes de Navidad</a>']),
                 list_title="Planes para hoy y los próximos días", links=_p(type_links("")))
+
+    # ---- temporada de Navidad: día y hora por ciudad. Misma URL cada año; fuera de temporada o con pocos planes, noindex.
+    for key in temporada.ORDER:
+        fn, label, _, _, need = temporada.PAGES[key]
+        icon, ttl, lead, what = SEASON_TEXT[key]
+        yr = temporada.season_label_year(key, t0)
+        its = sorted(temporada.items(key, events, t0), key=lambda e: (_first_day(e, t0), e.get("time") or "99", norm(e.get("city") or "")))
+        others = [l for l in season_links(events, t0) if fn not in l] + ['<a href="t/navidad.html">Todos los planes de Navidad</a>']
+        crumbs = [("Inicio", ""), (label, fn)]
+        if key in season_on:
+            cities_ = []
+            for e in its:
+                c = e.get("city") or e.get("province")
+                if c and c not in cities_:
+                    cities_.append(c)
+            where = ("%s ciudades" % fmt_n(len(cities_))) if len(cities_) > 4 else _join_es(cities_)
+            intro = '<p class="intro">%s Se actualiza cada día: si tu ciudad aún no sale, vuelve en unos días.</p>' % html.escape(lead % (yr, where))
+            page = _render(site_dir, fn, "", seo_title=ttl % yr, h1="%s %s %d" % (icon, label, yr),
+                           desc="%s %d: día y hora en %s%s, con lugar y enlace a la agenda oficial." % (
+                               label, yr, _join_es(cities_[:4]) if len(cities_) <= 4 else ", ".join(cities_[:4]),
+                               "" if len(cities_) <= 4 else " y %s ciudades más" % fmt_n(len(cities_) - 4)),
+                           items=its, crumbs=crumbs, params="", t0=t0, updated=upd,
+                           intro=intro + _timetable(its, t0), list_title="Cada plan, con todos los detalles (%s)" % fmt_n(len(its)),
+                           links=_p(others) + _p(nat("")) + _p(type_links("")))
+            done(fn, page)
+        else:
+            if temporada.in_season(key, t0):
+                msg = ("Todavía hay pocos %s publicados para %d. Los añadimos cada día en cuanto salen en las agendas oficiales; "
+                       "mientras tanto, mira todos los planes de Navidad." % (what, yr))
+            else:
+                msg = "Esta página se publica cada año en temporada. Mientras tanto, mira qué hacer hoy y este fin de semana."
+            _render(site_dir, fn, "", seo_title="%s: día y hora por ciudad" % label, h1="%s %s" % (icon, label), desc=msg,
+                    items=its if temporada.in_season(key, t0) else [], crumbs=crumbs, params="", t0=t0, updated=upd,
+                    robots="noindex,follow", intro="", list_title="Planes publicados",
+                    cards=None if (its and temporada.in_season(key, t0)) else _p(nat("") + others),
+                    links=_p(type_links("")))
 
     # ---- páginas fijas
     promo = _promo_page()
