@@ -45,7 +45,7 @@
   <a class="sm-big lilac" href="./?favs=1" data-menu="favs"><span aria-hidden="true">⭐</span> Mis favoritos <span class="pill" id="menuFavCount"></span></a>
   <details class="sm-acc hot" open>
     <summary><span aria-hidden="true">♥</span> Mi Planika</summary>
-    <a href="./" data-menu="plan"><span aria-hidden="true">✚</span> Crear tu plan <span class="pill" id="menuPlanCount"></span></a>
+    <a href="./" data-menu="plan"><span aria-hidden="true">✚</span> Mis planes <span class="pill" id="menuPlanCount"></span></a>
     <a href="./?view=cal" data-menu="cal"><span aria-hidden="true">▦</span> Calendario: elige tus días</a>
     <a href="./?view=map" data-menu="map"><span aria-hidden="true">◎</span> Mapa de planes</a>
     <a href="./" data-menu="near"><span aria-hidden="true">➤</span> Planes cerca de mí</a>
@@ -205,12 +205,20 @@
 </footer>
 
 <div id="menu" class="menu" hidden></div>
-<button type="button" class="plan-pill" id="planPill" hidden><span aria-hidden="true">🗓</span> Mi plan · <span id="planPillN">0</span></button>
+<button type="button" class="plan-pill" id="planPill" hidden><span aria-hidden="true">🗓</span> <span class="pp-t" id="planPillT">Mi plan</span> · <span id="planPillN">0</span></button>
 <dialog id="planDlg" class="modal plan-dlg" aria-labelledby="planName">
   <button type="button" class="close" id="planClose" aria-label="Cerrar">✕</button>
-  <p class="plan-kicker">🗓 Crear tu plan</p>
+  <div id="plansView" hidden>
+    <h2 class="plans-h" id="plansTitle">🗓 Mis planes</h2>
+    <p class="plans-sub">Crea varios planes y comparte cada uno con quien vaya.</p>
+    <div id="plansList" class="plans-list"></div>
+    <button type="button" class="btn primary plans-new" id="plansNew">＋ Nuevo plan</button>
+    <details class="plans-past" id="plansPast" hidden><summary id="plansPastSum"></summary><div id="plansPastList" class="plans-list"></div></details>
+  </div>
+  <div id="planView">
+  <button type="button" class="plan-back" id="planBack">‹ Mis planes</button>
   <input type="text" id="planName" class="plan-name" maxlength="60" placeholder="Ponle nombre: Sábado en Bilbao" aria-label="Nombre del plan">
-  <div class="plan-shared" id="planShared" hidden>Te han compartido este plan. <button type="button" class="btn primary" id="planSave">Guardarlo como mi plan</button></div>
+  <div class="plan-shared" id="planShared" hidden>Te han compartido este plan. <button type="button" class="btn primary" id="planSave">Guardar en Mis planes</button></div>
   <div id="planList" class="plan-list"></div>
   <form id="planNoteForm" class="plan-note" hidden>
     <select id="planNoteDay" aria-label="Día de la nota"></select>
@@ -224,9 +232,18 @@
     <button type="button" class="btn" id="planAdd">＋ Añadir planes</button>
     <button type="button" class="btn" id="planMap">◎ Ver en el mapa</button>
     <button type="button" class="btn" id="planCopy">🔗 Copiar enlace</button>
-    <button type="button" class="linklike" id="planClear">Vaciar plan</button>
+    <button type="button" class="linklike" id="planDup">Duplicar</button>
+    <button type="button" class="linklike" id="planDel">Borrar plan</button>
   </div>
   <div class="plan-cal" id="planCal" hidden></div>
+  </div>
+</dialog>
+<dialog id="pickDlg" class="modal plan-dlg pick-dlg" aria-labelledby="pickTitle">
+  <button type="button" class="close" id="pickClose" aria-label="Cerrar">✕</button>
+  <h2 class="plans-h" id="pickTitle">¿A qué plan lo añades?</h2>
+  <p class="pick-ev" id="pickEv" data-noi18n></p>
+  <div id="pickList" class="plans-list"></div>
+  <button type="button" class="btn primary plans-new" id="pickNew">＋ Nuevo plan con este</button>
 </dialog>
 <dialog id="modal" class="modal"><button type="button" class="close" id="modalClose" aria-label="Cerrar">✕</button><div id="modalBody"></div></dialog>
 <div id="toast" class="toast" hidden></div>

@@ -357,12 +357,6 @@
 "Copiar ligazón",
 "Copy link"
 ],
-"Crear tu plan": [
-"Sortu zure plana",
-"Crea el teu pla",
-"Crea o teu plan",
-"Create your plan"
-],
 "Cualquiera": [
 "Edozein",
 "Qualsevol",
@@ -705,23 +699,11 @@
 "De balde, sen tenda de apps e funciona sen conexión",
 "Free, no app store, works offline"
 ],
-"Guardado como tu plan": [
-"Zure plan gisa gordeta",
-"Desat com el teu pla",
-"Gardado como o teu plan",
-"Saved as your plan"
-],
 "Guardar en favoritos": [
 "Gorde gogokoetan",
 "Desa als preferits",
 "Gardar en favoritos",
 "Save to favourites"
-],
-"Guardarlo como mi plan": [
-"Gorde nire plan gisa",
-"Desa'l com el meu pla",
-"Gardalo como o meu plan",
-"Save as my plan"
 ],
 "Hasta": [
 "Noiz arte",
@@ -1521,12 +1503,6 @@
 "Usar a miña localización",
 "Use my location"
 ],
-"Vaciar plan": [
-"Hustu plana",
-"Buida el pla",
-"Baleirar plan",
-"Empty plan"
-],
 "Ver en el mapa": [
 "Ikusi mapan",
 "Mostra al mapa",
@@ -1568,12 +1544,6 @@
 "Visita permanent, sense una data única. Aquest avís és un recordatori d'un dia.",
 "Visita permanente, sen unha data única. Este aviso é un recordatorio dun día.",
 "Permanent visit with no single date. This entry is a one-day reminder."
-],
-"Ya tienes un plan. ¿Lo cambias por este?": [
-"Plan bat baduzu jada. Honekin ordeztu nahi duzu?",
-"Ja tens un pla. El canvies per aquest?",
-"Xa tes un plan. Cámbialo por este?",
-"You already have a plan. Replace it with this one?"
 ],
 "a menos de {n} km": [
 "{n} km baino gutxiagora",
@@ -1821,12 +1791,6 @@
 "Organizas un evento? Publícao de balde en Planika",
 "Organising an event? Publish it for free on Planika"
 ],
-"¿Vaciar tu plan?": [
-"Zure plana hustu?",
-"Vols buidar el teu pla?",
-"Baleirar o teu plan?",
-"Empty your plan?"
-],
 "Ábrelo en Planika:": [
 "Ireki Planikan:",
 "Obre'l a Planika:",
@@ -1838,6 +1802,156 @@
 "… i {n} més. Prem «Mostra a la llista» per veure'ls tots.",
 "… e {n} máis. Preme «Ver na lista» para velos todos.",
 "… and {n} more. Tap «See in the list» to see them all."
+],
+"Mis planes": [
+"Nire planak",
+"Els meus plans",
+"Os meus plans",
+"My plans"
+],
+"Crea varios planes y comparte cada uno con quien vaya.": [
+"Sortu hainbat plan eta partekatu bakoitza joango denarekin.",
+"Crea diversos plans i comparteix-ne cadascun amb qui hi vagi.",
+"Crea varios plans e comparte cada un con quen vaia.",
+"Make several plans and share each one with whoever is going."
+],
+"Nuevo plan": [
+"Plan berria",
+"Pla nou",
+"Plan novo",
+"New plan"
+],
+"¿A qué plan lo añades?": [
+"Zein planetara gehitu nahi duzu?",
+"A quin pla l'afegeixes?",
+"A que plan o engades?",
+"Which plan should it go in?"
+],
+"Nuevo plan con este": [
+"Plan berria honekin",
+"Pla nou amb aquest",
+"Plan novo con este",
+"New plan with this one"
+],
+"Duplicar": [
+"Bikoiztu",
+"Duplica",
+"Duplicar",
+"Duplicate"
+],
+"Borrar plan": [
+"Ezabatu plana",
+"Esborra el pla",
+"Borrar plan",
+"Delete plan"
+],
+"Guardar en Mis planes": [
+"Gorde nire planetan",
+"Desa als meus plans",
+"Gardar nos meus plans",
+"Save to My plans"
+],
+"Guardado en Mis planes": [
+"Nire planetan gordeta",
+"Desat als meus plans",
+"Gardado nos meus plans",
+"Saved to My plans"
+],
+"Plan sin nombre": [
+"Izenik gabeko plana",
+"Pla sense nom",
+"Plan sen nome",
+"Untitled plan"
+],
+"En {n} planes": [
+"{n} planetan",
+"En {n} plans",
+"En {n} plans",
+"In {n} plans"
+],
+"Quitado de «{p}»": [
+"«{p}» planetik kenduta",
+"Tret de «{p}»",
+"Quitado de «{p}»",
+"Removed from “{p}”"
+],
+"Añadido a «{p}» ({d})": [
+"«{p}» planera gehituta ({d})",
+"Afegit a «{p}» ({d})",
+"Engadido a «{p}» ({d})",
+"Added to “{p}” ({d})"
+],
+"Ya tienes {n} planes: borra alguno para crear otro": [
+"Dagoeneko {n} plan dituzu: ezabatu bat beste bat sortzeko",
+"Ja tens {n} plans: esborra'n algun per crear-ne un altre",
+"Xa tes {n} plans: borra algún para crear outro",
+"You already have {n} plans: delete one to make another"
+],
+"1 plan": [
+"Plan 1",
+"1 pla",
+"1 plan",
+"1 plan"
+],
+"{n} planes": [
+"{n} plan",
+"{n} plans",
+"{n} plans",
+"{n} plans"
+],
+"1 nota": [
+"Ohar 1",
+"1 nota",
+"1 nota",
+"1 note"
+],
+"{n} notas": [
+"{n} ohar",
+"{n} notes",
+"{n} notas",
+"{n} notes"
+],
+"Vacío": [
+"Hutsik",
+"Buit",
+"Baleiro",
+"Empty"
+],
+"Ya está: tócalo para quitarlo": [
+"Hemen dago jada: sakatu kentzeko",
+"Ja hi és: toca'l per treure'l",
+"Xa está: tócao para quitalo",
+"Already in: tap to remove it"
+],
+"Aún no tienes ningún plan. Crea uno o pulsa «＋ Mi plan» en cualquier plan de la agenda.": [
+"Oraindik ez duzu planik. Sortu bat edo sakatu «＋ Nire plana» agendako edozein planetan.",
+"Encara no tens cap pla. Crea'n un o prem «＋ El meu pla» en qualsevol pla de l'agenda.",
+"Aínda non tes ningún plan. Crea un ou preme «＋ O meu plan» en calquera plan da axenda.",
+"You have no plans yet. Make one or tap «＋ My plan» on any plan in the listings."
+],
+"Pasados ({n})": [
+"Iraganak ({n})",
+"Passats ({n})",
+"Pasados ({n})",
+"Past ({n})"
+],
+"{p} (copia)": [
+"{p} (kopia)",
+"{p} (còpia)",
+"{p} (copia)",
+"{p} (copy)"
+],
+"¿Borrar el plan «{p}»?": [
+"«{p}» plana ezabatu?",
+"Vols esborrar el pla «{p}»?",
+"Borrar o plan «{p}»?",
+"Delete the plan “{p}”?"
+],
+"En el mapa solo salen los planes de «{p}»": [
+"Mapan «{p}» planekoak bakarrik agertzen dira",
+"Al mapa només surten els plans de «{p}»",
+"No mapa só saen os plans de «{p}»",
+"The map only shows what is in “{p}”"
 ]
 };
   /*END*/

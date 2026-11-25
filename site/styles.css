@@ -370,12 +370,12 @@ a.chip.on { color: var(--white); }
 body.menu-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .sidemenu { transition: none; } }
 
-/* ---------- crear tu plan */
+/* ---------- mis planes */
 .btn.addplan.on { background: var(--teal); }
 .plan-pill { position: fixed; right: 14px; bottom: 18px; z-index: 55; font: inherit; font-weight: 800; font-size: 16px; cursor: pointer;
   background: var(--teal); color: var(--ink); border: var(--b); border-radius: 999px; padding: 10px 18px; box-shadow: var(--sh); }
 .plan-pill:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
-.plan-dlg { max-width: 560px; }
+.plan-dlg { max-width: 560px; padding: 18px 18px 22px; }
 .plan-kicker { margin: 0 0 6px; font-weight: 800; font-size: 14px; color: var(--ink-2); }
 .plan-name { width: 100%; font: inherit; font-size: 22px; font-weight: 900; border: 0; border-bottom: var(--b2); background: transparent; padding: 4px 0 6px; color: var(--ink); }
 .plan-name:focus { outline: none; border-bottom-color: var(--hot); }
@@ -399,6 +399,25 @@ body.menu-open { overflow: hidden; }
 .plan-note input, .plan-note select { font: inherit; border: var(--b2); border-radius: 10px; padding: 6px 8px; background: var(--white); color: var(--ink); }
 .plan-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; align-items: center; }
 body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi plan» */
+.pp-t { display: inline-block; max-width: 44vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+.plans-h { margin: 0 44px 4px 0; font-size: 22px; font-weight: 900; }
+.plans-sub { margin: 0 0 14px; font-size: 14px; color: var(--ink-2); }
+.plans-list { display: flex; flex-direction: column; gap: 10px; margin: 0 0 14px; }
+.plans-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+  padding: 12px 14px; background: var(--c, var(--white)); border: var(--b); border-radius: 14px; box-shadow: var(--sh); }
+.plans-row:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.plans-row .pr-t { flex: 1; min-width: 0; }
+.plans-row b { display: block; font-size: 17px; line-height: 1.25; overflow-wrap: anywhere; }
+.plans-row .pr-t span { display: block; font-size: 13px; font-weight: 600; margin-top: 2px; }
+.plans-row .pr-go { font-size: 22px; font-weight: 900; }
+.plans-row.on { outline: 3px dashed var(--ink); outline-offset: 3px; }
+.plans-row.past { background: #f3f1f6; box-shadow: var(--sh-sm); border: var(--b2); }
+.plans-new { width: 100%; justify-content: center; }
+.plans-past { margin: 18px 0 0; }
+.plans-past summary { cursor: pointer; font-weight: 800; color: var(--ink-2); margin: 0 0 10px; }
+.plan-back { border: 0; background: none; font: inherit; font-weight: 800; font-size: 14px; color: var(--ink-2); padding: 2px 0; margin: 0 0 6px; cursor: pointer; }
+.pick-ev { margin: 0 0 14px; font-weight: 700; font-size: 15px; color: var(--ink-2); }
+.plan-dlg .toast { position: fixed; }
 
 /* ---------- idioma */
 .lang-pill { position: fixed; top: 12px; right: 12px; z-index: 60; display: inline-flex; align-items: center; gap: 4px; background: var(--white);
