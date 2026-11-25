@@ -13,7 +13,8 @@ from playwright.sync_api import sync_playwright
 
 SITE = os.environ.get("SITE", "https://planikaapp.com/")
 OUT = os.path.join("capturas", "moviles")
-DEVICES = [("iPhone 15", "webkit"), ("iPhone SE", "webkit"), ("Pixel 7", "chromium"), ("Galaxy S9+", "chromium")]
+DEVICES = [("iPhone 15", "webkit"), ("iPhone SE", "webkit"), ("Pixel 7", "chromium"), ("Android 360", "chromium"), ("Galaxy S9+", "chromium")]
+CUSTOM = {"Android 360": ("Pixel 7", {"width": 360, "height": 780})}  # ancho de muchos Samsung Galaxy A
 SKIP = ("googletagmanager", "google-analytics", "analytics.google", "doubleclick")
 
 WIDE_JS = """() => {
@@ -107,7 +108,10 @@ def layout(page):
 
 
 def run_device(p, dev, engine):
-    d = dict(p.devices[dev])
+    base, vp = CUSTOM.get(dev, (dev, None))
+    d = dict(p.devices[base])
+    if vp:
+        d["viewport"] = vp
     d.pop("default_browser_type", None)
     browser = getattr(p, engine).launch()
     ctx = browser.new_context(**d, locale="es-ES", timezone_id="Europe/Madrid")
