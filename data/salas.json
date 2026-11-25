@@ -481,6 +481,7 @@
 "48|bilbao|bilbaoarte": {"checked": "2026-11-21", "ok": false},
 "48|bilbao|bilboko kafe antzokia": {"checked": "2026-11-21", "ok": false},
 "48|bilbao|bilborock": {"checked": "2026-11-21", "lat": 43.257146, "lon": -2.927598, "nombre": "Bilborock", "ok": true, "osm": "way/51983636", "q": "Bilborock", "tipo": "amenity=theatre"},
+"48|bilbao|bira kulturgunea": {"checked": "2026-11-25", "ok": false},
 "48|bilbao|bizkaia aretoa": {"checked": "2026-11-21", "ok": false},
 "48|bilbao|centro municipal de abando barrainkua": {"checked": "2026-11-21", "ok": false},
 "48|bilbao|centro municipal de altamira": {"checked": "2026-11-21", "ok": false},
