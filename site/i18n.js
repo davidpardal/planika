@@ -1988,6 +1988,12 @@
 "Calendari del mòbil (.ics)",
 "Calendario do móbil (.ics)",
 "Phone calendar (.ics)"
+],
+"Síguenos": [
+"Jarraitu",
+"Segueix",
+"Síguenos",
+"Follow us"
 ]
 };
   /*END*/
@@ -1998,12 +2004,6 @@
 "Concerts, teatre, exposicions, esport, fires i festes recollits d'agendes públiques. Filtra per província i tipus de pla, mira el calendari i desa el pla a la teva agenda.",
 "Concertos, teatro, exposicións, deporte, feiras e festas recollidos de axendas públicas. Filtra por provincia e tipo de plan, mira o calendario e garda o plan na túa axenda.",
 "Concerts, theatre, exhibitions, sport, fairs and festivities gathered from public listings. Filter by province and type of plan, check the calendar and save plans to your calendar."
-],
-"social": [
-"<a class=\"ig\" href=\"https://www.instagram.com/planikaapp/\" target=\"_blank\" rel=\"noopener\"><span aria-hidden=\"true\">📸</span> Jarrai gaitzazu Instagramen: <strong>@planikaapp</strong></a>",
-"<a class=\"ig\" href=\"https://www.instagram.com/planikaapp/\" target=\"_blank\" rel=\"noopener\"><span aria-hidden=\"true\">📸</span> Segueix-nos a Instagram: <strong>@planikaapp</strong></a>",
-"<a class=\"ig\" href=\"https://www.instagram.com/planikaapp/\" target=\"_blank\" rel=\"noopener\"><span aria-hidden=\"true\">📸</span> Síguenos en Instagram: <strong>@planikaapp</strong></a>",
-"<a class=\"ig\" href=\"https://www.instagram.com/planikaapp/\" target=\"_blank\" rel=\"noopener\"><span aria-hidden=\"true\">📸</span> Follow us on Instagram: <strong>@planikaapp</strong></a>"
 ],
 "cal_hint": [
 "Zenbaki handia egun horretan <strong>hasten</strong> diren planak dira; txikia, martxan jarraitzen dutenak (erakusketak, zikloak…). Sakatu egun bat edo gehiago (ez dute jarraian egon behar) haien planak ikusteko; sakatu berriro kentzeko.",
