@@ -2334,6 +2334,1620 @@
 "dur": 0.8,
 "cap": "4 · O todos en la lista",
 "tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/001.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/002.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/008.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/009.jpg",
+"dur": 0.45,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": [
+322.7,
+490.0
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/010.jpg",
+"dur": 0.7,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/011.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/012.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/013.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/014.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/015.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/016.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/017.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/018.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/019.jpg",
+"dur": 0.45,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": [
+195.0,
+489.5
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/020.jpg",
+"dur": 0.7,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/021.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/022.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/023.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/024.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/025.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/026.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/027.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/028.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/029.jpg",
+"dur": 0.45,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": [
+322.7,
+489.6
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/030.jpg",
+"dur": 0.7,
+"cap": "1 · Pulsa «＋ Mi plan»",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/031.jpg",
+"dur": 0.45,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": [
+307.1,
+657.0
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/032.jpg",
+"dur": 0.6,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/033.jpg",
+"dur": 0.45,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": [
+195.0,
+92.5
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/034.jpg",
+"dur": 0.3,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/035.jpg",
+"dur": 0.35,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/036.jpg",
+"dur": 0.35,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/037.jpg",
+"dur": 0.35,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/038.jpg",
+"dur": 0.9,
+"cap": "2 · Ábrelo y ponle nombre",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/039.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/040.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/041.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/045.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/046.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/047.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/048.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/049.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/050.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/051.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/052.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/053.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/054.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/055.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/056.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/057.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/058.jpg",
+"dur": 0.9,
+"cap": "3 · Todo ordenado por hora",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/059.jpg",
+"dur": 0.45,
+"cap": "4 · Añade tus notas",
+"tap": [
+99.9,
+512.8
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/060.jpg",
+"dur": 0.2,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/061.jpg",
+"dur": 0.4,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/062.jpg",
+"dur": 0.45,
+"cap": "4 · Añade tus notas",
+"tap": [
+195.0,
+558.2
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/063.jpg",
+"dur": 0.2,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/064.jpg",
+"dur": 0.5,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/065.jpg",
+"dur": 0.45,
+"cap": "4 · Añade tus notas",
+"tap": [
+75.8,
+603.0
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/066.jpg",
+"dur": 0.3,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/067.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/068.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/069.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/070.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/071.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/072.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/073.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/074.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/075.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/076.jpg",
+"dur": 1.1,
+"cap": "4 · Añade tus notas",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/077.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/078.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/079.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/080.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/081.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/082.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/083.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/084.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/085.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/086.jpg",
+"dur": 0.45,
+"cap": "5 · A tu calendario, de una vez",
+"tap": [
+111.4,
+560.0
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/087.jpg",
+"dur": 1.0,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/088.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/089.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/090.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/091.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/092.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/093.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/094.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/095.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/096.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/097.jpg",
+"dur": 1.3,
+"cap": "5 · A tu calendario, de una vez",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/098.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/099.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/100.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/101.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/102.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/103.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/104.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/105.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/106.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "miplan",
+"img": "miplan/107.jpg",
+"dur": 0.45,
+"cap": "6 · Y compártelo con tu gente",
+"tap": [
+252.6,
+399.0
+]
+},
+{
+"reel": "miplan",
+"img": "miplan/108.jpg",
+"dur": 1.8,
+"cap": "6 · Y compártelo con tu gente",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/001.jpg",
+"dur": 0.45,
+"cap": "1 · Abre «Mis planes» en el menú",
+"tap": [
+60.4,
+35.0
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/002.jpg",
+"dur": 0.5,
+"cap": "1 · Abre «Mis planes» en el menú",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/003.jpg",
+"dur": 0.45,
+"cap": "1 · Abre «Mis planes» en el menú",
+"tap": [
+172.2,
+303.2
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/004.jpg",
+"dur": 1.0,
+"cap": "1 · Abre «Mis planes» en el menú",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/005.jpg",
+"dur": 0.45,
+"cap": "2 · Crea otro plan",
+"tap": [
+195.0,
+437.9
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/006.jpg",
+"dur": 0.3,
+"cap": "2 · Crea otro plan",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/007.jpg",
+"dur": 0.35,
+"cap": "2 · Crea otro plan",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/008.jpg",
+"dur": 0.35,
+"cap": "2 · Crea otro plan",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/009.jpg",
+"dur": 0.35,
+"cap": "2 · Crea otro plan",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/010.jpg",
+"dur": 0.8,
+"cap": "2 · Crea otro plan",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/011.jpg",
+"dur": 0.45,
+"cap": "2 · Crea otro plan",
+"tap": [
+344.0,
+151.5
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/012.jpg",
+"dur": 0.4,
+"cap": "2 · Crea otro plan",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/013.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/014.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/015.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/016.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/017.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/018.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/019.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/020.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/021.jpg",
+"dur": 0.45,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": [
+195.0,
+489.1
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/022.jpg",
+"dur": 0.9,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/023.jpg",
+"dur": 0.45,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": [
+195.0,
+316.9
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/024.jpg",
+"dur": 0.8,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/025.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/026.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/027.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/028.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/033.jpg",
+"dur": 0.45,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": [
+311.1,
+489.3
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/034.jpg",
+"dur": 0.9,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/035.jpg",
+"dur": 0.45,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": [
+195.0,
+316.9
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/036.jpg",
+"dur": 0.8,
+"cap": "3 · Elige a qué plan va cada cosa",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/037.jpg",
+"dur": 0.45,
+"cap": "4 · Todos tus planes, a mano",
+"tap": [
+60.4,
+35.0
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/038.jpg",
+"dur": 0.4,
+"cap": "4 · Todos tus planes, a mano",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/039.jpg",
+"dur": 0.45,
+"cap": "4 · Todos tus planes, a mano",
+"tap": [
+172.2,
+303.2
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/040.jpg",
+"dur": 1.8,
+"cap": "4 · Todos tus planes, a mano",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/041.jpg",
+"dur": 0.45,
+"cap": "5 · Cada uno, con su enlace",
+"tap": [
+195.0,
+409.4
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/042.jpg",
+"dur": 1.0,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/045.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/046.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/047.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/048.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/049.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/050.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/051.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/052.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "misplanes",
+"img": "misplanes/053.jpg",
+"dur": 0.45,
+"cap": "5 · Cada uno, con su enlace",
+"tap": [
+252.6,
+607.0
+]
+},
+{
+"reel": "misplanes",
+"img": "misplanes/054.jpg",
+"dur": 1.8,
+"cap": "5 · Cada uno, con su enlace",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/001.jpg",
+"dur": 0.5,
+"cap": "1 · Toca el idioma, arriba",
+"tap": [
+315.1,
+33.0
+]
+},
+{
+"reel": "idiomas",
+"img": "idiomas/002.jpg",
+"dur": 1.1,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/008.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/009.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/010.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/011.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/012.jpg",
+"dur": 0.08333333333333333,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/013.jpg",
+"dur": 0.9,
+"cap": "Euskaraz",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/014.jpg",
+"dur": 0.5,
+"cap": "Euskaraz",
+"tap": [
+315.1,
+33.0
+]
+},
+{
+"reel": "idiomas",
+"img": "idiomas/015.jpg",
+"dur": 1.1,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/016.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/017.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/018.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/019.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/020.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/021.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/022.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/023.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/024.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/025.jpg",
+"dur": 0.08333333333333333,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/026.jpg",
+"dur": 0.9,
+"cap": "En català",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/027.jpg",
+"dur": 0.5,
+"cap": "En català",
+"tap": [
+315.1,
+33.0
+]
+},
+{
+"reel": "idiomas",
+"img": "idiomas/028.jpg",
+"dur": 1.1,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/033.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/034.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/035.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/036.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/037.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/038.jpg",
+"dur": 0.08333333333333333,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/039.jpg",
+"dur": 0.9,
+"cap": "En galego",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/040.jpg",
+"dur": 0.5,
+"cap": "En galego",
+"tap": [
+315.1,
+33.0
+]
+},
+{
+"reel": "idiomas",
+"img": "idiomas/041.jpg",
+"dur": 1.1,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/045.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/046.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/047.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/048.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/049.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/050.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/051.jpg",
+"dur": 0.08333333333333333,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/052.jpg",
+"dur": 0.9,
+"cap": "In English",
+"tap": null
+},
+{
+"reel": "idiomas",
+"img": "idiomas/053.jpg",
+"dur": 0.45,
+"cap": "In English",
+"tap": [
+60.4,
+35.0
+]
+},
+{
+"reel": "idiomas",
+"img": "idiomas/054.jpg",
+"dur": 1.6,
+"cap": "In English",
+"tap": null
 }
 ]
 }
