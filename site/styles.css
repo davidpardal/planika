@@ -155,7 +155,8 @@ h1, h2 { letter-spacing: -.02em; }
 .when { font-weight: 700; font-size: 14.5px; }
 .where, .desc { font-size: 14px; }
 .desc { margin: 0; background: #fff8; border-radius: 10px; padding: 8px 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.actions { display: flex; gap: 6px; flex-wrap: nowrap; margin-top: auto; padding-top: 10px; }
+/* Si los botones no caben en una fila (móviles de 360 px, idiomas con palabras largas) bajan a otra en vez de cortarse */
+.actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; }
 .actions .btn { flex: 1 1 auto; justify-content: center; white-space: nowrap; padding: 7px 8px; min-width: 0; }
 /* Con «Entradas» no caben cuatro botones en el móvil: Entradas ocupa su propia fila y el resto va debajo, en una */
 .actions:has(> .btn.primary) { flex-wrap: wrap; }
@@ -320,7 +321,7 @@ a.chip.on { color: var(--white); }
 
 /* Instagram en la cabecera: visible pero discreto */
 .social { margin: 12px 0 0; }
-.ig { display: inline-flex; align-items: center; gap: 0; white-space: pre; min-height: 40px; padding: 6px 14px; background: var(--white); color: var(--ink);
+.ig { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0; white-space: pre-wrap; max-width: 100%; min-height: 40px; padding: 6px 14px; background: var(--white); color: var(--ink);
   border: var(--b2); border-radius: 999px; box-shadow: 3px 3px 0 var(--ink); font-size: 14px; font-weight: 700; text-decoration: none; }
 .ig:hover { box-shadow: 4px 4px 0 var(--hot); }
 .ig > span { margin-right: 8px; }
@@ -433,3 +434,8 @@ body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi p
 .plan-gcal { display: flex; flex-direction: column; gap: 6px; }
 .plan-gcal .btn { justify-content: flex-start; text-align: left; white-space: normal; }
 .plan-gcal-day { margin: 6px 0 0; font-size: 13px; font-weight: 800; color: var(--ink-2); }
+
+/* iPhone hace zoom al tocar un campo con letra de menos de 16 px (y no lo deshace): en móviles van a 16 px */
+@media (max-width: 640px), (pointer: coarse) {
+  input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size: 16px !important; }
+}
