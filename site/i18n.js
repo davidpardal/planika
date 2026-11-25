@@ -1989,11 +1989,11 @@
 "Calendario do móbil (.ics)",
 "Phone calendar (.ics)"
 ],
-"Síguenos": [
-"Jarraitu",
-"Segueix",
-"Síguenos",
-"Follow us"
+"Síguenos en Instagram: @planikaapp": [
+"Jarraitu gaitzazu Instagramen: @planikaapp",
+"Segueix-nos a Instagram: @planikaapp",
+"Síguenos en Instagram: @planikaapp",
+"Follow us on Instagram: @planikaapp"
 ]
 };
   /*END*/
