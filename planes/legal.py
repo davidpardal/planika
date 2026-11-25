@@ -11,7 +11,7 @@ import os
 from . import static
 
 SITE_URL = static.SITE_URL
-UPDATED = "20 de noviembre de 2026"
+UPDATED = "25 de noviembre de 2026"
 CONTACT_FALLBACK = "https://github.com/davidpardal/planika/issues"
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "legal.json")
 
@@ -84,7 +84,7 @@ def privacy_page(cfg=None):
 <h3>Formulario para organizadores</h3>
 <p>Si publicas un evento con el formulario (Google Forms), recibimos los datos que escribes: los del evento y los de contacto. Los usamos para revisar y publicar tu evento y para ponernos en contacto contigo si hace falta. Base jurídica: tu consentimiento y la gestión de tu solicitud (art. 6.1.a y 6.1.b). Los conservamos mientras sean necesarios para esa gestión. Google trata los datos del formulario como proveedor del servicio.</p>
 <h3>Servidores y contenidos de terceros</h3>
-<p>La web se aloja en GitHub Pages, que registra datos técnicos de conexión (como la dirección IP) para prestar el servicio. Las imágenes de algunos planes se cargan directamente desde los servidores de sus organizadores o fuentes, que pueden ver tu dirección IP al pedirlas. Los enlaces a webs de organizadores, entradas y Google Calendar llevan a sitios con sus propias políticas.</p>
+<p>La web se aloja en GitHub Pages, que registra datos técnicos de conexión (como la dirección IP) para prestar el servicio. Las imágenes de algunos planes se cargan directamente desde los servidores de sus organizadores o fuentes, que pueden ver tu dirección IP al pedirlas. Si compartes un plan de «Mis planes» con un enlace, ese plan (su nombre, los planes que incluye con su día y sus notas) se guarda en Supabase, con servidores en la Unión Europea (Irlanda), para que quien tenga el enlace pueda verlo y editarlo; Supabase registra datos técnicos de conexión (como la dirección IP) y los planes compartidos se borran 6 meses después de su último cambio. Los enlaces a webs de organizadores, entradas y Google Calendar llevan a sitios con sus propias políticas.</p>
 
 <h2 id="cookies">Cookies</h2>
 <p><a href="#cookies" data-privacy-settings><strong>Cambiar mis preferencias de cookies</strong></a></p>
