@@ -159,8 +159,9 @@ class TestStatic(unittest.TestCase):
         e = dict(self.ev(), url="javascript:alert(1)", venue="Teatro <Real>", description='Una obra </script> con "comillas"')
         page = static.event_page(e, t0="2026-11-14", prov_slug="madrid")
         self.assertNotIn("javascript:alert", page)
-        # solo los cierres propios: el bloque JSON-LD, consent.js (GA4 solo se carga si se acepta) y el registro del service worker
-        self.assertEqual(page.count("</script>"), 2 + static.PWA_HEAD.count("</script>"))
+        # solo los cierres propios: el bloque JSON-LD, consent.js (GA4 solo se carga si se acepta), i18n.js (idioma
+        # de la interfaz) y el registro del service worker
+        self.assertEqual(page.count("</script>"), 3 + static.PWA_HEAD.count("</script>"))
         self.assertIn("Teatro &lt;Real&gt;", page)
         ld = json.loads(page.split('<script type="application/ld+json">')[1].split("</script>")[0])
         self.assertIn("</script>", ld["@graph"][0]["description"])
