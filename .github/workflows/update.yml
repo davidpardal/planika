@@ -77,6 +77,14 @@ jobs:
               gh issue close "$n" --comment "Todas las fuentes han respondido con normalidad en la ejecución de $(date -u +%F)."
             done
           fi
+      # Planes compartidos en vivo (Supabase, plan gratis): una consulta al día para que el proyecto no se pause por
+      # inactividad. La clave es la pública de la web (solo llama a las funciones de planes compartidos).
+      - name: Mantener activos los planes compartidos
+        continue-on-error: true
+        run: |
+          curl -s -m 20 -X POST "https://rqjrrdtdscvcimwzrwxj.supabase.co/rest/v1/rpc/shared_plan_ping" \
+            -H "apikey: sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF" -H "Content-Type: application/json" -d '{}' \
+            | sed 's/^/Planes compartidos guardados: /'
       # Carruseles de Instagram del finde, uno por ciudad (site/ig/: noindex, fuera del sitemap y de git).
       # Nunca bloquea la publicación diaria de la agenda.
       - name: Carruseles de Instagram

@@ -434,6 +434,7 @@ body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi p
 .plans-paste-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .plans-paste-form input { flex: 1 1 200px; min-width: 0; padding: 10px 12px; border: var(--b2); border-radius: 12px; font: inherit; }
 .plans-paste-err { flex-basis: 100%; margin: 0; color: #b3123f; font-size: 13px; font-weight: 700; }
+.plan-live { margin: 2px 0 12px; padding: 7px 11px; background: #e3faf6; border: 2px dashed #1fa99b; border-radius: 12px; font-size: 13px; font-weight: 700; color: #0b5c54; }
 .plan-app-hint { margin: 0 0 12px; padding: 10px 12px; background: #fff3b0; border: var(--b2); border-radius: 12px; font-size: 14px; font-weight: 600; }
 .plan-app-hint .btn { margin-top: 8px; min-height: 36px; }
 .plans-past { margin: 18px 0 0; }
