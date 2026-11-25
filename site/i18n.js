@@ -1994,6 +1994,48 @@
 "Segueix-nos a Instagram: @planikaapp",
 "Síguenos en Instagram: @planikaapp",
 "Follow us on Instagram: @planikaapp"
+],
+"Pegar un enlace de Planika": [
+"Itsatsi Planikako esteka bat",
+"Enganxa un enllaç de Planika",
+"Pegar unha ligazón de Planika",
+"Paste a Planika link"
+],
+"Pega aquí el enlace que te han mandado": [
+"Itsatsi hemen bidali dizuten esteka",
+"Enganxa aquí l'enllaç que t'han enviat",
+"Pega aquí a ligazón que che mandaron",
+"Paste the link you were sent here"
+],
+"Enlace de Planika": [
+"Planikako esteka",
+"Enllaç de Planika",
+"Ligazón de Planika",
+"Planika link"
+],
+"Abrir": [
+"Ireki",
+"Obre",
+"Abrir",
+"Open"
+],
+"Ese enlace no es de un plan de Planika": [
+"Esteka hori ez da Planikako plan batena",
+"Aquest enllaç no és d'un pla de Planika",
+"Esa ligazón non é dun plan de Planika",
+"That link isn't a Planika plan"
+],
+"¿Usas Planika desde la pantalla de inicio? Copia este enlace y pégalo allí, en «Mis planes».": [
+"Planika hasierako pantailatik erabiltzen duzu? Kopiatu esteka hau eta itsatsi han, «Nire planak» atalean.",
+"Fas servir Planika des de la pantalla d'inici? Copia aquest enllaç i enganxa'l allà, a «Els meus plans».",
+"Usas Planika desde a pantalla de inicio? Copia esta ligazón e pégaa alí, en «Os meus plans».",
+"Using Planika from your home screen? Copy this link and paste it there, in «My plans»."
+],
+"Enlace copiado": [
+"Esteka kopiatuta",
+"Enllaç copiat",
+"Ligazón copiada",
+"Link copied"
 ]
 };
   /*END*/

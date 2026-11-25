@@ -1158,10 +1158,12 @@
     $('plansView').hidden = m !== 'list'; $('planView').hidden = m === 'list';
     $('planDlg').setAttribute('aria-labelledby', m === 'list' ? 'plansTitle' : 'planName');
     $('planCal').hidden = true;
+    syncAppHint();
     if (!$('planDlg').open) $('planDlg').showModal();
     $('planDlg').scrollTop = 0;
   }
   function redraw() { if (planMode === 'list') renderPlans(); else renderPlan(); }
+  function syncAppHint() { $('planAppHint').hidden = !(FROM_LINK && planMode === 'one'); }
   function renderPlans() {
     var live = sortPlans(livePlans()), past = store.p.filter(isPast).sort(function (a, b) {
       var x = planDays(a).pop(), y = planDays(b).pop(); return x < y ? 1 : x > y ? -1 : 0;
@@ -1356,19 +1358,68 @@
     if (ev.target.closest('[data-gcal]')) track('plan_gcal');
   });
   // ?miplan=… (plan compartido: se enseña y se puede guardar como uno más) y ?add=<id> (botón «＋ Mi plan» de las fichas)
+  function openSharedPlan(b64) {
+    try {
+      var b = b64.replace(/-/g, '+').replace(/_/g, '/');
+      var q = cleanPlan(JSON.parse(decodeURIComponent(escape(atob(b))))), mine = samePlan(q);
+      if (mine) openPlanId(mine.id);
+      else { sharedPlan = q; showMode('one'); renderPlan(); }
+      track('plan_shared_open');
+      return true;
+    } catch (e) { toast(tr('Ese enlace de plan no se puede leer')); return false; }
+  }
+  // Enlace de Planika que te mandan (WhatsApp…): plan compartido (?miplan=), ficha de un plan (/e/…-<id>.html) o
+  // «＋ Mi plan» (?add=). La app de la pantalla de inicio del iPhone no comparte datos con Safari, y los enlaces se
+  // abren en Safari: por eso se pueden pegar en «Mis planes». En Android llegan también con «Compartir» (share_target).
+  function sharedLink(text) {
+    var urls = String(text || '').match(/https?:\/\/[^\s<>"']+/g) || [];
+    for (var i = 0; i < urls.length; i++) {
+      var u;
+      try { u = new URL(urls[i]); } catch (e) { continue; }
+      if (!/(^|\.)planikaapp\.com$|^localhost$|^127\.0\.0\.1$/.test(u.hostname)) continue;
+      if (u.searchParams.get('miplan')) return { miplan: u.searchParams.get('miplan') };
+      if (u.searchParams.get('add')) return { add: u.searchParams.get('add') };
+      var f = u.pathname.match(/\/e\/(?:[^\/]*-)?([A-Za-z0-9_]+)\.html$/);
+      if (f) return { add: f[1] };
+    }
+    return null;
+  }
+  function openShared(l) {
+    if (l.miplan) return openSharedPlan(l.miplan);
+    if (BY_ID[l.add]) { togglePlanAdd(l.add); return true; }
+    toast(tr('Este plan ya no está en la agenda'));
+    return false;
+  }
   function planFromURL() {
     var p = new URLSearchParams(PLAN_Q);
-    if (p.get('miplan')) {
-      try {
-        var b = p.get('miplan').replace(/-/g, '+').replace(/_/g, '/');
-        var q = cleanPlan(JSON.parse(decodeURIComponent(escape(atob(b))))), mine = samePlan(q);
-        if (mine) openPlanId(mine.id);
-        else { sharedPlan = q; showMode('one'); renderPlan(); }
-        track('plan_shared_open');
-      } catch (e) { toast(tr('Ese enlace de plan no se puede leer')); }
-    }
+    if (p.get('miplan')) openSharedPlan(p.get('miplan'));
     if (p.get('add') && BY_ID[p.get('add')]) togglePlanAdd(p.get('add'));
+    if (p.get('su') || p.get('sx')) {  // Android: «Compartir» → Planika
+      var l = sharedLink([p.get('su'), p.get('sx'), p.get('st')].join(' '));
+      if (l) { track('plan_share_target'); openShared(l); } else toast(tr('Ese enlace no es de un plan de Planika'));
+    }
   }
+  // En Safari del iPhone, si se llega con un enlace de plan: aviso para llevarlo a la app de la pantalla de inicio
+  var FROM_LINK = ios && !standalone && /[?&](miplan|add)=/.test(PLAN_Q);
+  function linkToCopy() { return location.origin + location.pathname + PLAN_Q; }
+  $('planAppCopy').addEventListener('click', function () { copy(linkToCopy(), tr('Enlace copiado')); track('plan_app_hint_copy'); });
+  $('plansPaste').addEventListener('click', function () {
+    var show = function () { $('plansPasteForm').hidden = false; $('plansPasteErr').hidden = true; $('plansPasteInput').focus(); };
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function (t) {
+        var l = sharedLink(t);
+        if (l) { track('plan_paste', { how: 'clipboard' }); openShared(l); } else show();
+      }, show);
+    } else show();
+  });
+  $('plansPasteForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var l = sharedLink($('plansPasteInput').value);
+    if (!l) { $('plansPasteErr').hidden = false; $('plansPasteInput').focus(); return; }
+    $('plansPasteInput').value = ''; $('plansPasteForm').hidden = true;
+    track('plan_paste', { how: 'field' });
+    openShared(l);
+  });
   // Desde la ficha se viene a añadir: si ya está en tu plan, no se quita, se abre
   function togglePlanAdd(id) {
     var live = livePlans();

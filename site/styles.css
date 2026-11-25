@@ -430,6 +430,12 @@ body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi p
 .plans-row.on { outline: 3px dashed var(--ink); outline-offset: 3px; }
 .plans-row.past { background: #f3f1f6; box-shadow: var(--sh-sm); border: var(--b2); }
 .plans-new { width: 100%; justify-content: center; }
+.plans-paste { width: 100%; justify-content: center; margin-top: 10px; }
+.plans-paste-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.plans-paste-form input { flex: 1 1 200px; min-width: 0; padding: 10px 12px; border: var(--b2); border-radius: 12px; font: inherit; }
+.plans-paste-err { flex-basis: 100%; margin: 0; color: #b3123f; font-size: 13px; font-weight: 700; }
+.plan-app-hint { margin: 0 0 12px; padding: 10px 12px; background: #fff3b0; border: var(--b2); border-radius: 12px; font-size: 14px; font-weight: 600; }
+.plan-app-hint .btn { margin-top: 8px; min-height: 36px; }
 .plans-past { margin: 18px 0 0; }
 .plans-past summary { cursor: pointer; font-weight: 800; color: var(--ink-2); margin: 0 0 10px; }
 .plan-back { border: 0; background: none; font: inherit; font-weight: 800; font-size: 14px; color: var(--ink-2); padding: 2px 0; margin: 0 0 6px; cursor: pointer; }
