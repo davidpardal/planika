@@ -391,7 +391,8 @@ body.menu-open { overflow: hidden; }
 .plan-item a { text-decoration: none; }
 .plan-item[class*="pop"] { background: var(--c); border: var(--b); box-shadow: var(--sh); }  /* como las tarjetas de la lista */
 .plan-item[class*="pop"] span { color: var(--ink); }
-.plan-item.note { background: var(--white); border-style: dashed; box-shadow: none; }
+.plan-item.note { background: #fff3b0; border-style: solid; box-shadow: 2px 2px 0 var(--ink); transform: rotate(-1deg); }  /* pósit: tu nota */
+.plan-item.note > div > span { color: #6b5600; font-weight: 700; }
 .plan-item.gone { background: #f3f1f6; opacity: .8; }
 .plan-x { margin-left: auto; border: 0; background: none; font-size: 16px; cursor: pointer; padding: 2px 4px; color: var(--ink-2); }
 .plan-walk { font-size: 13px; color: var(--ink-2); padding: 6px 0 6px 64px; }

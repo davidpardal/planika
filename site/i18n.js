@@ -999,12 +999,6 @@
 "Nota do teu plan",
 "Note from your plan"
 ],
-"Nota tuya": [
-"Zure oharra",
-"Nota teva",
-"Nota túa",
-"Your note"
-],
 "Nota: comer, quedar en el bar…": [
 "Oharra: bazkaldu, tabernan geratu…",
 "Nota: dinar, quedar al bar…",
