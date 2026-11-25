@@ -11,7 +11,7 @@ import os
 from . import static
 
 SITE_URL = static.SITE_URL
-UPDATED = "25 de noviembre de 2026"
+UPDATED = "20 de noviembre de 2026"
 CONTACT_FALLBACK = "https://github.com/davidpardal/planika/issues"
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "legal.json")
 
@@ -69,7 +69,7 @@ def privacy_page(cfg=None):
     cfg = cfg if cfg is not None else load_config()
     body = """
 <h2>Resumen</h2>
-<p>Planika no tiene cuentas de usuario ni muestra publicidad. Tus planes se guardan en tu dispositivo; solo los que compartes con un enlace se guardan también en un servidor, para que se actualicen para todos los que lo tienen. Google Analytics 4 (GA4) se utiliza únicamente si aceptas las cookies de analítica. Si las rechazas, GA4 no se carga. Puedes cambiar tu decisión desde el enlace «Configurar cookies» del pie de cada página.</p>
+<p>Planika no tiene cuentas de usuario ni muestra publicidad. Google Analytics 4 (GA4) se utiliza únicamente si aceptas las cookies de analítica. Si las rechazas, GA4 no se carga. Puedes cambiar tu decisión desde el enlace «Configurar cookies» del pie de cada página.</p>
 
 <h2>Responsable</h2>
 %(holder)s
@@ -79,10 +79,6 @@ def privacy_page(cfg=None):
 <p>Usamos Google Analytics 4 (Google Ireland Limited) para obtener estadísticas de uso, como páginas consultadas, interacciones, información técnica del navegador y datos aproximados de ubicación. GA4 puede utilizar cookies y tecnologías similares y transmitir datos a Google. La analítica permanece desactivada hasta que das tu consentimiento mediante el panel de privacidad. Base jurídica: consentimiento (art. 6.1.a del RGPD y normativa aplicable sobre almacenamiento o acceso a información en el dispositivo). Si rechazas, la etiqueta de GA4 no se carga. Puedes retirar o cambiar el consentimiento en cualquier momento con el enlace «Configurar cookies» del pie de cada página.</p>
 <h3>Favoritos</h3>
 <p>Cuando marcas un plan como favorito, Planika lo guarda en el almacenamiento local de tu navegador (clave <code>planika_favs</code>). Se queda en tu dispositivo, no se envía a ningún servidor y puedes borrarlo en cualquier momento limpiando los datos del sitio. Es un almacenamiento necesario para una función que tú pides, por lo que no requiere consentimiento.</p>
-<h3>Mis planes y planes compartidos</h3>
-<p>Los planes que creas en «Mis planes» (su nombre, los planes de la agenda que incluyen con su día y tus notas) se guardan en el almacenamiento local de tu navegador (clave <code>planika_plans</code>) y no salen de tu dispositivo.</p>
-<p>Solo si pulsas «Compartir» o «Copiar enlace» en un plan, ese plan se guarda también en un servidor de Supabase, que actúa como proveedor del servicio, con los datos alojados en la Unión Europea (Irlanda). Sirve para que quien tenga el enlace pueda verlo y editarlo y para que los cambios les lleguen a todos. Se guarda únicamente el contenido del plan, identificado con un código aleatorio que va en el enlace: ni tu nombre, ni tu correo, ni ningún dato de cuenta. Cualquiera que tenga el enlace puede ver y cambiar el plan, así que no escribas datos personales en las notas. Como cualquier servidor, Supabase registra datos técnicos de las conexiones (como la dirección IP) durante un tiempo limitado por seguridad. Base jurídica: prestarte el servicio que pides al compartir el plan (art. 6.1.b del RGPD).</p>
-<p>Los planes compartidos se borran automáticamente 6 meses después de su último cambio. Borrar un plan de tu dispositivo no lo borra para los demás; si quieres que borremos uno antes, escríbenos con su enlace.</p>
 <h3>Ubicación («Cerca de mí»)</h3>
 <p>Solo si pulsas el botón, el navegador te pide permiso y Planika usa tu posición para ordenar los planes por distancia. El cálculo se hace en tu dispositivo: la posición no se envía ni se guarda.</p>
 <h3>Formulario para organizadores</h3>
