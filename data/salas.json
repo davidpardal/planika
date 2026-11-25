@@ -115,6 +115,7 @@
 "07|palma de mallorca|palacio real de la almudaina": {"checked": "2026-11-21", "lat": 39.567979, "lon": 2.647204, "nombre": "Palacio de la Almudaina", "ok": true, "osm": "relation/2424202", "q": "almudaina", "tipo": "tourism=attraction"},
 "07|palma de mallorca|parc de la mar": {"checked": "2026-11-21", "lat": 39.565852, "lon": 2.648489, "nombre": "Parque del Mar", "ok": true, "osm": "way/5229049", "q": "Parc de la Mar", "tipo": "leisure=park"},
 "07|palma de mallorca|trui teatre": {"checked": "2026-11-21", "lat": 39.583195, "lon": 2.619277, "nombre": "Trui Teatre", "ok": true, "osm": "way/87987547", "q": "Trui Teatre", "tipo": "amenity=theatre"},
+"08|barcelona|camp municipal de futbol nou sardenya": {"checked": "2026-11-25", "lat": 41.411773, "lon": 2.161538, "nombre": "Camp Municipal de Futbol Nou Sardenya - Europa", "ok": true, "osm": "way/34287259", "q": "camp futbol sardenya", "tipo": "leisure=stadium"},
 "08|barcelona|chobani stadyumu": {"checked": "2026-11-21", "ok": false},
 "08|barcelona|palau blaugrana": {"checked": "2026-11-21", "lat": 41.380032, "lon": 2.120089, "nombre": "Palau Blaugrana", "ok": true, "osm": "way/45330589", "q": "Palau Blaugrana", "tipo": "leisure=sports_centre"},
 "08|fogars de montclus|punt d acollida del centre d informacio de fogars de montclus": {"checked": "2026-11-21", "ok": false},
