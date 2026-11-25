@@ -43,10 +43,11 @@
   <a class="sm-big lilac" href="./?favs=1" data-menu="favs"><span aria-hidden="true">⭐</span> Mis favoritos <span class="pill" id="menuFavCount"></span></a>
   <details class="sm-acc hot" open>
     <summary><span aria-hidden="true">♥</span> Mi Planika</summary>
+    <a href="./" data-menu="plan"><span aria-hidden="true">✚</span> Crear tu plan <span class="pill" id="menuPlanCount"></span></a>
     <a href="./?view=cal" data-menu="cal"><span aria-hidden="true">▦</span> Calendario: elige tus días</a>
     <a href="./?view=map" data-menu="map"><span aria-hidden="true">◎</span> Mapa de planes</a>
     <a href="./" data-menu="near"><span aria-hidden="true">➤</span> Planes cerca de mí</a>
-    <a href="promociona-tu-evento.html"><span aria-hidden="true">＋</span> Añade tu plan</a>
+    <a href="promociona-tu-evento.html"><span aria-hidden="true">📣</span> Publica tu evento</a>
   </details>
   <details class="sm-acc yellow">
     <summary><span aria-hidden="true">🗓</span> Planes destacados</summary>
@@ -202,6 +203,28 @@
 </footer>
 
 <div id="menu" class="menu" hidden></div>
+<button type="button" class="plan-pill" id="planPill" hidden><span aria-hidden="true">🗓</span> Mi plan · <span id="planPillN">0</span></button>
+<dialog id="planDlg" class="modal plan-dlg" aria-labelledby="planName">
+  <button type="button" class="close" id="planClose" aria-label="Cerrar">✕</button>
+  <p class="plan-kicker">🗓 Crear tu plan</p>
+  <input type="text" id="planName" class="plan-name" maxlength="60" placeholder="Ponle nombre: Sábado en Bilbao" aria-label="Nombre del plan">
+  <div class="plan-shared" id="planShared" hidden>Te han compartido este plan. <button type="button" class="btn primary" id="planSave">Guardarlo como mi plan</button></div>
+  <div id="planList" class="plan-list"></div>
+  <form id="planNoteForm" class="plan-note" hidden>
+    <select id="planNoteDay" aria-label="Día de la nota"></select>
+    <input type="time" id="planNoteTime" aria-label="Hora de la nota">
+    <input type="text" id="planNoteText" maxlength="80" placeholder="Nota: comer, quedar en el bar…" aria-label="Nota">
+    <button type="submit" class="btn">＋ Nota</button>
+  </form>
+  <div class="plan-actions" id="planActions">
+    <button type="button" class="btn primary" id="planShare">↗ Compartir (WhatsApp…)</button>
+    <button type="button" class="btn" id="planIcs">📅 A mi calendario</button>
+    <button type="button" class="btn" id="planAdd">＋ Añadir planes</button>
+    <button type="button" class="btn" id="planMap">◎ Ver en el mapa</button>
+    <button type="button" class="btn" id="planCopy">🔗 Copiar enlace</button>
+    <button type="button" class="linklike" id="planClear">Vaciar plan</button>
+  </div>
+</dialog>
 <dialog id="modal" class="modal"><button type="button" class="close" id="modalClose" aria-label="Cerrar">✕</button><div id="modalBody"></div></dialog>
 <div id="toast" class="toast" hidden></div>
 <div id="offline" class="offline-bar" role="status" hidden>📴 Sin conexión: ves los planes de tu última visita</div>

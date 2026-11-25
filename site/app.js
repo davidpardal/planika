@@ -28,7 +28,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var state = { q: '', ccaa: '', prov: '', city: '', from: '', to: '', free: false, tickets: false, cats: {}, tod: '', aud: '', pmax: '',
-                favs: false, geo: null, radius: 25, view: 'list', shown: PAGE, month: null, days: [] };
+                favs: false, geo: null, radius: 25, view: 'list', shown: PAGE, month: null, days: [], planOnly: false };
   // days: días sueltos elegidos en el calendario ("2026-12-05"…), ordenados. Si hay alguno, es el filtro de fechas
   // de toda la web (lista, mapa, enlace) en lugar de from/to.
   var favSet = loadFavs();
@@ -337,7 +337,7 @@
   }
   function anyFilter() {
     var quickAll = $('quick').querySelector('button.on[data-range="all"]');
-    return !!(state.q || state.ccaa || state.prov || state.city || state.free || anyCat() || advCount() || state.days.length || (!quickAll && (state.from || state.to)));
+    return !!(state.q || state.ccaa || state.prov || state.city || state.free || anyCat() || advCount() || state.days.length || state.planOnly || (!quickAll && (state.from || state.to)));
   }
   function syncUI() {
     $('what').querySelectorAll('a.chip').forEach(function (a) {
@@ -380,6 +380,7 @@
     if (state.tickets) parts.push('con venta de entradas');
     if (state.geo) parts.push('a menos de ' + state.radius + ' km');
     if (state.favs) parts.push('solo favoritos');
+    if (state.planOnly) parts.push('solo tu plan');
     return parts.join(' · ');
   }
   function anyCat() { for (var k in state.cats) if (state.cats[k]) return true; return false; }
@@ -414,6 +415,7 @@
     if (state.free && !e.free) return false;
     if (state.tickets && !e.tk) return false;
     if (state.favs && !favSet.has(e.id)) return false;
+    if (state.planOnly && !inPlan(e.id)) return false;
     if (anyCat() && !state.cats[e.category] && !(state.cats.navidad && e.xm)) return false;
     if (state.tod) {
       if (!e.time) return false;
@@ -477,7 +479,7 @@
       (where ? '<div class="where">📍 ' + esc(where) + '</div>' : '') +
       (e.description ? '<p class="desc">' + esc(e.description) + '</p>' : '') +
       '<div class="actions">' + tickets + info + '<button type="button" class="btn addcal" data-id="' + e.id + '">＋ Calendario</button>' +
-      '<button type="button" class="btn share" data-share="' + e.id + '" title="Compartir este plan">↗ Compartir</button></div>' +
+      '<button type="button" class="btn share" data-share="' + e.id + '" title="Compartir este plan">↗ Compartir</button>' + planBtn(e.id) + '</div>' +
       ((e.source || (e.subtype && !isPermanent(e))) ? '<div class="src">' + (e.source ? 'Fuente: ' + esc(e.source) : '') + (e.subtype && !isPermanent(e) ? (e.source ? ' · ' : '') + esc(e.subtype) : '') + '</div>' : '') +
       '</div></article>';
   }
@@ -769,6 +771,8 @@
       if (state.favs) refresh(); return; }
     var s = ev.target.closest('[data-share]');
     if (s) { var e2 = byId(s.dataset.share); if (e2) shareLink(e2); return; }
+    var pb = ev.target.closest('[data-plan]');
+    if (pb) { togglePlan(pb.dataset.plan); return; }
     var o = ev.target.closest('[data-open]');
     if (o) { ev.preventDefault(); openModal(o.dataset.open); return; }
     var gv = ev.target.closest('[data-goview]');
@@ -852,6 +856,7 @@
     if (ev.target.closest('#moreTypes')) { $('adv').open = true; $('cats').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
   });
   $('clearAll').addEventListener('click', function () {
+    state.planOnly = false;
     state.q = ''; state.ccaa = ''; state.prov = ''; state.city = ''; state.free = false; state.tickets = false; state.cats = {};
     state.tod = ''; state.aud = ''; state.pmax = ''; state.favs = false;
     if (state.geo) { state.geo = null; $('geoBtn').textContent = '📍 Activar'; $('geoBtn').classList.remove('on'); }
@@ -950,6 +955,7 @@
     ev.preventDefault();
     var act = a.dataset.menu;
     closeSide();
+    if (act === 'plan') { openPlan(); track('menu_plan'); return; }
     if (act === 'favs') { state.favs = true; $('favs').checked = true; refresh(); setView('list'); }
     else if (act === 'cal' || act === 'map') setView(act);
     else if (act === 'near') { $('geoBtn').click(); }
@@ -957,6 +963,227 @@
     setTimeout(function () { window.scrollTo({ top: $(target).offsetTop - 80, behavior: 'smooth' }); }, 60);
     track('menu_' + act);
   });
+
+  // ---------- crear tu plan
+  // Un plan tuyo: planes de la agenda (con el día elegido) y notas propias, ordenados por hora. Se guarda en el
+  // móvil (como los favoritos) y viaja entero en el enlace para compartir (?miplan=…), sin cuentas ni servidor.
+  var plan = loadPlan(), sharedPlan = null;
+  var PLAN_Q = location.search;  // al arrancar, writeURL() reescribe la URL con los filtros: se guarda antes
+  function loadPlan() {
+    try { return cleanPlan(JSON.parse(localStorage.getItem('planika_plan') || 'null')); } catch (e) { return cleanPlan(null); }
+  }
+  function cleanPlan(p) {
+    p = p && typeof p === 'object' ? p : {};
+    var ok = function (d) { return typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d); };
+    return {
+      n: String(p.n || '').slice(0, 60),
+      i: (Array.isArray(p.i) ? p.i : []).filter(function (x) { return Array.isArray(x) && typeof x[0] === 'string' && ok(x[1]); }).slice(0, 40),
+      o: (Array.isArray(p.o) ? p.o : []).filter(function (x) { return x && ok(x.d) && typeof x.x === 'string'; })
+        .map(function (x) { return { d: x.d, t: /^\d{2}:\d{2}$/.test(x.t || '') ? x.t : '', x: x.x.slice(0, 80) }; }).slice(0, 20)
+    };
+  }
+  function savePlan() {
+    try { localStorage.setItem('planika_plan', JSON.stringify(plan)); } catch (e) { /* sin almacenamiento */ }
+    var n = plan.i.length + plan.o.length;
+    $('planPill').hidden = !n; $('planPillN').textContent = n; document.body.classList.toggle('has-plan', !!n);
+    $('menuPlanCount').textContent = n ? String(n) : '';
+  }
+  function inPlan(id) { return plan.i.some(function (x) { return x[0] === id; }); }
+  function planBtn(id) {
+    var on = inPlan(id);
+    return '<button type="button" class="btn addplan' + (on ? ' on' : '') + '" data-plan="' + id + '" aria-pressed="' + on + '">' + (on ? '✓ En tu plan' : '＋ Mi plan') + '</button>';
+  }
+  function planDays() {
+    var d = {};
+    plan.i.forEach(function (x) { d[x[1]] = 1; }); plan.o.forEach(function (x) { d[x.d] = 1; });
+    return Object.keys(d).sort();
+  }
+  // Día del plan en que se irá: el primero de los días elegidos o del plan en que se puede; si no, la próxima fecha
+  function pickDay(e) {
+    var cands = state.days.concat(planDays());
+    for (var i = 0; i < cands.length; i++) if (cands[i] >= TODAY && (isPermanent(e) || onDay(e, cands[i]))) return cands[i];
+    if (isPermanent(e)) return cands[0] || TODAY;
+    if (e.sessions) return nextSession(e);
+    return e.start > TODAY ? e.start : TODAY;
+  }
+  function togglePlan(id) {
+    var e = byId(id); if (!e) return;
+    if (inPlan(id)) { plan.i = plan.i.filter(function (x) { return x[0] !== id; }); toast('Quitado de tu plan'); }
+    else { plan.i.push([id, pickDay(e)]); toast('Añadido a tu plan (' + fmtD(plan.i[plan.i.length - 1][1]).replace(',', '') + ')'); track('plan_add'); }
+    savePlan(); syncPlanBtns(id);
+    if ($('planDlg').open) renderPlan();
+  }
+  function syncPlanBtns(id) {
+    document.querySelectorAll('[data-plan="' + id + '"]').forEach(function (b) {
+      var on = inPlan(id); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.textContent = on ? '✓ En tu plan' : '＋ Mi plan';
+    });
+  }
+  function km(a, b) {
+    var R = 6371, rad = Math.PI / 180, dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  // Coordenadas aproximadas: cuando una fuente no da la sala exacta, el plan lleva el centro de la ciudad, y ese
+  // mismo punto lo comparten muchas salas distintas. Ahí no se calcula el paseo (saldría «en el mismo sitio»).
+  var approxPts = null;
+  function approxPoint(e) {
+    if (!approxPts) {
+      var v = {};
+      EVENTS.forEach(function (x) { if (x.lat == null) return; var k = x.lat + ',' + x.lon; (v[k] = v[k] || {})[x.venue || '?'] = 1; });
+      approxPts = {};
+      Object.keys(v).forEach(function (k) { if (Object.keys(v[k]).length > 3) approxPts[k] = 1; });
+    }
+    return !!approxPts[e.lat + ',' + e.lon];
+  }
+  function walkable(a, b) {
+    if (a.lat == null || b.lat == null) return false;
+    if (a.lat === b.lat && a.lon === b.lon) return !!a.venue && a.venue === b.venue;
+    return !approxPoint(a) && !approxPoint(b);
+  }
+  function mins(t) { return t ? +t.slice(0, 2) * 60 + +t.slice(3, 5) : null; }
+  // Filas del plan por día: planes y notas, por hora (lo que no tiene hora va primero, «todo el día»)
+  function planRows(p) {
+    var rows = [];
+    p.i.forEach(function (x) { var e = BY_ID[x[0]]; rows.push({ d: x[1], t: e ? e.time : '', e: e, id: x[0] }); });
+    p.o.forEach(function (x, k) { rows.push({ d: x.d, t: x.t, note: x.x, k: k }); });
+    rows.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : (a.t || '') < (b.t || '') ? -1 : (a.t || '') > (b.t || '') ? 1 : 0; });
+    return rows;
+  }
+  function renderPlan() {
+    var p = sharedPlan || plan, shared = !!sharedPlan;
+    var rows = planRows(p), h = '', lastDay = '', prev = null;
+    $('planName').value = p.n; $('planName').readOnly = shared;
+    $('planShared').hidden = !shared;
+    if (!rows.length) {
+      h = '<div class="empty">Tu plan está vacío. Pulsa «＋ Mi plan» en cualquier plan de la lista o de su ficha y aparecerá aquí, ordenado por hora.</div>';
+    }
+    rows.forEach(function (r) {
+      if (r.d !== lastDay) {
+        h += '<h3 class="plan-day">' + esc(cap(fmtDayName.format(fromIso(r.d)))) + '</h3>';
+        lastDay = r.d; prev = null;
+      }
+      if (prev && prev.e && r.e && walkable(prev.e, r.e)) {
+        var k = km(prev.e, r.e) * 1.3, walk = Math.round(k / 4.8 * 60);
+        h += '<div class="plan-walk">' + (k < 0.15 ? (prev.e.venue && prev.e.venue === r.e.venue ? '📍 En el mismo sitio' : '🚶 Al lado: 1 o 2 min a pie') : walk <= 40 ? '🚶 unos ' + Math.max(1, walk) + ' min a pie' : '🚌 a ' + (k < 10 ? k.toFixed(1) : Math.round(k)) + ' km: mejor en transporte') + '</div>';
+      }
+      // Aviso de solape entre planes de la agenda (no con las notas): menos de hora y media entre uno y otro
+      if (prev && prev.e && r.e && mins(r.t) != null && mins(prev.t) != null && mins(r.t) - mins(prev.t) < 90) {
+        var gap = mins(r.t) - mins(prev.t);
+        h += '<div class="plan-warn">⚠ Empieza ' + (gap <= 0 ? 'a la vez que el anterior' : 'solo ' + gap + ' min después del anterior') + '</div>';
+      }
+      if (r.note != null) {
+        h += '<div class="plan-item note"><span class="tm">' + (r.t || '—') + '</span><div><b>' + esc(r.note) + '</b><span>Nota tuya</span></div>' +
+          (shared ? '' : '<button type="button" class="plan-x" data-plan-note="' + r.k + '" aria-label="Quitar nota">✕</button>') + '</div>';
+      } else if (!r.e) {
+        h += '<div class="plan-item gone"><span class="tm">—</span><div><b>Este plan ya no está en la agenda</b><span>Puede que se haya cancelado o que ya haya pasado</span></div>' +
+          (shared ? '' : '<button type="button" class="plan-x" data-plan-del="' + r.id + '" aria-label="Quitar">✕</button>') + '</div>';
+      } else {
+        var e = r.e, where = [e.venue, e.city].filter(Boolean).join(' · ');
+        var price = e.free ? 'Gratis' : e.price;
+        h += '<div class="plan-item"><span class="tm">' + (r.t || 'Todo el día') + '</span><div><a href="' + esc(evFile(e)) + '"><b>' + esc(title(e)) + '</b></a>' +
+          '<span>' + esc([where, price].filter(Boolean).join(' · ')) + '</span></div>' +
+          (shared ? '' : '<button type="button" class="plan-x" data-plan-del="' + e.id + '" aria-label="Quitar del plan">✕</button>') + '</div>';
+      }
+      prev = r;
+    });
+    $('planList').innerHTML = h;
+    $('planNoteForm').hidden = shared || !rows.length;
+    $('planActions').hidden = shared;
+    var days = planDays();
+    $('planNoteDay').innerHTML = days.map(function (d) { return '<option value="' + d + '">' + esc(fmtD(d).replace(',', '')) + '</option>'; }).join('');
+    $('planNoteDay').hidden = days.length < 2;
+  }
+  function openPlan() { renderPlan(); if (!$('planDlg').open) $('planDlg').showModal(); track('plan_open'); }
+  function planURL(p) {
+    var json = JSON.stringify({ n: p.n, i: p.i, o: p.o });
+    var b64 = btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return location.href.split('?')[0].split('#')[0] + '?miplan=' + b64;
+  }
+  function planText(p) {
+    var lines = ['🗓 ' + (p.n || 'Mi plan') + ' (Planika)'], last = '';
+    planRows(p).forEach(function (r) {
+      if (r.d !== last) { lines.push('', cap(fmtDayName.format(fromIso(r.d)))); last = r.d; }
+      var what = r.note != null ? r.note : r.e ? title(r.e) + (r.e.venue || r.e.city ? ' (' + (r.e.venue || r.e.city) + ')' : '') : 'Plan que ya no está';
+      lines.push('· ' + (r.t || 'Todo el día') + ' ' + what);
+    });
+    return lines.join('\n');
+  }
+  function sharePlan() {
+    var url = planURL(plan), text = planText(plan);
+    track('plan_share');
+    if (navigator.share) { navigator.share({ title: plan.n || 'Mi plan', text: text, url: url }).catch(function () {}); return; }
+    window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\nÁbrelo en Planika: ' + url), '_blank', 'noopener');
+  }
+  function planIcs() {
+    var rows = planRows(plan).filter(function (r) { return r.e; });
+    if (!rows.length) { toast('Añade algún plan de la agenda primero'); return; }
+    var all = rows.map(function (r) {
+      var e = Object.assign({}, r.e, { start: r.d, end: r.d, sessions: null, subtype: '' });  // el día elegido en el plan
+      var t = icsText(e);
+      return t.slice(t.indexOf('BEGIN:VEVENT'), t.indexOf('END:VCALENDAR'));
+    }).join('');
+    var txt = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Planika//planikaapp.com//ES\r\nCALSCALE:GREGORIAN\r\n' + all + 'END:VCALENDAR';
+    var blob = new Blob([txt], { type: 'text/calendar;charset=utf-8' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = ((plan.n || 'mi plan').replace(/[^\w\dáéíóúñü ]+/gi, '').trim() || 'mi_plan').replace(/\s+/g, '_') + '.ics';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    track('plan_ics');
+  }
+  // ?miplan=… (plan compartido: se enseña sin pisar el tuyo) y ?add=<id> (botón «A mi plan» de las fichas)
+  function planFromURL() {
+    var p = new URLSearchParams(PLAN_Q);
+    if (p.get('miplan')) {
+      try {
+        var b = p.get('miplan').replace(/-/g, '+').replace(/_/g, '/');
+        sharedPlan = cleanPlan(JSON.parse(decodeURIComponent(escape(atob(b)))));
+        openPlan(); track('plan_shared_open');
+      } catch (e) { toast('Ese enlace de plan no se puede leer'); }
+    }
+    if (p.get('add')) {
+      var id = p.get('add');
+      if (BY_ID[id] && !inPlan(id)) { plan.i.push([id, pickDay(BY_ID[id])]); savePlan(); }
+      openPlan();
+    }
+  }
+  $('planPill').addEventListener('click', openPlan);
+  $('planClose').addEventListener('click', function () { $('planDlg').close(); });
+  $('planDlg').addEventListener('click', function (ev) { if (ev.target === $('planDlg')) $('planDlg').close(); });
+  $('planDlg').addEventListener('close', function () { sharedPlan = null; });
+  $('planName').addEventListener('input', function () { if (!sharedPlan) { plan.n = this.value.slice(0, 60); savePlan(); } });
+  $('planList').addEventListener('click', function (ev) {
+    var d = ev.target.closest('[data-plan-del]');
+    if (d) { var id = d.dataset.planDel; plan.i = plan.i.filter(function (x) { return x[0] !== id; }); savePlan(); syncPlanBtns(id); renderPlan(); return; }
+    var n = ev.target.closest('[data-plan-note]');
+    if (n) { plan.o.splice(+n.dataset.planNote, 1); savePlan(); renderPlan(); }
+  });
+  $('planNoteForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var x = $('planNoteText').value.trim();
+    if (!x) { $('planNoteText').focus(); return; }
+    plan.o.push({ d: $('planNoteDay').value || planDays()[0] || TODAY, t: $('planNoteTime').value || '', x: x.slice(0, 80) });
+    $('planNoteText').value = ''; $('planNoteTime').value = '';
+    savePlan(); renderPlan();
+  });
+  $('planShare').addEventListener('click', sharePlan);
+  $('planCopy').addEventListener('click', function () { copy(planURL(plan), 'Enlace de tu plan copiado'); });
+  $('planIcs').addEventListener('click', planIcs);
+  $('planAdd').addEventListener('click', function () { $('planDlg').close(); setView('list'); window.scrollTo({ top: $('list').offsetTop - 80, behavior: 'smooth' }); });
+  $('planMap').addEventListener('click', function () {
+    $('planDlg').close(); state.planOnly = true; setView('map'); toast('En el mapa solo salen los planes de tu plan');
+    window.scrollTo({ top: $('mapView').offsetTop - 80, behavior: 'smooth' });
+  });
+  $('planClear').addEventListener('click', function () {
+    if (!confirm('¿Vaciar tu plan?')) return;
+    var ids = plan.i.map(function (x) { return x[0]; });
+    plan = cleanPlan(null); savePlan(); ids.forEach(syncPlanBtns); renderPlan();
+  });
+  $('planSave').addEventListener('click', function () {
+    if (!sharedPlan) return;
+    if ((plan.i.length || plan.o.length) && !confirm('Ya tienes un plan. ¿Lo cambias por este?')) return;
+    plan = cleanPlan(sharedPlan); sharedPlan = null; savePlan(); plan.i.forEach(function (x) { syncPlanBtns(x[0]); }); renderPlan();
+    toast('Guardado como tu plan'); track('plan_shared_save');
+  });
+  savePlan();
 
   // ---------- arranque
   var openId = readURL();
@@ -969,4 +1196,5 @@
   if (advCount()) $('adv').open = true;
   if (state.view !== 'list') setView(state.view);
   if (openId) openModal(openId);
+  planFromURL();
 })();
