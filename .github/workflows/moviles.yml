@@ -1,0 +1,29 @@
+name: Prueba en móviles simulados (rama sondeo, no desplegar)
+on:
+  push:
+    branches: [sondeo]
+    paths: ["tools/sondeo/moviles.py", ".github/workflows/moviles.yml"]
+permissions:
+  contents: write
+jobs:
+  moviles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get install -y -q fonts-roboto fonts-noto-color-emoji >/dev/null
+      - run: pip install -q playwright && python -m playwright install --with-deps chromium webkit >/dev/null
+      - name: Capturas anteriores
+        run: git clone -q --depth 1 -b capturas "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" capturas || mkdir capturas
+      - run: python3 tools/sondeo/moviles.py
+      - name: Subir el informe a la rama capturas
+        run: |
+          cd capturas
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Móviles $(date -u +%FT%TZ)"
+          git push -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:capturas
