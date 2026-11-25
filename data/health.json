@@ -182,7 +182,7 @@
    },
    {
     "date": "2026-11-25",
-    "count": 3664,
+    "count": 3667,
     "error": ""
    }
   ],
@@ -492,8 +492,8 @@
    },
    {
     "date": "2026-11-25",
-    "count": 31,
-    "error": ""
+    "count": 29,
+    "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
    }
   ],
   "galicia": [
@@ -1067,7 +1067,7 @@
    },
    {
     "date": "2026-11-25",
-    "count": 790,
+    "count": 793,
     "error": ""
    }
   ],
@@ -1403,6 +1403,8 @@
    }
   ]
  },
- "updated_at": "2026-11-25T12:11",
- "alerts": []
+ "updated_at": "2026-11-25T12:25",
+ "alerts": [
+  "Junta de Andalucía: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-25"
+ ]
 }
