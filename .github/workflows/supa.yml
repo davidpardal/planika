@@ -1,0 +1,25 @@
+name: Prueba API planes compartidos (rama sondeo, no desplegar)
+on:
+  push:
+    branches: [sondeo]
+    paths: [".github/workflows/supa.yml"]
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Crear, leer y guardar por HTTP con la clave pública (y CORS desde planikaapp.com)
+        run: |
+          set -x
+          U=https://rqjrrdtdscvcimwzrwxj.supabase.co/rest/v1/rpc
+          K=sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF
+          ID=$(python3 -c "import secrets,base64;print(base64.urlsafe_b64encode(secrets.token_bytes(16)).decode().rstrip('='))")
+          H=(-H "apikey: $K" -H "Content-Type: application/json" -H "Origin: https://planikaapp.com")
+          curl -s -i "${H[@]}" -X POST "$U/shared_plan_create" -d "{\"p_id\":\"$ID\",\"p_plan\":{\"n\":\"Prueba CI\",\"i\":[],\"o\":[]}}" | grep -iE "^HTTP|access-control-allow-origin|^\[|plan_version"
+          curl -s "${H[@]}" -X POST "$U/shared_plan_save" -d "{\"p_id\":\"$ID\",\"p_plan\":{\"n\":\"Prueba CI 2\",\"i\":[],\"o\":[{\"d\":\"2026-11-28\",\"t\":\"\",\"x\":\"nota\"}]}}"; echo
+          curl -s "${H[@]}" -X POST "$U/shared_plan_get" -d "{\"p_ids\":[\"$ID\",\"noexiste\"]}"; echo
+          curl -s -i "${H[@]}" -X POST "$U/shared_plan_create" -d "{\"p_id\":\"$ID\",\"p_plan\":{\"n\":\"dup\"}}" | grep -E "^HTTP"
+          curl -s -i -X OPTIONS "$U/shared_plan_get" -H "Origin: https://planikaapp.com" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: apikey,content-type" | grep -iE "^HTTP|access-control-allow"
+          echo "--- tabla directa (debe fallar):"
+          curl -s "https://rqjrrdtdscvcimwzrwxj.supabase.co/rest/v1/shared_plans?select=id" -H "apikey: $K"; echo
+          curl -s "${H[@]}" -X POST "$U/shared_plan_ping" -d '{}'; echo
+          echo "ID=$ID"
