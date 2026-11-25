@@ -519,6 +519,8 @@ def event_page(e, related=(), t0=None, prov_slug="", city=None, title_place=None
         actions.append('<a class="btn" href="%s" target="_blank" rel="noopener">Más info ↗</a>' % esc(url))
     actions.append('<a class="btn" href="%s" target="_blank" rel="noopener">＋ Google Calendar</a>' % esc(_gcal(e, t0)))
     actions.append('<a class="btn" href="../?e=%s">Abrir en Planika</a>' % esc(e["id"]))
+    # Lo añade a «Crear tu plan» en la app (se guarda en el móvil); nofollow: no es una página para buscadores
+    actions.append('<a class="btn" href="../?add=%s" rel="nofollow">＋ Mi plan</a>' % esc(e["id"]))
     sessions = ""
     if e.get("sessions"):
         up = [d for d in e["sessions"] if d >= t0] or e["sessions"][-1:]
