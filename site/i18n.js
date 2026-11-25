@@ -1952,6 +1952,24 @@
 "Al mapa només surten els plans de «{p}»",
 "No mapa só saen os plans de «{p}»",
 "The map only shows what is in “{p}”"
+],
+"Encendido de luces de Navidad": [
+"Gabonetako argiak piztea",
+"Encesa de llums de Nadal",
+"Acendido das luces de Nadal",
+"Christmas lights switch-on"
+],
+"Cabalgatas de Reyes": [
+"Errege Magoen kabalkadak",
+"Cavalcades de Reis",
+"Cabalgatas de Reis",
+"Three Kings parades"
+],
+"Nochevieja y Año Nuevo": [
+"Urtezahar eta Urteberri",
+"Cap d'Any i Any Nou",
+"Noitevella e Aninovo",
+"New Year's Eve and New Year"
 ]
 };
   /*END*/

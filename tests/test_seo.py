@@ -391,6 +391,95 @@ class TestPuente(unittest.TestCase):
             self.assertEqual(seo_check.check(tmp, SITE)[0], [])
 
 
+
+class TestTemporada(unittest.TestCase):
+    def ev(self, i, title, day, cat="navidad", **kw):
+        base = dict(province_code="48", city="Bilbao", venue="Plaza %d" % i, time="18:00", category=cat,
+                    description="Encendido navideño con música, chocolate y actividades para toda la familia en la plaza.",
+                    url="https://ayto.example/%d" % i)
+        base.update(kw)
+        return util.event("Agenda", "s%d" % i, title, day, **base)
+
+    def test_matching(self):
+        from planes import temporada
+        m = temporada.matches
+        self.assertTrue(m("luces", self.ev(1, "Encendido de las luces de Navidad", "2026-11-27")))
+        self.assertTrue(m("luces", self.ev(2, "Encesa de l'enllumenat de Nadal", "2026-11-26", "otros")))
+        self.assertTrue(m("luces", self.ev(3, "Encendido navideño", "2026-11-27", "otros")))
+        self.assertFalse(m("luces", self.ev(4, "Encendido de la antorcha", "2026-11-27", "deporte")))
+        self.assertTrue(m("cabalgatas", self.ev(5, "Cabalgata de los Reyes Magos", "2027-01-05")))
+        self.assertTrue(m("cabalgatas", self.ev(6, "Cavalcada de Reis a Sants", "2027-01-05")))
+        self.assertTrue(m("cabalgatas", self.ev(7, "Gran cabalgata", "2027-01-05")))  # por la fecha
+        self.assertFalse(m("cabalgatas", self.ev(8, "Cavalcada de Nadal del Pare Noel", "2026-12-20")))
+        self.assertTrue(m("nochevieja", self.ev(9, "San Silvestre Vallecana 2026", "2026-12-31", "deporte")))
+        self.assertTrue(m("nochevieja", self.ev(10, "Concert de Cap d'Any", "2027-01-01", "musica")))
+        self.assertFalse(m("nochevieja", self.ev(11, "Fin de Año Musical de Araia", "2026-11-29", "musica")))
+
+    def test_seasons(self):
+        from planes import temporada
+        self.assertTrue(temporada.in_season("luces", "2026-11-25"))
+        self.assertFalse(temporada.in_season("luces", "2026-12-20"))
+        self.assertTrue(temporada.in_season("cabalgatas", "2027-01-06"))
+        self.assertFalse(temporada.in_season("cabalgatas", "2027-01-07"))
+        self.assertTrue(temporada.in_season("nochevieja", "2026-12-31"))
+        self.assertEqual(temporada.season_label_year("cabalgatas", "2026-11-25"), 2027)
+        self.assertEqual(temporada.season_label_year("cabalgatas", "2027-01-03"), 2027)
+        self.assertEqual(temporada.season_label_year("nochevieja", "2027-01-01"), 2026)
+
+    def _evs(self):
+        cities = ["Bilbao", "Getxo", "Barakaldo", "Portugalete", "Santurtzi", "Leioa"]
+        evs = [self.ev(20 + i, "Encendido de las luces de Navidad de %s" % c, "2026-11-%02d" % (26 + i % 2), city=c, time="1%d:30" % (7 + i % 2))
+               for i, c in enumerate(cities)]
+        evs.append(self.ev(40, "Encendido del alumbrado navideño de Durango", "2026-11-28", city="Durango", time=""))
+        evs += [self.ev(50 + i, "Cabalgata de Reyes de Bilbao %d" % i, "2027-01-05") for i in range(2)]  # pocas: noindex
+        evs += [dict(rich(i), start="2026-11-26", end="2026-11-26") for i in range(6)]
+        return evs
+
+    def test_pages(self):
+        with _Day("2026-11-25"), tempfile.TemporaryDirectory() as tmp:
+            evs = self._evs()
+            pages = build(tmp, evs)
+            self.assertIn("encendido-luces-navidad.html", pages)
+            page = read(tmp, "encendido-luces-navidad.html")
+            self.assertIn("<title>Encendido de luces de Navidad 2026: fechas y horas por ciudad · Planika</title>", page)
+            self.assertIn('content="index,follow', page)
+            self.assertIn('<h3 class="tt-day">Jueves 26 de noviembre</h3>', page)
+            self.assertIn('<span class="tt-h">17:30</span>', page)
+            self.assertIn("Sin hora publicada", page)  # Durango no tiene hora: no se inventa
+            self.assertIn("e/%s" % static.event_file(evs[0]), page)
+            self.assertIn("7 ciudades", page)
+            # pocas cabalgatas: la página existe pero no se indexa ni se enlaza
+            self.assertNotIn("cabalgatas-reyes.html", pages)
+            self.assertIn('content="noindex,follow"', read(tmp, "cabalgatas-reyes.html"))
+            self.assertIn('content="noindex,follow"', read(tmp, "nochevieja.html"))
+            gratis = read(tmp, "planes-gratis.html")
+            self.assertIn('href="encendido-luces-navidad.html"', gratis)  # enlazada desde los hubs
+            self.assertNotIn('href="cabalgatas-reyes.html"', gratis)
+            self.assertIn('href="../encendido-luces-navidad.html"', read(tmp, "e", static.event_file(evs[0])))  # y desde la ficha
+            self.assertNotIn("encendido-luces-navidad", read(tmp, "e", static.event_file(evs[-1])))
+            self.assertIn("Día y hora por ciudad: encendido de luces de navidad", read(tmp, "t", "navidad.html"))
+            self.assertIn("encendido-luces-navidad.html", read(tmp, "sitemap-paginas.xml"))
+            self.assertEqual(seo_check.check(tmp, SITE)[0], [])
+
+    def test_home_links(self):
+        with _Day("2026-11-25"), tempfile.TemporaryDirectory() as tmp:
+            with open(os.path.join(tmp, "index.html"), "w", encoding="utf-8") as fh:
+                fh.write('<section id="list" class="list" aria-live="polite"></section><h2 class="count" id="count" aria-live="polite"></h2>'
+                         '<span id="puenteLink"></span><span id="temporadaLinks"></span><span class="sm-dyn" id="temporadaMenu"></span>')
+            publish.prerender_index(tmp, self._evs())
+            home = read(tmp, "index.html")
+            self.assertIn('<span id="temporadaLinks"><a href="encendido-luces-navidad.html">Encendido de luces de Navidad</a> · </span>', home)
+            self.assertIn('<span class="sm-dyn" id="temporadaMenu"><a href="encendido-luces-navidad.html">', home)
+            self.assertNotIn("cabalgatas-reyes.html", home)
+
+    def test_out_of_season(self):
+        with _Day("2027-02-10"), tempfile.TemporaryDirectory() as tmp:
+            pages = build(tmp, [dict(rich(i), start="2027-02-12", end="2027-02-12") for i in range(5)])
+            for fn in ("encendido-luces-navidad.html", "cabalgatas-reyes.html", "nochevieja.html"):
+                self.assertNotIn(fn, pages)
+                self.assertIn('content="noindex,follow"', read(tmp, fn))
+            self.assertEqual(seo_check.check(tmp, SITE)[0], [])
+
 class TestGoneFichas(unittest.TestCase):
     def _build(self, tmp, evs):
         return publish.write_pages(tmp, evs, [], "2026-11-18T04:30", state_path=os.path.join(tmp, "state.json"),
