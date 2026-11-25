@@ -213,10 +213,17 @@
     <p class="plans-sub">Crea varios planes y comparte cada uno con quien vaya.</p>
     <div id="plansList" class="plans-list"></div>
     <button type="button" class="btn primary plans-new" id="plansNew">＋ Nuevo plan</button>
+    <button type="button" class="btn plans-paste" id="plansPaste">📋 Pegar un enlace de Planika</button>
+    <form class="plans-paste-form" id="plansPasteForm" hidden>
+      <input type="text" inputmode="url" id="plansPasteInput" placeholder="Pega aquí el enlace que te han mandado" aria-label="Enlace de Planika">
+      <button type="submit" class="btn">Abrir</button>
+      <p class="plans-paste-err" id="plansPasteErr" hidden>Ese enlace no es de un plan de Planika</p>
+    </form>
     <details class="plans-past" id="plansPast" hidden><summary id="plansPastSum"></summary><div id="plansPastList" class="plans-list"></div></details>
   </div>
   <div id="planView">
   <button type="button" class="plan-back" id="planBack">‹ Mis planes</button>
+  <p class="plan-app-hint" id="planAppHint" hidden><span>📲 ¿Usas Planika desde la pantalla de inicio? Copia este enlace y pégalo allí, en «Mis planes».</span> <button type="button" class="btn" id="planAppCopy">🔗 Copiar enlace</button></p>
   <input type="text" id="planName" class="plan-name" maxlength="60" placeholder="Ponle nombre: Sábado en Bilbao" aria-label="Nombre del plan">
   <div class="plan-shared" id="planShared" hidden>Te han compartido este plan. <button type="button" class="btn primary" id="planSave">Guardar en Mis planes</button></div>
   <div id="planList" class="plan-list"></div>
