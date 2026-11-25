@@ -57,7 +57,7 @@ class TestDictionary(unittest.TestCase):
             self.assertIn(key, H)
 
     def test_menu_and_filters_are_translated(self):
-        for s in ("Mis favoritos", "Crear tu plan", "¿Buscas un plan?", "Búsqueda avanzada", "Borrar filtros", "Idioma"):
+        for s in ("Mis favoritos", "Mis planes", "¿Buscas un plan?", "Búsqueda avanzada", "Borrar filtros", "Idioma"):
             self.assertIn(s, K)
 
 

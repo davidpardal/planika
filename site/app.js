@@ -136,7 +136,11 @@
     var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(state.geo.lat * Math.PI / 180) * Math.cos(e.lat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     return 2 * R * Math.asin(Math.sqrt(a));
   }
-  function toast(msg) { var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { t.hidden = true; }, 2600); }
+  function toast(msg) {
+    var t = $('toast'), dlg = document.querySelector('dialog[open]');
+    (dlg || document.body).appendChild(t);  // con una ventana abierta, el aviso va dentro para que se vea encima
+    t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { t.hidden = true; }, 2600);
+  }
   function loadFavs() { try { return new Set(JSON.parse(localStorage.getItem('planika_favs') || '[]')); } catch (e) { return new Set(); } }
   function saveFavs() { try { localStorage.setItem('planika_favs', JSON.stringify(Array.from(favSet))); } catch (e) { /* sin almacenamiento */ } $('favCount').textContent = favSet.size ? favSet.size : ''; }
 
@@ -961,7 +965,7 @@
     ev.preventDefault();
     var act = a.dataset.menu;
     closeSide();
-    if (act === 'plan') { openPlan(); track('menu_plan'); return; }
+    if (act === 'plan') { openPlans(); track('menu_plan'); return; }
     if (act === 'favs') { state.favs = true; $('favs').checked = true; refresh(); setView('list'); }
     else if (act === 'cal' || act === 'map') setView(act);
     else if (act === 'near') { $('geoBtn').click(); }
@@ -970,60 +974,213 @@
     track('menu_' + act);
   });
 
-  // ---------- crear tu plan
-  // Un plan tuyo: planes de la agenda (con el día elegido) y notas propias, ordenados por hora. Se guarda en el
-  // móvil (como los favoritos) y viaja entero en el enlace para compartir (?miplan=…), sin cuentas ni servidor.
-  var plan = loadPlan(), sharedPlan = null;
+  // ---------- mis planes
+  // Varios planes tuyos («Sábado en Bilbao», «Navidad con los primos»…). Cada uno lleva planes de la agenda (con el
+  // día elegido) y notas propias, ordenados por hora. Se guardan en el móvil (como los favoritos), sin cuentas ni
+  // servidor, y cada uno viaja entero en su enlace para compartir (?miplan=…).
+  var MAX_PLANS = 20;
   var PLAN_Q = location.search;  // al arrancar, writeURL() reescribe la URL con los filtros: se guarda antes
-  function loadPlan() {
-    try { return cleanPlan(JSON.parse(localStorage.getItem('planika_plan') || 'null')); } catch (e) { return cleanPlan(null); }
-  }
+  var store = loadPlans(), sharedPlan = null, planMode = 'one', pickFor = null, pickThenOpen = false;
+  var plan = byPlanId(store.a);  // el plan activo: el último que abriste o al que añadiste algo
+  function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function cleanPlan(p) {
     p = p && typeof p === 'object' ? p : {};
     var ok = function (d) { return typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d); };
     return {
+      id: typeof p.id === 'string' && /^[\w-]{1,24}$/.test(p.id) ? p.id : newId(),
       n: String(p.n || '').slice(0, 60),
       i: (Array.isArray(p.i) ? p.i : []).filter(function (x) { return Array.isArray(x) && typeof x[0] === 'string' && ok(x[1]); }).slice(0, 40),
       o: (Array.isArray(p.o) ? p.o : []).filter(function (x) { return x && ok(x.d) && typeof x.x === 'string'; })
         .map(function (x) { return { d: x.d, t: /^\d{2}:\d{2}$/.test(x.t || '') ? x.t : '', x: x.x.slice(0, 80) }; }).slice(0, 20)
     };
   }
-  function savePlan() {
-    try { localStorage.setItem('planika_plan', JSON.stringify(plan)); } catch (e) { /* sin almacenamiento */ }
-    var n = plan.i.length + plan.o.length;
-    $('planPill').hidden = !n; $('planPillN').textContent = n; document.body.classList.toggle('has-plan', !!n);
-    $('menuPlanCount').textContent = n ? String(n) : '';
+  function loadPlans() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem('planika_plans') || 'null'); } catch (e) { s = null; }
+    if (!s || !Array.isArray(s.p)) {
+      // Antes había un solo plan («planika_plan»): pasa a ser el primero de «Mis planes»
+      var old = null;
+      try { old = JSON.parse(localStorage.getItem('planika_plan') || 'null'); } catch (e) { old = null; }
+      old = cleanPlan(old);
+      s = { a: old.id, p: old.i.length || old.o.length || old.n ? [old] : [] };
+    }
+    var seen = {}, ps = s.p.map(cleanPlan).slice(0, MAX_PLANS);
+    ps.forEach(function (p) { if (seen[p.id]) p.id = newId(); seen[p.id] = 1; });
+    return { a: seen[s.a] ? s.a : ps[0] ? ps[0].id : '', p: ps };
   }
-  function inPlan(id) { return plan.i.some(function (x) { return x[0] === id; }); }
-  function planBtn(id) {
-    var on = inPlan(id);
-    return '<button type="button" class="btn addplan' + (on ? ' on' : '') + '" data-plan="' + id + '" aria-pressed="' + on + '">' + (on ? '✓ ' + tr('En tu plan') : '＋ ' + tr('Mi plan')) + '</button>';
-  }
-  function planDays() {
+  function byPlanId(id) { return store.p.filter(function (p) { return p.id === id; })[0] || null; }
+  function setActive(p) { plan = p; store.a = p ? p.id : ''; }
+  function planSize(p) { return p.i.length + p.o.length; }
+  function planTitle(p) { return p.n || tr('Plan sin nombre'); }
+  function planDays(p) {
     var d = {};
-    plan.i.forEach(function (x) { d[x[1]] = 1; }); plan.o.forEach(function (x) { d[x.d] = 1; });
+    p = p || plan;
+    if (!p) return [];
+    p.i.forEach(function (x) { d[x[1]] = 1; }); p.o.forEach(function (x) { d[x.d] = 1; });
     return Object.keys(d).sort();
   }
+  // Un plan es «pasado» cuando ya pasaron todos sus días; no se borra nunca solo, va a «Pasados»
+  function isPast(p) { var d = planDays(p); return !!d.length && d[d.length - 1] < TODAY; }
+  function livePlans() { return store.p.filter(function (p) { return !isPast(p); }); }
+  function sortPlans(ps) {  // por el primer día; los vacíos, al final
+    return ps.slice().sort(function (a, b) { var x = planDays(a)[0] || '9', y = planDays(b)[0] || '9'; return x < y ? -1 : x > y ? 1 : 0; });
+  }
+  // Los planes vacíos y sin nombre no se guardan, salvo el que tienes abierto (el de «＋ Nuevo plan»)
+  function prune() { store.p = store.p.filter(function (p) { return p === plan || planSize(p) || p.n.trim(); }); }
+  function makeRoom() {
+    prune();
+    if (store.p.length < MAX_PLANS) return true;
+    toast(tr('Ya tienes {n} planes: borra alguno para crear otro', { n: MAX_PLANS }));
+    return false;
+  }
+  function addPlan(p) { store.p.push(p); return p; }
+  function savePlan() {
+    prune();
+    try { localStorage.setItem('planika_plans', JSON.stringify(store)); } catch (e) { /* sin almacenamiento */ }
+    var full = store.p.filter(function (p) { return planSize(p) && !isPast(p); }).length, cur = plan && planSize(plan) && !isPast(plan) ? plan : null;
+    $('planPill').hidden = !full;
+    $('planPillT').textContent = cur ? (cur.n || tr('Mi plan')) : tr('Mis planes');
+    $('planPillN').textContent = cur ? planSize(cur) : full;
+    document.body.classList.toggle('has-plan', !!full);
+    $('menuPlanCount').textContent = full ? String(full) : '';
+  }
+  function has(p, id) { return p.i.some(function (x) { return x[0] === id; }); }
+  function plansWith(id) { return store.p.filter(function (p) { return has(p, id); }).length; }
+  function inPlan(id) { return !!plan && has(plan, id); }  // el filtro «solo tu plan» del mapa: el plan activo
+  function planLabel(id) {
+    var n = plansWith(id);
+    return n > 1 ? '✓ ' + tr('En {n} planes', { n: n }) : n ? '✓ ' + tr('En tu plan') : '＋ ' + tr('Mi plan');
+  }
+  function planBtn(id) {
+    var on = plansWith(id) > 0;
+    return '<button type="button" class="btn addplan' + (on ? ' on' : '') + '" data-plan="' + id + '" aria-pressed="' + on + '">' + planLabel(id) + '</button>';
+  }
+  function syncPlanBtns(id) {
+    var on = plansWith(id) > 0, label = planLabel(id);
+    document.querySelectorAll('[data-plan="' + id + '"]').forEach(function (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.textContent = label; });
+  }
   // Día del plan en que se irá: el primero de los días elegidos o del plan en que se puede; si no, la próxima fecha
-  function pickDay(e) {
-    var cands = state.days.concat(planDays());
+  function pickDay(e, p) {
+    var cands = state.days.concat(planDays(p));
     for (var i = 0; i < cands.length; i++) if (cands[i] >= TODAY && (isPermanent(e) || onDay(e, cands[i]))) return cands[i];
     if (isPermanent(e)) return cands[0] || TODAY;
     if (e.sessions) return nextSession(e);
     return e.start > TODAY ? e.start : TODAY;
   }
-  function togglePlan(id) {
-    var e = byId(id); if (!e) return;
-    if (inPlan(id)) { plan.i = plan.i.filter(function (x) { return x[0] !== id; }); toast(tr('Quitado de tu plan')); }
-    else { plan.i.push([id, pickDay(e)]); toast(tr('Añadido a tu plan ({d})', { d: fmtD(plan.i[plan.i.length - 1][1]).replace(',', '') })); track('plan_add'); }
+  function addTo(p, id) { if (BY_ID[id] && !has(p, id)) p.i.push([id, pickDay(BY_ID[id], p)]); }
+  // «＋ Mi plan»: con un solo plan (o ninguno) se añade directamente; con varios, se pregunta a cuál
+  function togglePlan(id, thenOpen) {
+    if (!byId(id)) return;
+    var live = livePlans();
+    if (live.length > 1) { openPick(id, thenOpen); return; }
+    var p = live[0];
+    if (!p) { if (!makeRoom()) return; p = addPlan(cleanPlan(null)); }
+    toggleIn(p, id);
+    if (thenOpen) openPlanId(p.id);
+  }
+  function toggleIn(p, id) {
+    var many = store.p.length > 1;
+    setActive(p);
+    if (has(p, id)) {
+      p.i = p.i.filter(function (x) { return x[0] !== id; });
+      toast(many ? tr('Quitado de «{p}»', { p: planTitle(p) }) : tr('Quitado de tu plan'));
+    } else {
+      addTo(p, id);
+      var d = fmtD(p.i[p.i.length - 1][1]).replace(',', '');
+      toast(many ? tr('Añadido a «{p}» ({d})', { p: planTitle(p), d: d }) : tr('Añadido a tu plan ({d})', { d: d }));
+      track('plan_add');
+    }
     savePlan(); syncPlanBtns(id);
-    if ($('planDlg').open) renderPlan();
+    if ($('planDlg').open) redraw();
   }
-  function syncPlanBtns(id) {
-    document.querySelectorAll('[data-plan="' + id + '"]').forEach(function (b) {
-      var on = inPlan(id); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.textContent = on ? '✓ ' + tr('En tu plan') : '＋ ' + tr('Mi plan');
+  // Elegir plan: primero el último que usaste, luego por fecha. Si ya está en uno, al tocarlo se quita.
+  function planMeta(p) {
+    var d = planDays(p), bits = [], ni = p.i.length, no = p.o.length;
+    if (d.length) bits.push(fmtD(d[0]).replace(',', '') + (d.length > 1 ? ' – ' + fmtD(d[d.length - 1]).replace(',', '') : ''));
+    if (ni) bits.push(ni === 1 ? tr('1 plan') : tr('{n} planes', { n: ni }));
+    if (no) bits.push(no === 1 ? tr('1 nota') : tr('{n} notas', { n: no }));
+    if (!ni && !no) bits.push(tr('Vacío'));
+    return bits.join(' · ');
+  }
+  function planRow(p, cls, attr, sub, on) {
+    return '<button type="button" class="plans-row ' + cls + (on ? ' on' : '') + '" ' + attr + '="' + p.id + '"><span class="pr-t"><b>' +
+      (on ? '✓ ' : '') + esc(planTitle(p)) + '</b><span>' + esc(sub) + '</span></span><span class="pr-go" aria-hidden="true">' + (on ? '✕' : '›') + '</span></button>';
+  }
+  function openPick(id, thenOpen) {
+    var e = BY_ID[id];
+    if (!e) return;
+    pickFor = id; pickThenOpen = !!thenOpen;
+    var live = sortPlans(livePlans());
+    if (plan && live.indexOf(plan) > 0) { live.splice(live.indexOf(plan), 1); live.unshift(plan); }
+    $('pickEv').textContent = title(e);
+    $('pickList').innerHTML = live.map(function (p, k) {
+      var on = has(p, id);
+      return planRow(p, 'pop' + (k % 4), 'data-pick', on ? tr('Ya está: tócalo para quitarlo') : planMeta(p), on);
+    }).join('');
+    if (!$('pickDlg').open) $('pickDlg').showModal();
+    track('plan_pick_open');
+  }
+  $('pickList').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-pick]'), p = b && byPlanId(b.dataset.pick), id = pickFor;
+    if (!p || !id) return;
+    $('pickDlg').close();
+    toggleIn(p, id);
+    if (pickThenOpen) openPlanId(p.id);
+  });
+  $('pickNew').addEventListener('click', function () {
+    var id = pickFor;
+    if (!id || !makeRoom()) return;
+    var p = addPlan(cleanPlan(null));
+    $('pickDlg').close();
+    setActive(p); addTo(p, id); savePlan(); syncPlanBtns(id); track('plan_new', { from: 'pick' });
+    openPlanId(p.id, true);
+  });
+  $('pickClose').addEventListener('click', function () { $('pickDlg').close(); });
+  $('pickDlg').addEventListener('click', function (ev) { if (ev.target === $('pickDlg')) $('pickDlg').close(); });
+  $('pickDlg').addEventListener('close', function () { pickFor = null; });
+  // La ventana tiene dos vistas: la lista «Mis planes» y un plan abierto
+  function showMode(m) {
+    planMode = m;
+    $('plansView').hidden = m !== 'list'; $('planView').hidden = m === 'list';
+    $('planDlg').setAttribute('aria-labelledby', m === 'list' ? 'plansTitle' : 'planName');
+    $('planCal').hidden = true;
+    if (!$('planDlg').open) $('planDlg').showModal();
+    $('planDlg').scrollTop = 0;
+  }
+  function redraw() { if (planMode === 'list') renderPlans(); else renderPlan(); }
+  function renderPlans() {
+    var live = sortPlans(livePlans()), past = store.p.filter(isPast).sort(function (a, b) {
+      var x = planDays(a).pop(), y = planDays(b).pop(); return x < y ? 1 : x > y ? -1 : 0;
     });
+    $('plansList').innerHTML = live.length ? live.map(function (p, k) { return planRow(p, 'pop' + (k % 4), 'data-open-plan', planMeta(p)); }).join('')
+      : '<div class="empty">' + tr('Aún no tienes ningún plan. Crea uno o pulsa «＋ Mi plan» en cualquier plan de la agenda.') + '</div>';
+    $('plansPast').hidden = !past.length;
+    $('plansPastSum').textContent = tr('Pasados ({n})', { n: past.length });
+    $('plansPastList').innerHTML = past.map(function (p) { return planRow(p, 'past', 'data-open-plan', planMeta(p)); }).join('');
   }
+  function openPlans() { sharedPlan = null; showMode('list'); renderPlans(); track('plans_open'); }
+  function openPlanId(id, focusName) {
+    var p = byPlanId(id);
+    if (!p) { openPlans(); return; }
+    sharedPlan = null; setActive(p); savePlan();
+    showMode('one'); renderPlan();
+    if (focusName) $('planName').focus();
+    track('plan_open');
+  }
+  function openPlan() { if (plan && !isPast(plan) && planSize(plan)) openPlanId(plan.id); else openPlans(); }
+  // Mismo plan (nombre, planes y notas): para no guardar dos veces el que te reenvían o tu propio enlace
+  function samePlan(q) {
+    var sig = JSON.stringify([q.n, q.i, q.o]);
+    return store.p.filter(function (p) { return JSON.stringify([p.n, p.i, p.o]) === sig; })[0] || null;
+  }
+  $('plansView').addEventListener('click', function (ev) { var b = ev.target.closest('[data-open-plan]'); if (b) openPlanId(b.dataset.openPlan); });
+  $('plansNew').addEventListener('click', function () {
+    if (!makeRoom()) return;
+    var p = addPlan(cleanPlan(null));
+    track('plan_new', { from: 'list' });
+    openPlanId(p.id, true);
+  });
+  $('planBack').addEventListener('click', openPlans);
   function km(a, b) {
     var R = 6371, rad = Math.PI / 180, dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
     var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -1099,7 +1256,6 @@
     $('planNoteDay').innerHTML = days.map(function (d) { return '<option value="' + d + '">' + esc(fmtD(d).replace(',', '')) + '</option>'; }).join('');
     $('planNoteDay').hidden = days.length < 2;
   }
-  function openPlan() { $('planCal').hidden = true; renderPlan(); if (!$('planDlg').open) $('planDlg').showModal(); track('plan_open'); }
   function planURL(p) {
     var json = JSON.stringify({ n: p.n, i: p.i, o: p.o });
     var b64 = btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -1181,27 +1337,34 @@
     if (ev.target.closest('[data-plan-ics]')) { planIcs(); return; }
     if (ev.target.closest('[data-gcal]')) track('plan_gcal');
   });
-  // ?miplan=… (plan compartido: se enseña sin pisar el tuyo) y ?add=<id> (botón «A mi plan» de las fichas)
+  // ?miplan=… (plan compartido: se enseña y se puede guardar como uno más) y ?add=<id> (botón «＋ Mi plan» de las fichas)
   function planFromURL() {
     var p = new URLSearchParams(PLAN_Q);
     if (p.get('miplan')) {
       try {
         var b = p.get('miplan').replace(/-/g, '+').replace(/_/g, '/');
-        sharedPlan = cleanPlan(JSON.parse(decodeURIComponent(escape(atob(b)))));
-        openPlan(); track('plan_shared_open');
+        var q = cleanPlan(JSON.parse(decodeURIComponent(escape(atob(b))))), mine = samePlan(q);
+        if (mine) openPlanId(mine.id);
+        else { sharedPlan = q; showMode('one'); renderPlan(); }
+        track('plan_shared_open');
       } catch (e) { toast(tr('Ese enlace de plan no se puede leer')); }
     }
-    if (p.get('add')) {
-      var id = p.get('add');
-      if (BY_ID[id] && !inPlan(id)) { plan.i.push([id, pickDay(BY_ID[id])]); savePlan(); }
-      openPlan();
-    }
+    if (p.get('add') && BY_ID[p.get('add')]) togglePlanAdd(p.get('add'));
+  }
+  // Desde la ficha se viene a añadir: si ya está en tu plan, no se quita, se abre
+  function togglePlanAdd(id) {
+    var live = livePlans();
+    if (live.length > 1) { openPick(id, true); return; }
+    var p = live[0];
+    if (!p) { if (!makeRoom()) return; p = addPlan(cleanPlan(null)); }
+    if (!has(p, id)) { setActive(p); addTo(p, id); savePlan(); syncPlanBtns(id); track('plan_add'); }
+    openPlanId(p.id);
   }
   $('planPill').addEventListener('click', openPlan);
   $('planClose').addEventListener('click', function () { $('planDlg').close(); });
   $('planDlg').addEventListener('click', function (ev) { if (ev.target === $('planDlg')) $('planDlg').close(); });
-  $('planDlg').addEventListener('close', function () { sharedPlan = null; });
-  $('planName').addEventListener('input', function () { if (!sharedPlan) { plan.n = this.value.slice(0, 60); savePlan(); } });
+  $('planDlg').addEventListener('close', function () { sharedPlan = null; savePlan(); });
+  $('planName').addEventListener('input', function () { if (!sharedPlan && plan) { plan.n = this.value.slice(0, 60); savePlan(); } });
   $('planList').addEventListener('click', function (ev) {
     var d = ev.target.closest('[data-plan-del]');
     if (d) { var id = d.dataset.planDel; plan.i = plan.i.filter(function (x) { return x[0] !== id; }); savePlan(); syncPlanBtns(id); renderPlan(); return; }
@@ -1221,19 +1384,38 @@
   $('planIcs').addEventListener('click', function () { if (!$('planCal').hidden) { $('planCal').hidden = true; return; } renderPlanCal(); track('plan_cal_open'); });
   $('planAdd').addEventListener('click', function () { $('planDlg').close(); setView('list'); window.scrollTo({ top: $('list').offsetTop - 80, behavior: 'smooth' }); });
   $('planMap').addEventListener('click', function () {
-    $('planDlg').close(); state.planOnly = true; setView('map'); toast(tr('En el mapa solo salen los planes de tu plan'));
+    $('planDlg').close(); state.planOnly = true; setView('map');
+    toast(store.p.length > 1 ? tr('En el mapa solo salen los planes de «{p}»', { p: planTitle(plan) }) : tr('En el mapa solo salen los planes de tu plan'));
     window.scrollTo({ top: $('mapView').offsetTop - 80, behavior: 'smooth' });
   });
-  $('planClear').addEventListener('click', function () {
-    if (!confirm(tr('¿Vaciar tu plan?'))) return;
-    var ids = plan.i.map(function (x) { return x[0]; });
-    plan = cleanPlan(null); savePlan(); ids.forEach(syncPlanBtns); renderPlan();
+  $('planDup').addEventListener('click', function () {
+    if (!plan || !makeRoom()) return;
+    var p = cleanPlan(JSON.parse(JSON.stringify(plan)));
+    p.id = newId(); p.n = tr('{p} (copia)', { p: plan.n || tr('Mi plan') }).slice(0, 60);
+    addPlan(p); p.i.forEach(function (x) { syncPlanBtns(x[0]); });
+    track('plan_dup');
+    openPlanId(p.id, true);
+  });
+  $('planDel').addEventListener('click', function () {
+    var p = plan;
+    if (!p || (planSize(p) && !confirm(tr('¿Borrar el plan «{p}»?', { p: planTitle(p) })))) return;
+    store.p = store.p.filter(function (x) { return x !== p; });
+    setActive(sortPlans(livePlans())[0] || null);
+    if (state.planOnly) { state.planOnly = false; refresh(); }
+    savePlan(); p.i.forEach(function (x) { syncPlanBtns(x[0]); });
+    track('plan_delete');
+    openPlans();
   });
   $('planSave').addEventListener('click', function () {
     if (!sharedPlan) return;
-    if ((plan.i.length || plan.o.length) && !confirm(tr('Ya tienes un plan. ¿Lo cambias por este?'))) return;
-    plan = cleanPlan(sharedPlan); sharedPlan = null; savePlan(); plan.i.forEach(function (x) { syncPlanBtns(x[0]); }); renderPlan();
-    toast(tr('Guardado como tu plan')); track('plan_shared_save');
+    var p = samePlan(sharedPlan);
+    if (!p) {
+      if (!makeRoom()) return;
+      p = addPlan(cleanPlan(sharedPlan)); p.id = newId();
+      track('plan_shared_save');
+    }
+    openPlanId(p.id); p.i.forEach(function (x) { syncPlanBtns(x[0]); });
+    toast(tr('Guardado en Mis planes'));
   });
   savePlan();
 
