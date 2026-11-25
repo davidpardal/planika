@@ -16,15 +16,18 @@ FRAMES = []
 
 
 class Reel:
-    def __init__(self, page, name):
-        self.page, self.name, self.n = page, name, 0
+    def __init__(self, page, name, side=None):
+        self.page, self.name, self.n, self.side = page, name, 0, side  # side: «a» o «b» en los reels con dos móviles
         os.makedirs(os.path.join(OUT, name), exist_ok=True)
 
     def shot(self, dur, cap, tap=None):
-        img = "%s/%03d.jpg" % (self.name, self.n)
+        img = "%s/%s%03d.jpg" % (self.name, self.side or "", self.n)
         self.n += 1
         self.page.screenshot(path=os.path.join(OUT, img), type="jpeg", quality=90)
-        FRAMES.append({"reel": self.name, "img": img, "dur": dur, "cap": cap, "tap": tap})
+        f = {"reel": self.name, "img": img, "dur": dur, "cap": cap, "tap": tap}
+        if self.side:
+            f["side"] = self.side
+        FRAMES.append(f)
 
     def center(self, loc):
         b = loc.bounding_box()
@@ -384,12 +387,74 @@ def reel_idiomas(browser):
     ctx.close()
 
 
+def reel_envivo(browser):
+    """Novedad: planes compartidos en vivo, con dos móviles. Tú compartes «Sábado en Bilbao» (planes reales del sábado 28),
+    Ane lo abre, lo guarda y añade una nota, y a ti te llega. Usa el Supabase real: el plan creado se borra después a mano."""
+    ctx_a, a = new_page(browser)
+    ctx_b, b = new_page(browser)
+    A, B = Reel(a, "envivo", "a"), Reel(b, "envivo", "b")
+    url = SITE + "?prov=48&city=Bilbao&dias=2026-11-28"
+    open_site(a, url)
+    cards = a.locator("#list article[data-id]")
+    ids = [cards.nth(k).get_attribute("data-id") for k in pick_cards(a)]
+    a.evaluate("""ids => { var p = { id: 'sabado', n: 'Sábado en Bilbao', i: ids.map(function (x) { return [x, '2026-11-28']; }), o: [] };
+      localStorage.setItem('planika_plans', JSON.stringify({ a: 'sabado', p: [p] })); }""", ids)
+    open_site(a, url)
+    open_site(b, url)
+    B.shot(0, "intro")
+    A.shot(1.8, "intro")
+    cap = "1 · Abre tu plan"
+    A.tap(a.locator("#menuBtn"), cap, wait=600, hold=0.4)
+    A.tap(a.locator('#sidemenu [data-menu="plan"]'), cap, wait=800, hold=0.6)
+    A.tap(a.locator("#plansList .plans-row", has_text="Sábado en Bilbao"), cap, wait=900, hold=0.8)
+    cap = "2 · Comparte el enlace"
+    cp = a.locator("#planCopy")
+    A.glide_in_to("#planDlg", cp, 380, 0.8, cap)
+    A.tap(cp, cap, wait=700, hold=1.1)
+    a.wait_for_function("() => { var p = JSON.parse(localStorage.getItem('planika_plans')).p[0]; return p.s && p.v >= 1; }", timeout=20000)
+    sid = a.evaluate("() => JSON.parse(localStorage.getItem('planika_plans')).p[0].s")
+    print("ENVIVO_ID=" + sid, flush=True)
+    A.glide_in("#planDlg", 0, 0.7, cap)
+    A.shot(1.3, cap)
+    cap = "3 · Tu cuadrilla lo abre y lo guarda"
+    b.goto(SITE + "?plan=" + sid, wait_until="domcontentloaded", timeout=60000)
+    b.wait_for_function("document.querySelector('#planDlg').open && !document.querySelector('#planShared').hidden", timeout=60000)
+    b.wait_for_timeout(1500)
+    B.shot(1.5, cap)
+    B.tap(b.locator("#planSave"), cap, wait=900, hold=1.0)
+    cap = "4 · Cualquiera puede cambiarlo"
+    B.glide_in_to("#planDlg", b.locator("#planNoteForm"), 520, 0.8, cap)
+    t = b.locator("#planNoteTime")
+    B.tap(t, cap, wait=200, hold=0.2)
+    t.fill("21:00")
+    B.shot(0.4, cap)
+    B.tap(b.locator("#planNoteText"), cap, wait=200, hold=0.2)
+    for chunk in ("Cena de ", "pintxos"):
+        b.keyboard.type(chunk, delay=40)
+        B.shot(0.3, cap)
+    b.keyboard.insert_text(" 🍢")
+    B.shot(0.4, cap)
+    B.tap(b.locator("#planNoteForm button[type=submit]"), cap, wait=600, hold=0.3)
+    B.glide_in_to("#planDlg", b.locator("#planList .plan-item.note"), 300, 0.7, cap)
+    B.shot(0.8, cap)
+    b.wait_for_function("() => { var p = JSON.parse(localStorage.getItem('planika_plans')).p.filter(function (x) { return x.s; })[0]; return p && p.v >= 2; }", timeout=20000)
+    cap = "5 · ¡Y te llega al momento!"
+    a.evaluate("() => document.dispatchEvent(new Event('visibilitychange'))")
+    a.wait_for_function("() => document.querySelector('#planList .plan-item.note')", timeout=20000)
+    a.wait_for_timeout(300)
+    A.shot(1.0, cap)
+    A.glide_in_to("#planDlg", a.locator("#planList .plan-item.note"), 300, 0.8, cap)
+    A.shot(1.8, cap)
+    ctx_a.close()
+    ctx_b.close()
+
+
 def main():
     import shutil
     os.makedirs(OUT, exist_ok=True)
     only = [x for x in os.environ.get("REELS", "buscar,guardar,cerca").split(",") if x]
     fns = {"buscar": reel_buscar, "guardar": reel_guardar, "cerca": reel_cerca, "dias": reel_dias,
-           "miplan": reel_miplan, "misplanes": reel_misplanes, "idiomas": reel_idiomas}
+           "miplan": reel_miplan, "misplanes": reel_misplanes, "idiomas": reel_idiomas, "envivo": reel_envivo}
     old = []
     try:  # se conservan las capturas de los reels que no se repiten
         with open(os.path.join(OUT, "timeline.json"), encoding="utf-8") as fh:
