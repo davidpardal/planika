@@ -1099,7 +1099,7 @@
     $('planNoteDay').innerHTML = days.map(function (d) { return '<option value="' + d + '">' + esc(fmtD(d).replace(',', '')) + '</option>'; }).join('');
     $('planNoteDay').hidden = days.length < 2;
   }
-  function openPlan() { renderPlan(); if (!$('planDlg').open) $('planDlg').showModal(); track('plan_open'); }
+  function openPlan() { $('planCal').hidden = true; renderPlan(); if (!$('planDlg').open) $('planDlg').showModal(); track('plan_open'); }
   function planURL(p) {
     var json = JSON.stringify({ n: p.n, i: p.i, o: p.o });
     var b64 = btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -1120,21 +1120,67 @@
     if (navigator.share) { navigator.share({ title: plan.n || tr('Mi plan'), text: text, url: url }).catch(function () {}); return; }
     window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\n' + tr('Ábrelo en Planika:') + ' ' + url), '_blank', 'noopener');
   }
+  // Notas propias como citas del calendario: a su hora (1 h) o de todo el día
+  function noteTimes(r) {
+    var d = r.d.replace(/-/g, '');
+    if (!r.t) return { allDay: true, start: d, end: addDays(r.d, 1).replace(/-/g, '') };
+    var hh = +r.t.slice(0, 2) + 1, endDay = r.d;
+    if (hh >= 24) { hh -= 24; endDay = addDays(r.d, 1); }
+    return { allDay: false, start: d + 'T' + r.t.replace(':', '') + '00', end: endDay.replace(/-/g, '') + 'T' + pad(hh) + r.t.slice(3) + '00' };
+  }
+  function planEvent(r) { return Object.assign({}, r.e, { start: r.d, end: r.d, sessions: null, subtype: '' }); }  // el día elegido en el plan
+  function noteDetails() { return tr('Nota de tu plan') + (plan.n ? ' «' + plan.n + '»' : '') + ' · Planika'; }
+  function calRows() { return planRows(plan).filter(function (r) { return r.e || r.note != null; }); }
+  // Todo el plan (planes de la agenda y notas) en un .ics: iPhone, Apple Calendar y Outlook lo añaden de una vez
   function planIcs() {
-    var rows = planRows(plan).filter(function (r) { return r.e; });
-    if (!rows.length) { toast(tr('Añade algún plan de la agenda primero')); return; }
+    var rows = calRows();
+    if (!rows.length) { toast(tr('Añade algo a tu plan primero')); return; }
+    var f = function (x) { return String(x).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, function (c) { return '\\' + c; }); };
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
     var all = rows.map(function (r) {
-      var e = Object.assign({}, r.e, { start: r.d, end: r.d, sessions: null, subtype: '' });  // el día elegido en el plan
-      var t = icsText(e);
-      return t.slice(t.indexOf('BEGIN:VEVENT'), t.indexOf('END:VCALENDAR'));
+      if (r.e) { var t = icsText(planEvent(r)); return t.slice(t.indexOf('BEGIN:VEVENT'), t.indexOf('END:VCALENDAR')); }
+      var nt = noteTimes(r);
+      return ['BEGIN:VEVENT', 'UID:nota-' + r.d + '-' + (r.t || '').replace(':', '') + '-' + slug(r.note).slice(0, 30) + '@planikaapp.com', 'DTSTAMP:' + stamp,
+        nt.allDay ? 'DTSTART;VALUE=DATE:' + nt.start : 'DTSTART;TZID=Europe/Madrid:' + nt.start,
+        nt.allDay ? 'DTEND;VALUE=DATE:' + nt.end : 'DTEND;TZID=Europe/Madrid:' + nt.end,
+        'SUMMARY:' + f(r.note), 'DESCRIPTION:' + f(noteDetails()), 'END:VEVENT', ''].join('\r\n');
     }).join('');
     var txt = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Planika//planikaapp.com//ES\r\nCALSCALE:GREGORIAN\r\n' + all + 'END:VCALENDAR';
     var blob = new Blob([txt], { type: 'text/calendar;charset=utf-8' });
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = ((plan.n || 'mi plan').replace(/[^\w\dáéíóúñü ]+/gi, '').trim() || 'mi_plan').replace(/\s+/g, '_') + '.ics';
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-    track('plan_ics');
+    track('plan_ics', { n: rows.length });
   }
+  // «A mi calendario»: todo el plan de una vez (.ics) o, para Google Calendar, que no deja añadir varios a la vez,
+  // un botón por plan y por nota
+  function gcalNote(r) {
+    var nt = noteTimes(r), enc = encodeURIComponent;
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + enc(r.note) + '&dates=' + nt.start + '/' + nt.end +
+      '&details=' + enc(noteDetails()) + '&ctz=Europe/Madrid';
+  }
+  function renderPlanCal() {
+    var rows = calRows(), box = $('planCal');
+    if (!rows.length) { box.hidden = true; toast(tr('Añade algo a tu plan primero')); return; }
+    need(rows.filter(function (r) { return r.e; }).map(function (r) { return r.e; }));
+    var last = '';
+    box.innerHTML = '<p class="plan-cal-h">📱 ' + tr('Todo el plan de una vez (iPhone, Apple Calendar, Outlook)') + '</p>' +
+      '<button type="button" class="btn primary" data-plan-ics="1">📅 ' + tr('Descargar el plan (.ics)') + '</button>' +
+      '<p class="plan-cal-h">' + tr('Google Calendar: un toque por cada plan (Google no deja añadir varios a la vez)') + '</p><div class="plan-gcal">' +
+      rows.map(function (r) {
+        var head = r.d !== last ? '<p class="plan-gcal-day">' + esc(cap(fmtDayName.format(fromIso(r.d)))) + '</p>' : '';
+        last = r.d;
+        var url = r.e ? links(planEvent(r)).google : gcalNote(r);
+        var what = r.e ? title(r.e) : r.note;
+        return head + '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener" data-gcal="1">＋ ' + (r.t ? r.t + ' · ' : '') + esc(what) + '</a>';
+      }).join('') + '</div>';
+    box.hidden = false;
+    box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  $('planCal').addEventListener('click', function (ev) {
+    if (ev.target.closest('[data-plan-ics]')) { planIcs(); return; }
+    if (ev.target.closest('[data-gcal]')) track('plan_gcal');
+  });
   // ?miplan=… (plan compartido: se enseña sin pisar el tuyo) y ?add=<id> (botón «A mi plan» de las fichas)
   function planFromURL() {
     var p = new URLSearchParams(PLAN_Q);
@@ -1172,7 +1218,7 @@
   });
   $('planShare').addEventListener('click', sharePlan);
   $('planCopy').addEventListener('click', function () { copy(planURL(plan), tr('Enlace de tu plan copiado')); });
-  $('planIcs').addEventListener('click', planIcs);
+  $('planIcs').addEventListener('click', function () { if (!$('planCal').hidden) { $('planCal').hidden = true; return; } renderPlanCal(); track('plan_cal_open'); });
   $('planAdd').addEventListener('click', function () { $('planDlg').close(); setView('list'); window.scrollTo({ top: $('list').offsetTop - 80, behavior: 'smooth' }); });
   $('planMap').addEventListener('click', function () {
     $('planDlg').close(); state.planOnly = true; setView('map'); toast(tr('En el mapa solo salen los planes de tu plan'));
