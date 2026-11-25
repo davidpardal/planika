@@ -3,5 +3,7 @@ Allow: /
 # La app guarda búsqueda y filtros en parámetros (?e=, ?prov=, ?cat=, ?q=…) sobre la misma página,
 # que ya tiene canonical a la portada: son navegación facetada y no hace falta rastrearlos.
 Disallow: /?
+# Imágenes para Instagram (site/ig/): no son páginas para buscadores
+Disallow: /ig/
 
 Sitemap: https://planikaapp.com/sitemap.xml
