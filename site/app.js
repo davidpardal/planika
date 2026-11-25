@@ -1240,7 +1240,7 @@
         h += '<div class="plan-warn">⚠ ' + (gap <= 0 ? tr('Empieza a la vez que el anterior') : tr('Empieza solo {n} min después del anterior', { n: gap })) + '</div>';
       }
       if (r.note != null) {
-        h += '<div class="plan-item note"><span class="tm">' + (r.t || '—') + '</span><div><b>' + esc(r.note) + '</b><span>' + tr('Nota tuya') + '</span></div>' +
+        h += '<div class="plan-item note"><span class="tm">' + (r.t || '—') + '</span><div><b>' + esc(r.note) + '</b><span>📌 ' + tr('Nota') + '</span></div>' +
           (shared ? '' : '<button type="button" class="plan-x" data-plan-note="' + r.k + '" aria-label="' + tr('Quitar nota') + '">✕</button>') + '</div>';
       } else if (!r.e) {
         h += '<div class="plan-item gone"><span class="tm">—</span><div><b>' + tr('Este plan ya no está en la agenda') + '</b><span>' + tr('Puede que se haya cancelado o que ya haya pasado') + '</span></div>' +
