@@ -3948,6 +3948,590 @@
 "dur": 1.6,
 "cap": "In English",
 "tap": null
+},
+{
+"reel": "envivo",
+"img": "envivo/b000.jpg",
+"dur": 0,
+"cap": "intro",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/a000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a001.jpg",
+"dur": 0.45,
+"cap": "1 · Abre tu plan",
+"tap": [
+60.4,
+35.0
+],
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a002.jpg",
+"dur": 0.4,
+"cap": "1 · Abre tu plan",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a003.jpg",
+"dur": 0.45,
+"cap": "1 · Abre tu plan",
+"tap": [
+172.2,
+304.2
+],
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a004.jpg",
+"dur": 0.6,
+"cap": "1 · Abre tu plan",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a005.jpg",
+"dur": 0.45,
+"cap": "1 · Abre tu plan",
+"tap": [
+195.0,
+343.5
+],
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a006.jpg",
+"dur": 0.8,
+"cap": "1 · Abre tu plan",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a007.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a008.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a009.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a010.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a011.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a012.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a013.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a014.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a015.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a016.jpg",
+"dur": 0.45,
+"cap": "2 · Comparte el enlace",
+"tap": [
+252.6,
+606.5
+],
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a017.jpg",
+"dur": 1.1,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a018.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a019.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a020.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a021.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a022.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a023.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a024.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a025.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a026.jpg",
+"dur": 1.3,
+"cap": "2 · Comparte el enlace",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/b001.jpg",
+"dur": 1.5,
+"cap": "3 · Tu cuadrilla lo abre y lo guarda",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b002.jpg",
+"dur": 0.45,
+"cap": "3 · Tu cuadrilla lo abre y lo guarda",
+"tap": [
+136.6,
+262.0
+],
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b003.jpg",
+"dur": 1.0,
+"cap": "3 · Tu cuadrilla lo abre y lo guarda",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b004.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b005.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b006.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b007.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b008.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b009.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b010.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b011.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b012.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b013.jpg",
+"dur": 0.45,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": [
+102.9,
+541.0
+],
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b014.jpg",
+"dur": 0.2,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b015.jpg",
+"dur": 0.4,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b016.jpg",
+"dur": 0.45,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": [
+195.0,
+588.0
+],
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b017.jpg",
+"dur": 0.2,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b018.jpg",
+"dur": 0.3,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b019.jpg",
+"dur": 0.3,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b020.jpg",
+"dur": 0.4,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b021.jpg",
+"dur": 0.45,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": [
+75.8,
+687.5
+],
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b022.jpg",
+"dur": 0.3,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b023.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b024.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b025.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b026.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b027.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b028.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b029.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b030.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/b031.jpg",
+"dur": 0.8,
+"cap": "4 · Cualquiera puede cambiarlo",
+"tap": null,
+"side": "b"
+},
+{
+"reel": "envivo",
+"img": "envivo/a027.jpg",
+"dur": 1.0,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a028.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a029.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a030.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a031.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a032.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a033.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a034.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a035.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a036.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
+},
+{
+"reel": "envivo",
+"img": "envivo/a037.jpg",
+"dur": 1.8,
+"cap": "5 · ¡Y te llega al momento!",
+"tap": null,
+"side": "a"
 }
 ]
 }
