@@ -95,6 +95,7 @@
 "06|merida|centro cultural alcazaba": {"checked": "2026-11-21", "lat": 38.915468, "lon": -6.345154, "nombre": "Centro Cultural Alcazaba", "ok": true, "osm": "way/734139254", "q": "Centro Cultural Alcazaba", "tipo": "building=public"},
 "06|merida|centro cultural la antigua": {"checked": "2026-11-21", "ok": false},
 "06|merida|centro cultural santo domingo fundacion cb": {"checked": "2026-11-21", "ok": false},
+"06|merida|escuela de arte y superior de diseno de merida": {"checked": "2026-11-25", "ok": false},
 "06|merida|huerta de otero": {"checked": "2026-11-21", "ok": false},
 "06|merida|liceo de merida": {"checked": "2026-11-23", "ok": false},
 "06|merida|museo nacional de arte romano": {"checked": "2026-11-23", "lat": 38.917243, "lon": -6.339839, "nombre": "Museo Nacional de Arte Romano", "ok": true, "osm": "way/37858770", "q": "Museo Nacional de Arte Romano", "tipo": "tourism=museum"},
