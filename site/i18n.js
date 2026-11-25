@@ -2036,6 +2036,48 @@
 "Enllaç copiat",
 "Ligazón copiada",
 "Link copied"
+],
+"Plan compartido: quien tenga el enlace lo ve y lo edita, y los cambios les llegan a todos.": [
+"Partekatutako plana: esteka duenak ikusi eta editatu dezake, eta aldaketak guztiei iristen zaizkie.",
+"Pla compartit: qui tingui l'enllaç el veu i l'edita, i els canvis arriben a tothom.",
+"Plan compartido: quen teña a ligazón veo e edítao, e os cambios chéganlles a todos.",
+"Shared plan: anyone with the link can see and edit it, and changes reach everyone."
+],
+"Es un plan en vivo: guárdalo y verás los cambios que hagan los demás.": [
+"Zuzeneko plana da: gorde ezazu eta besteen aldaketak ikusiko dituzu.",
+"És un pla en directe: desa-ho i veuràs els canvis que facin els altres.",
+"É un plan en directo: gárdao e verás os cambios que fagan os demais.",
+"It's a live plan: save it and you'll see the changes others make."
+],
+"Compartido": [
+"Partekatua",
+"Compartit",
+"Compartido",
+"Shared"
+],
+"«{p}» se ha actualizado": [
+"«{p}» eguneratu da",
+"«{p}» s'ha actualitzat",
+"«{p}» actualizouse",
+"«{p}» has been updated"
+],
+"¿Borrar «{p}» de tu móvil? Quien tenga el enlace lo seguirá teniendo.": [
+"«{p}» zure mugikorretik ezabatu? Esteka duenak izaten jarraituko du.",
+"Vols esborrar «{p}» del mòbil? Qui tingui l'enllaç el continuarà tenint.",
+"Borrar «{p}» do teu móbil? Quen teña a ligazón seguirá téndoo.",
+"Delete «{p}» from your phone? Anyone with the link will still have it."
+],
+"Ese plan compartido ya no existe": [
+"Partekatutako plan hori ez da existitzen",
+"Aquest pla compartit ja no existeix",
+"Ese plan compartido xa non existe",
+"That shared plan no longer exists"
+],
+"No se ha podido cargar el plan compartido. Prueba en un rato.": [
+"Ezin izan da partekatutako plana kargatu. Saiatu geroxeago.",
+"No s'ha pogut carregar el pla compartit. Prova-ho d'aquí a una estona.",
+"Non se puido cargar o plan compartido. Proba nun anaco.",
+"The shared plan couldn't be loaded. Try again in a while."
 ]
 };
   /*END*/

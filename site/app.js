@@ -1000,13 +1000,16 @@
   function cleanPlan(p) {
     p = p && typeof p === 'object' ? p : {};
     var ok = function (d) { return typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d); };
-    return {
+    var q = {
       id: typeof p.id === 'string' && /^[\w-]{1,24}$/.test(p.id) ? p.id : newId(),
       n: String(p.n || '').slice(0, 60),
       i: (Array.isArray(p.i) ? p.i : []).filter(function (x) { return Array.isArray(x) && typeof x[0] === 'string' && ok(x[1]); }).slice(0, 40),
       o: (Array.isArray(p.o) ? p.o : []).filter(function (x) { return x && ok(x.d) && typeof x.x === 'string'; })
         .map(function (x) { return { d: x.d, t: /^\d{2}:\d{2}$/.test(x.t || '') ? x.t : '', x: x.x.slice(0, 80) }; }).slice(0, 20)
     };
+    // Plan compartido en vivo: id del servidor (va en el enlace), versión y huella de lo último sincronizado
+    if (typeof p.s === 'string' && /^[A-Za-z0-9_-]{22}$/.test(p.s)) { q.s = p.s; q.v = Math.max(0, parseInt(p.v, 10) || 0); q.h = String(p.h || '').slice(0, 16); }
+    return q;
   }
   function loadPlans() {
     var s = null;
@@ -1048,9 +1051,11 @@
     return false;
   }
   function addPlan(p) { store.p.push(p); return p; }
+  function persist() { try { localStorage.setItem('planika_plans', JSON.stringify(store)); } catch (e) { /* sin almacenamiento */ } }
   function savePlan() {
     prune();
-    try { localStorage.setItem('planika_plans', JSON.stringify(store)); } catch (e) { /* sin almacenamiento */ }
+    persist();
+    liveSoon();
     var full = store.p.filter(function (p) { return planSize(p) && !isPast(p); }).length, cur = plan && planSize(plan) && !isPast(plan) ? plan : null;
     $('planPill').hidden = !full;
     $('planPillT').textContent = cur ? (cur.n || tr('Mi plan')) : tr('Mis planes');
@@ -1114,6 +1119,7 @@
     if (ni) bits.push(ni === 1 ? tr('1 plan') : tr('{n} planes', { n: ni }));
     if (no) bits.push(no === 1 ? tr('1 nota') : tr('{n} notas', { n: no }));
     if (!ni && !no) bits.push(tr('Vacío'));
+    if (p.s) bits.push('👥 ' + tr('Compartido'));
     return bits.join(' · ');
   }
   function planRow(p, cls, attr, sub, on) {
@@ -1159,6 +1165,8 @@
     $('planDlg').setAttribute('aria-labelledby', m === 'list' ? 'plansTitle' : 'planName');
     $('planCal').hidden = true;
     syncAppHint();
+    clearInterval(livePoll);
+    livePoll = setInterval(function () { if ($('planDlg').open) livePull(); else clearInterval(livePoll); }, 20000);
     if (!$('planDlg').open) $('planDlg').showModal();
     $('planDlg').scrollTop = 0;
   }
@@ -1174,7 +1182,7 @@
     $('plansPastSum').textContent = tr('Pasados ({n})', { n: past.length });
     $('plansPastList').innerHTML = past.map(function (p) { return planRow(p, 'past', 'data-open-plan', planMeta(p)); }).join('');
   }
-  function openPlans() { sharedPlan = null; showMode('list'); renderPlans(); track('plans_open'); }
+  function openPlans() { sharedPlan = null; showMode('list'); renderPlans(); track('plans_open'); livePullSoon(); }
   function openPlanId(id, focusName) {
     var p = byPlanId(id);
     if (!p) { openPlans(); return; }
@@ -1182,10 +1190,12 @@
     showMode('one'); renderPlan();
     if (focusName) $('planName').focus();
     track('plan_open');
+    livePullSoon();
   }
   function openPlan() { if (plan && !isPast(plan) && planSize(plan)) openPlanId(plan.id); else openPlans(); }
   // Mismo plan (nombre, planes y notas): para no guardar dos veces el que te reenvían o tu propio enlace
   function samePlan(q) {
+    if (q.s) return store.p.filter(function (p) { return p.s === q.s; })[0] || null;
     var sig = JSON.stringify([q.n, q.i, q.o]);
     return store.p.filter(function (p) { return JSON.stringify([p.n, p.i, p.o]) === sig; })[0] || null;
   }
@@ -1233,6 +1243,9 @@
     var rows = planRows(p), h = '', lastDay = '', prev = null, pop = 0;  // pop: los mismos 4 colores que las tarjetas, en orden
     $('planName').value = p.n; $('planName').readOnly = shared;
     $('planShared').hidden = !shared;
+    $('planLive').hidden = !p.s;
+    $('planLive').textContent = '👥 ' + (shared ? tr('Es un plan en vivo: guárdalo y verás los cambios que hagan los demás.')
+      : tr('Plan compartido: quien tenga el enlace lo ve y lo edita, y los cambios les llegan a todos.'));
     if (!rows.length) {
       h = '<div class="empty">' + tr('Tu plan está vacío. Pulsa «＋ Mi plan» en cualquier plan de la lista o de su ficha y aparecerá aquí, ordenado por hora.') + '</div>';
     }
@@ -1286,8 +1299,13 @@
     });
     return lines.join('\n');
   }
+  function liveEnsure(p) {
+    if (!p.s) { p.s = liveId(); p.v = 0; p.h = ''; persist(); track('plan_live_new'); if ($('planDlg').open && !sharedPlan) renderPlan(); }
+    livePush();  // se crea en el servidor mientras eliges con quién compartirlo
+    return liveURL(p);
+  }
   function sharePlan() {
-    var url = planURL(plan), text = planText(plan);
+    var url = liveEnsure(plan), text = planText(plan);
     track('plan_share');
     if (navigator.share) { navigator.share({ title: plan.n || tr('Mi plan'), text: text, url: url }).catch(function () {}); return; }
     window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\n' + tr('Ábrelo en Planika:') + ' ' + url), '_blank', 'noopener');
@@ -1357,6 +1375,87 @@
     if (ev.target.closest('[data-plan-ics]')) { planIcs(); track('plan_ics_' + DEVICE); return; }
     if (ev.target.closest('[data-gcal]')) track('plan_gcal');
   });
+  // ---------- planes compartidos en vivo
+  // Al compartir un plan se guarda en el servidor (Supabase, en la UE) con un id secreto que va en el enlace
+  // (?plan=…): quien lo tenga lo ve y, si lo guarda, lo edita; los cambios les llegan a todos (se traen al abrir
+  // Planika o volver a ella, al abrir Mis planes y cada 20 s con la ventana del plan abierta). Sin cuentas. Si dos
+  // personas lo cambian a la vez, se queda el último cambio. Se borran 6 meses después del último cambio.
+  var LIVE_API = 'https://rqjrrdtdscvcimwzrwxj.supabase.co/rest/v1/rpc/';
+  var LIVE_KEY = 'sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF';  // clave pública: solo llama a las funciones de planes compartidos
+  var liveT = null, liveBusy = false, livePoll = null, lastPull = 0;
+  function liveCall(fn, body) {
+    return fetch(LIVE_API + fn, { method: 'POST', headers: { apikey: LIVE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { if (!r.ok) { var e = new Error('live ' + r.status); e.status = r.status; throw e; } return r.json(); });
+  }
+  function liveBody(p) { return { n: p.n, i: p.i, o: p.o }; }
+  function liveHash(p) {
+    var s = JSON.stringify(liveBody(p)), h = 5381;
+    for (var k = 0; k < s.length; k++) h = (h * 33 + s.charCodeAt(k)) | 0;
+    return (h >>> 0).toString(36);
+  }
+  function liveId() {
+    var b = new Uint8Array(16), s = '';
+    crypto.getRandomValues(b);
+    for (var k = 0; k < b.length; k++) s += String.fromCharCode(b[k]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function liveURL(p) { return location.href.split('?')[0].split('#')[0] + '?plan=' + p.s; }
+  function liveDirty(p) { return !!p.s && (!p.v || p.h !== liveHash(p)); }
+  function liveSoon() { clearTimeout(liveT); if (store.p.some(liveDirty)) liveT = setTimeout(livePush, 1200); }
+  function livePush() {
+    var todo = store.p.filter(liveDirty);
+    if (!todo.length) return Promise.resolve();
+    if (liveBusy) { liveSoon(); return Promise.resolve(); }
+    liveBusy = true;
+    return Promise.all(todo.map(function (p) {
+      var h = liveHash(p), body = liveBody(p);
+      var req = p.v ? liveCall('shared_plan_save', { p_id: p.s, p_plan: body }) : liveCall('shared_plan_create', { p_id: p.s, p_plan: body });
+      return req.then(function (rows) {
+        if (!rows.length) { p.v = 0; return; }  // ya no estaba en el servidor (6 meses sin cambios): se vuelve a crear con el mismo enlace
+        p.v = rows[0].plan_version; p.h = h;
+      }, function (e) {
+        if (!p.v && e.status === 409) p.v = 1;  // ya se había creado (se perdió la respuesta): la próxima vez se guarda
+      });
+    })).then(function () { liveBusy = false; persist(); if (store.p.some(function (p) { return liveDirty(p) && p.v; })) liveSoon(); });
+  }
+  function livePull() {
+    var mine = store.p.filter(function (p) { return p.s && p.v; }).slice(0, 20);
+    if (!mine.length || document.hidden) return Promise.resolve();
+    lastPull = Date.now();
+    return livePush().then(function () {
+      return liveCall('shared_plan_get', { p_ids: mine.map(function (p) { return p.s; }) });
+    }).then(function (rows) {
+      var changed = [];
+      rows.forEach(function (r) {
+        var p = store.p.filter(function (x) { return x.s === r.plan_id; })[0];
+        if (!p || liveDirty(p) || r.plan_version <= p.v) return;  // con cambios tuyos sin subir, se queda lo tuyo
+        var q = cleanPlan(r.plan), ids = p.i.map(function (x) { return x[0]; });
+        p.n = q.n; p.i = q.i; p.o = q.o; p.v = r.plan_version; p.h = liveHash(p);
+        ids.concat(p.i.map(function (x) { return x[0]; })).forEach(syncPlanBtns);
+        changed.push(p);
+      });
+      if (!changed.length) return;
+      savePlan();
+      if ($('planDlg').open && !sharedPlan) redraw();
+      toast(tr('«{p}» se ha actualizado', { p: planTitle(changed[0]) }));
+    }).catch(function () { /* sin conexión: se intentará más tarde */ });
+  }
+  function livePullSoon() { if (Date.now() - lastPull > 5000) livePull(); }
+  function openLivePlan(s) {
+    var mine = store.p.filter(function (p) { return p.s === s; })[0];
+    if (mine) { openPlanId(mine.id); livePull(); return true; }
+    liveCall('shared_plan_get', { p_ids: [s] }).then(function (rows) {
+      if (!rows.length) { toast(tr('Ese plan compartido ya no existe')); return; }
+      var q = cleanPlan(rows[0].plan);
+      q.s = s; q.v = rows[0].plan_version; q.h = liveHash(q);
+      sharedPlan = q; showMode('one'); renderPlan();
+      track('plan_live_open');
+    }).catch(function () { toast(tr('No se ha podido cargar el plan compartido. Prueba en un rato.')); });
+    return true;
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) livePush(); else livePullSoon(); });
+  window.addEventListener('online', function () { livePush().then(livePull); });
+
   // ?miplan=… (plan compartido: se enseña y se puede guardar como uno más) y ?add=<id> (botón «＋ Mi plan» de las fichas)
   function openSharedPlan(b64) {
     try {
@@ -1377,6 +1476,7 @@
       var u;
       try { u = new URL(urls[i]); } catch (e) { continue; }
       if (!/(^|\.)planikaapp\.com$|^localhost$|^127\.0\.0\.1$/.test(u.hostname)) continue;
+      if (/^[A-Za-z0-9_-]{22}$/.test(u.searchParams.get('plan') || '')) return { live: u.searchParams.get('plan') };
       if (u.searchParams.get('miplan')) return { miplan: u.searchParams.get('miplan') };
       if (u.searchParams.get('add')) return { add: u.searchParams.get('add') };
       var f = u.pathname.match(/\/e\/(?:[^\/]*-)?([A-Za-z0-9_]+)\.html$/);
@@ -1385,6 +1485,7 @@
     return null;
   }
   function openShared(l) {
+    if (l.live) return openLivePlan(l.live);
     if (l.miplan) return openSharedPlan(l.miplan);
     if (BY_ID[l.add]) { togglePlanAdd(l.add); return true; }
     toast(tr('Este plan ya no está en la agenda'));
@@ -1392,6 +1493,7 @@
   }
   function planFromURL() {
     var p = new URLSearchParams(PLAN_Q);
+    if (/^[A-Za-z0-9_-]{22}$/.test(p.get('plan') || '')) openLivePlan(p.get('plan'));
     if (p.get('miplan')) openSharedPlan(p.get('miplan'));
     if (p.get('add') && BY_ID[p.get('add')]) togglePlanAdd(p.get('add'));
     if (p.get('su') || p.get('sx')) {  // Android: «Compartir» → Planika
@@ -1400,7 +1502,7 @@
     }
   }
   // En Safari del iPhone, si se llega con un enlace de plan: aviso para llevarlo a la app de la pantalla de inicio
-  var FROM_LINK = ios && !standalone && /[?&](miplan|add)=/.test(PLAN_Q);
+  var FROM_LINK = ios && !standalone && /[?&](miplan|add|plan)=/.test(PLAN_Q);
   function linkToCopy() { return location.origin + location.pathname + PLAN_Q; }
   $('planAppCopy').addEventListener('click', function () { copy(linkToCopy(), tr('Enlace copiado')); track('plan_app_hint_copy'); });
   $('plansPaste').addEventListener('click', function () {
@@ -1449,7 +1551,7 @@
     savePlan(); renderPlan();
   });
   $('planShare').addEventListener('click', sharePlan);
-  $('planCopy').addEventListener('click', function () { copy(planURL(plan), tr('Enlace de tu plan copiado')); });
+  $('planCopy').addEventListener('click', function () { copy(liveEnsure(plan), tr('Enlace de tu plan copiado')); });
   $('planIcs').addEventListener('click', function () { if (!$('planCal').hidden) { $('planCal').hidden = true; return; } renderPlanCal(); track('plan_cal_open'); });
   $('planAdd').addEventListener('click', function () { $('planDlg').close(); setView('list'); window.scrollTo({ top: $('list').offsetTop - 80, behavior: 'smooth' }); });
   $('planMap').addEventListener('click', function () {
@@ -1461,13 +1563,15 @@
     if (!plan || !makeRoom()) return;
     var p = cleanPlan(JSON.parse(JSON.stringify(plan)));
     p.id = newId(); p.n = tr('{p} (copia)', { p: plan.n || tr('Mi plan') }).slice(0, 60);
+    delete p.s; delete p.v; delete p.h;
     addPlan(p); p.i.forEach(function (x) { syncPlanBtns(x[0]); });
     track('plan_dup');
     openPlanId(p.id, true);
   });
   $('planDel').addEventListener('click', function () {
     var p = plan;
-    if (!p || (planSize(p) && !confirm(tr('¿Borrar el plan «{p}»?', { p: planTitle(p) })))) return;
+    if (!p || ((planSize(p) || p.s) && !confirm(p.s ? tr('¿Borrar «{p}» de tu móvil? Quien tenga el enlace lo seguirá teniendo.', { p: planTitle(p) })
+      : tr('¿Borrar el plan «{p}»?', { p: planTitle(p) })))) return;
     store.p = store.p.filter(function (x) { return x !== p; });
     setActive(sortPlans(livePlans())[0] || null);
     if (state.planOnly) { state.planOnly = false; refresh(); }
@@ -1481,7 +1585,7 @@
     if (!p) {
       if (!makeRoom()) return;
       p = addPlan(cleanPlan(sharedPlan)); p.id = newId();
-      track('plan_shared_save');
+      track(p.s ? 'plan_live_save' : 'plan_shared_save');
     }
     openPlanId(p.id); p.i.forEach(function (x) { syncPlanBtns(x[0]); });
     toast(tr('Guardado en Mis planes'));
@@ -1500,4 +1604,5 @@
   if (state.view !== 'list') setView(state.view);
   if (openId) openModal(openId);
   planFromURL();
+  livePull();  // planes compartidos en vivo: trae lo que hayan cambiado los demás
 })();
