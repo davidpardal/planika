@@ -33,6 +33,34 @@
 <script defer src="/consent.js"></script>
 </head>
 <body>
+<button type="button" class="menu-btn" id="menuBtn" aria-controls="sidemenu" aria-expanded="false"><span aria-hidden="true">☰</span> Menú</button>
+<div class="menu-veil" id="menuVeil" hidden></div>
+<nav class="sidemenu" id="sidemenu" aria-label="Menú de Planika" hidden>
+  <div class="sm-head">
+    <a class="sm-brand" href="./" aria-label="Planika, inicio"><span>P</span><span>l</span><span>a</span><span>n</span><span>i</span><span>k</span><span>a</span></a>
+    <button type="button" class="sm-close" id="menuClose" aria-label="Cerrar menú">✕</button>
+  </div>
+  <a class="sm-big lilac" href="./?favs=1" data-menu="favs"><span aria-hidden="true">⭐</span> Mis favoritos <span class="pill" id="menuFavCount"></span></a>
+  <details class="sm-acc hot" open>
+    <summary><span aria-hidden="true">♥</span> Mi Planika</summary>
+    <a href="./?view=cal" data-menu="cal"><span aria-hidden="true">▦</span> Calendario: elige tus días</a>
+    <a href="./?view=map" data-menu="map"><span aria-hidden="true">◎</span> Mapa de planes</a>
+    <a href="./" data-menu="near"><span aria-hidden="true">➤</span> Planes cerca de mí</a>
+    <a href="promociona-tu-evento.html"><span aria-hidden="true">＋</span> Añade tu plan</a>
+  </details>
+  <details class="sm-acc yellow">
+    <summary><span aria-hidden="true">🗓</span> Planes destacados</summary>
+    <a href="planes-hoy.html">Qué hacer hoy</a>
+    <a href="planes-este-fin-de-semana.html">Este fin de semana</a>
+    <a href="puente-diciembre.html">Puente de diciembre</a>
+    <a href="planes-gratis.html">Planes gratis</a>
+    <a href="t/navidad.html">Navidad</a>
+    <a href="festivales.html">Festivales</a>
+  </details>
+  <a class="sm-big teal" href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener"><span aria-hidden="true">📸</span> Síguenos en Instagram</a>
+  <a class="sm-big yellow" href="promociona-tu-evento.html"><span aria-hidden="true">✉</span> Contacto y promoción</a>
+  <p class="sm-foot"><a href="fuentes.html">Fuentes</a> · <a href="privacidad.html">Privacidad</a> · <a href="aviso-legal.html">Aviso legal</a></p>
+</nav>
 <header class="hero">
   <div class="wrap hero-grid">
     <div class="hero-text">

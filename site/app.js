@@ -922,6 +922,42 @@
     window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () { /* sin service worker */ }); });
   }
 
+  // ---------- menú lateral
+  var sideMenu = $('sidemenu'), sideVeil = $('menuVeil'), menuBtn = $('menuBtn');  // (menu ya es el menú «⋯»)
+  function openSide() {
+    var n = loadFavs().size;
+    $('menuFavCount').textContent = n ? String(n) : '';
+    sideMenu.hidden = false; sideVeil.hidden = false; document.body.classList.add('menu-open');
+    requestAnimationFrame(function () { sideMenu.classList.add('open'); });
+    menuBtn.setAttribute('aria-expanded', 'true');
+    $('menuClose').focus();
+    track('menu_open');
+  }
+  function closeSide() {
+    sideMenu.classList.remove('open'); sideVeil.hidden = true; document.body.classList.remove('menu-open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    setTimeout(function () { if (!sideMenu.classList.contains('open')) sideMenu.hidden = true; }, 230);
+    menuBtn.focus();
+  }
+  menuBtn.addEventListener('click', openSide);
+  $('menuClose').addEventListener('click', closeSide);
+  sideVeil.addEventListener('click', closeSide);
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !sideMenu.hidden) closeSide(); });
+  // Las opciones de la propia app no recargan la página: cambian la vista o el filtro y bajan a la lista
+  sideMenu.addEventListener('click', function (ev) {
+    var a = ev.target.closest('[data-menu]');
+    if (!a) return;
+    ev.preventDefault();
+    var act = a.dataset.menu;
+    closeSide();
+    if (act === 'favs') { state.favs = true; $('favs').checked = true; refresh(); setView('list'); }
+    else if (act === 'cal' || act === 'map') setView(act);
+    else if (act === 'near') { $('geoBtn').click(); }
+    var target = act === 'map' ? 'mapView' : act === 'cal' ? 'calendar' : act === 'near' ? 'near' : 'list';
+    setTimeout(function () { window.scrollTo({ top: $(target).offsetTop - 80, behavior: 'smooth' }); }, 60);
+    track('menu_' + act);
+  });
+
   // ---------- arranque
   var openId = readURL();
   window.PLANIKA_D = applyChunk;
