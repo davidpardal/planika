@@ -182,7 +182,10 @@ class TestStatic(unittest.TestCase):
             self.assertEqual(chunks, 1)
             with open(os.path.join(tmp, "core.js"), encoding="utf-8") as fh:
                 core = fh.read()
-            rows = json.loads(core.split("window.PLANES_CORE=")[1].rstrip(";\n"))["events"]
+            data = json.loads(core.split("window.PLANES_CORE=")[1].rstrip(";\n"))
+            rows = data["events"]
+            # la lista de tipos sale del código aunque el payload (events.json viejo) traiga otra: los índices dependen de ella
+            self.assertEqual([c["key"] for c in data["categories"]], static.CAT_KEYS)
             self.assertEqual(rows[1][0], evs[1]["id"])
             self.assertEqual(rows[1][13], 2)  # con entradas, no gratis
             with open(os.path.join(tmp, "d", "0.js"), encoding="utf-8") as fh:
@@ -262,6 +265,8 @@ class TestPermanent(unittest.TestCase):
                 self.assertIn(price, promo)
             self.assertNotIn('value="FR33"', promo)           # el formulario solo admite provincias españolas
             self.assertRegex(promo, r"\d+ planes de \d+ provincias")  # cifras del día, no escritas a mano
+            self.assertIn('name="kind" value="lugar"', promo)       # escape rooms, boleras, parques de bolas…
+            self.assertIn("?tipo=lugar#publicar", promo)
             with open(os.path.join(tmp, "p", "zaragoza.html"), encoding="utf-8") as fh:
                 self.assertIn("../promociona-tu-evento.html", fh.read())
             with _all_sitemaps(tmp) as fh:
@@ -523,3 +528,83 @@ class TestOrganizadores(unittest.TestCase):
                 page = fh.read()
         self.assertIn("⭐ Destacado", page)
         self.assertLess(page.index("Concierto destacado"), page.index("Antes en el calendario"))
+
+
+class TestLocalesDeOcio(unittest.TestCase):
+    """Escape rooms, boleras, parques de bolas…: solo entran si los publica su dueño, y sin planes no se ven."""
+
+    def _lugar(self, **kw):
+        raw = {"id": "org-lugar001", "kind": "lugar", "title": "Escape room de prueba", "url": "https://example.org/escape",
+               "province": "Álava", "city": "Vitoria-Gasteiz", "venue": "Escape room de prueba", "address": "Calle de prueba 1",
+               "category": "ocio", "horario": "De martes a domingo, de 11:00 a 21:00",
+               "description": "Sala de escape de prueba para los tests.", "checked": "2026-11-26"}
+        raw.update(kw)
+        return raw
+
+    def test_categories_exist_but_only_organizers_fill_them(self):
+        from planes import classify, llm
+        self.assertEqual(classify.CATEGORY_KEYS[-1], "otros")   # el índice de «otros» es el último en core.js
+        self.assertTrue(set(classify.ORGANIZER_ONLY) <= set(classify.CATEGORY_KEYS))
+        self.assertNotIn("ocio (", llm.SYSTEM)                   # la IA no clasifica planes de las agendas aquí
+        for types, title in ((["escape room"], "Escape room: la cárcel"), (["parque infantil"], "Parque de bolas en Navidad")):
+            self.assertNotIn(classify.classify(types, title), classify.ORGANIZER_ONLY)
+
+    def test_submission_of_a_place_becomes_an_all_year_listing(self):
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+        import organizadores as tool
+        from planes import src_organizadores
+        row = {"sub_id": "abcd1234-0000", "sent": "2026-11-26", "plan": "gratis",
+               "data": {"kind": "lugar", "title": "Escape room de prueba", "start": None, "end": None, "time": "",
+                        "horario": "Mar-dom 11-21", "city": "Vitoria-Gasteiz", "province_code": "01", "venue": "Escape room de prueba",
+                        "address": "Calle de prueba 1", "category": "ocio", "url": "https://example.org/escape",
+                        "description": "Sala de escape de prueba para los tests."}}
+        e = tool.entry(row, checked="2026-11-26")
+        self.assertEqual(e["kind"], "lugar")
+        self.assertNotIn("start", e)
+        self.assertEqual(src_organizadores.problems(e), [])
+        self.assertIn("Todo el año (Mar-dom 11-21)", tool.summary([e]))
+        self.assertIn("falta address", src_organizadores.problems(dict(e, address="")))
+        self.assertIn("un local destacado necesita destacado_hasta", src_organizadores.problems(dict(e, destacado=True)))
+
+    def _fetch(self, raws):
+        from planes import src_organizadores
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "organizadores.json")
+            with open(path, "w", encoding="utf-8") as fh:
+                json.dump({"events": raws}, fh)
+            old = src_organizadores.PATH
+            src_organizadores.PATH = path
+            try:
+                return src_organizadores.fetch(lambda m: None)
+            finally:
+                src_organizadores.PATH = old
+
+    def test_place_is_published_as_permanent_with_all_year_label(self):
+        evs = self._fetch([self._lugar(), self._lugar(id="org-lugar002", destacado=True, destacado_hasta="2099-01-01")])
+        self.assertEqual(len(evs), 2)
+        ev = evs[0]
+        self.assertTrue(util.is_permanent(ev))
+        self.assertEqual(ev["start"], util.iso(util.today()))
+        self.assertIn("Horario: De martes a domingo", ev["description"])
+        self.assertFalse(ev.get("featured"))
+        self.assertTrue(evs[1]["featured"])
+        self.assertEqual(static.permanent_label(ev), "Todo el año")
+        self.assertIn('"@type": "EntertainmentBusiness"', json.dumps(static.event_jsonld(ev, "https://x"), ensure_ascii=False))
+        self.assertNotIn(">Permanente<", publish._card(ev, "", util.iso(util.today())))
+
+    def test_empty_organizer_categories_have_no_page_nor_link(self):
+        other = util.event("Agenda", "2", "Concierto", "2099-05-01", province_code="01", city="Vitoria-Gasteiz", category="musica")
+        with tempfile.TemporaryDirectory() as tmp:
+            publish.write_pages(tmp, [other])
+            self.assertFalse(os.path.exists(os.path.join(tmp, "t", "ocio.html")))
+            with open(os.path.join(tmp, "t", "musica.html"), encoding="utf-8") as fh:
+                self.assertNotIn("t/ocio.html", fh.read())
+        with tempfile.TemporaryDirectory() as tmp:
+            publish.write_pages(tmp, [other] + self._fetch([self._lugar()]))
+            with open(os.path.join(tmp, "t", "ocio.html"), encoding="utf-8") as fh:
+                page = fh.read()
+            self.assertIn("Escape room de prueba", page)
+            self.assertIn("tipo=lugar", page)                       # «¿Tienes un escape room? Publícalo gratis»
+            self.assertIn("Hay 1 local abierto todo el año de escape rooms y ocio en España.", page)
+            self.assertNotIn("museos, monumentos", page)
+            self.assertFalse(os.path.exists(os.path.join(tmp, "t", "parques.html")))

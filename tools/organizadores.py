@@ -40,12 +40,15 @@ def entry(row, checked=None):
     """Un envío -> entrada de data/organizadores.json (mismo formato que data/destacados.json)."""
     d = row.get("data") or {}
     url = d.get("url") or d.get("tickets_url") or ""
+    lugar = d.get("kind") == "lugar"  # local abierto todo el año (escape room, parque de bolas…): sin fechas
     out = {
         "id": "org-" + str(row["sub_id"])[:8],
+        "kind": "lugar" if lugar else "",
         "title": d.get("title") or "",
-        "start": d.get("start") or "",
-        "end": d.get("end") or d.get("start") or "",
-        "time": d.get("time") or "",
+        "start": "" if lugar else d.get("start") or "",
+        "end": "" if lugar else d.get("end") or d.get("start") or "",
+        "time": "" if lugar else d.get("time") or "",
+        "horario": d.get("horario") or "",
         "city": d.get("city") or "",
         "province": PROV.get(d.get("province_code") or "", ""),
         "venue": d.get("venue") or "",
@@ -64,7 +67,8 @@ def entry(row, checked=None):
         "sent": row.get("sent") or "",
         "checked": checked or iso(today()),
     }
-    return {k: v for k, v in out.items() if v not in ("", None) or k in ("id", "title", "start", "url", "province", "checked")}
+    keep = ("id", "title", "url", "province", "checked") + (() if lugar else ("start",))
+    return {k: v for k, v in out.items() if v not in ("", None) or k in keep}
 
 
 def load(path, key):
@@ -77,11 +81,14 @@ def load(path, key):
 
 
 def summary(new):
-    lines = ["Eventos enviados desde «Publica tu evento» pendientes de aprobar. **Fusionar este PR los publica** en la "
+    lines = ["Eventos y locales enviados desde «Publica tu evento» pendientes de aprobar. **Fusionar este PR los publica** en la "
              "siguiente actualización. Para descartar uno, quítalo del fichero o dime su id.", "",
              "| id | Evento | Fecha | Lugar | Opción |", "|---|---|---|---|---|"]
     for e in new:
-        when = e["start"] + (("–" + e["end"]) if e.get("end") and e["end"] != e["start"] else "") + ((" " + e["time"]) if e.get("time") else "")
+        if e.get("kind") == "lugar":
+            when = "Todo el año" + ((" (" + e["horario"].replace("|", "/") + ")") if e.get("horario") else "")
+        else:
+            when = e["start"] + (("–" + e["end"]) if e.get("end") and e["end"] != e["start"] else "") + ((" " + e["time"]) if e.get("time") else "")
         where = ", ".join(x for x in (e.get("venue"), e.get("city"), e.get("province")) if x)
         lines.append("| `%s` | [%s](%s) | %s | %s | %s |" % (e["id"], e["title"].replace("|", "/"), e.get("url", ""), when,
                                                          where.replace("|", "/"), PLANES.get(e.get("plan"), e.get("plan"))))
@@ -101,7 +108,7 @@ def main():
     known = {e.get("id") for e in current} | set(load(DESCARTADOS, "ids"))
     rows = pending()
     new = [entry(r) for r in rows]
-    new = [e for e in new if e["id"] not in known and e["start"] >= iso(today())]
+    new = [e for e in new if e["id"] not in known and (e.get("kind") == "lugar" or e["start"] >= iso(today()))]
     print("Envíos en Supabase: %d · nuevos para revisar: %d" % (len(rows), len(new)))
     if not new:
         return 0

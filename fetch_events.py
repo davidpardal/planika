@@ -215,6 +215,7 @@ def main():
         moved = salas.apply(payload["events"])
         payload["sources"] = sources
         payload["provinces"] = [{"code": c, "name": n, "ccaa": a} for c, n, a in PROVINCIAS]  # por si se ha añadido alguna
+        payload["categories"] = [{"key": k, "name": n, "icon": i} for k, n, i in CATEGORIES]  # y lo mismo con los tipos
         payload["updated_at"] = util.stamp()
         with open(EVENTS_FILE, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))

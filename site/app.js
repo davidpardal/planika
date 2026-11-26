@@ -113,8 +113,10 @@
     return e.sessions[e.sessions.length - 1];
   }
   function isPermanent(e) { return e.subtype === 'Permanente'; }
+  // Locales que publican sus dueños (escape rooms, parques de bolas…): abiertos todo el año, no «visitas»
+  var ALL_YEAR = { ocio: 1, parques: 1 };
   function whenText(e) {
-    if (isPermanent(e)) return tr('Visita permanente');
+    if (isPermanent(e)) return tr(ALL_YEAR[e.category] ? 'Todo el año' : 'Visita permanente');
     if (e.sessions) {
       var n = nextSession(e); var rest = e.sessions.filter(function (d) { return d > n; }).length;
       return fmtD(n) + (e.time ? ' · ' + e.time : '') + (rest ? ' (' + tr('+{n} fechas', { n: rest }) + ')' : '');
@@ -209,7 +211,8 @@
     var pc = provCounts();
     $('seoLinks').innerHTML = DATA.provinces.filter(function (p) { return pc[p.code]; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); })
       .map(function (p) { return '<a href="p/' + slug(p.name) + '.html">' + esc(p.name) + '</a>'; }).join(' · ') + '<br>' +
-      DATA.categories.map(function (c) { return '<a href="t/' + c.key + '.html">' + c.icon + ' ' + esc(tr(c.name)) + '</a>'; }).join(' · ');
+      DATA.categories.filter(function (c) { return !ALL_YEAR[c.key] || EVENTS.some(function (e) { return e.category === c.key; }); })
+        .map(function (c) { return '<a href="t/' + c.key + '.html">' + c.icon + ' ' + esc(tr(c.name)) + '</a>'; }).join(' · ');
     $('q').value = state.q; $('from').value = state.from; $('to').value = state.to; $('free').checked = state.free; $('tickets').checked = state.tickets;
     $('tod').value = state.tod; $('aud').value = state.aud; $('pmax').value = state.pmax; $('favs').checked = state.favs; $('radius').value = String(state.radius);
     saveFavs();
@@ -434,8 +437,9 @@
       if (state.tod === 'tarde' && (h < 14 || h >= 20)) return false;
       if (state.tod === 'noche' && h < 20) return false;
     }
-    if (state.aud === 'familiar' && e.category !== 'infantil' && !/nin|infan|famil|haur|nens/.test(norm(e.audience || ''))) return false;
-    if (state.aud === 'adultos' && e.category === 'infantil') return false;
+    var kids = e.category === 'infantil' || e.category === 'parques';
+    if (state.aud === 'familiar' && !kids && !/nin|infan|famil|haur|nens/.test(norm(e.audience || ''))) return false;
+    if (state.aud === 'adultos' && kids) return false;
     if (state.pmax !== '') { var pn = priceNum(e); if (pn === null || pn > +state.pmax) return false; }
     if (state.geo) { var d = dist(e); if (d === null || d > state.radius) return false; }
     if (!ignoreDates && !inDates(e)) return false;
@@ -470,7 +474,7 @@
     var pop = opts.i != null ? opts.i % 4 : popOf(e.id);
     var c = CATS[e.category] || { icon: '✨', name: 'Otros planes' };
     var ongoing = !e.sessions && !isPermanent(e) && e.start < TODAY && e.end >= TODAY;
-    var permBadge = isPermanent(e) ? '<span class="badge">' + tr('Permanente') + '</span>' : '';
+    var permBadge = isPermanent(e) && !ALL_YEAR[e.category] ? '<span class="badge">' + tr('Permanente') + '</span>' : '';
     var img = e.image ? '<img src="' + esc(e.image) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
     var where = [e.venue, e.city, e.province && e.province !== e.city ? e.province : ''].filter(Boolean).join(' · ');
     var price = e.free ? '<span class="badge free">' + tr('Gratis') + '</span>' : (e.price ? '<span class="badge">' + esc(e.price) + '</span>' : '');

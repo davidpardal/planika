@@ -2079,6 +2079,48 @@
 "Non se puido cargar o plan compartido. Proba nun anaco.",
 "The shared plan couldn't be loaded. Try again in a while."
 ],
+"Escape rooms y ocio": [
+"Escape room-ak eta aisialdia",
+"Escape rooms i oci",
+"Escape rooms e lecer",
+"Escape rooms and leisure"
+],
+"Escape rooms y ocio en toda España": [
+"Escape room-ak eta aisialdia Espainia osoan",
+"Escape rooms i oci a tot Espanya",
+"Escape rooms e lecer en toda España",
+"Escape rooms and leisure across Spain"
+],
+"Escape rooms y ocio en {x}": [
+"{x}: escape room-ak eta aisialdia",
+"Escape rooms i oci a {x}",
+"Escape rooms e lecer en {x}",
+"Escape rooms and leisure in {x}"
+],
+"Parques infantiles y de bolas": [
+"Haur-parkeak eta bola-parkeak",
+"Parcs infantils i de boles",
+"Parques infantís e de bólas",
+"Indoor play and soft play"
+],
+"Parques infantiles y de bolas en toda España": [
+"Haur-parkeak eta bola-parkeak Espainia osoan",
+"Parcs infantils i de boles a tot Espanya",
+"Parques infantís e de bólas en toda España",
+"Indoor play and soft play across Spain"
+],
+"Parques infantiles y de bolas en {x}": [
+"{x}: haur-parkeak eta bola-parkeak",
+"Parcs infantils i de boles a {x}",
+"Parques infantís e de bólas en {x}",
+"Indoor play and soft play in {x}"
+],
+"Todo el año": [
+"Urte osoan",
+"Tot l'any",
+"Todo o ano",
+"All year round"
+],
 "Destacado": [
 "Nabarmendua",
 "Destacat",
