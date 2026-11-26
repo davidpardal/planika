@@ -1,0 +1,191 @@
+{
+ "about": "Reels de Planika para Instagram. tools/instagram.py --reels los publica en planikaapp.com/ig/ (noindex): los más nuevos primero; los que tienen «until» dejan de salir al día siguiente.",
+ "reels": [
+  {
+   "file": "reel-este-finde-por-0-euros-27-29-nov.mp4",
+   "poster": "reel-este-finde-por-0-euros-27-29-nov.jpg",
+   "title": "Este finde por 0 € (27–29 nov)",
+   "kind": "viral",
+   "made": "2026-11-26",
+   "caption": "🆓 Planes GRATIS este finde (27–29 nov) 👇\n\nConciertos, danza, títeres y luces de Navidad por 0 € en Bilbao, Vitoria, Donostia, Tolosa, Madrid, Barcelona, Zaragoza, Málaga y Pamplona.\n\nHay más de 400 planes gratis este finde, con horarios y mapa, en planikaapp.com\n📌 Guárdalo y etiqueta a quien te llevas\n\n#PlanesGratis #PlanesFinde #QueHacerEsteFinde #Bilbao #Vitoria #Donostia #Madrid #Barcelona #Zaragoza #Malaga #Pamplona #Planika",
+   "until": "2026-11-29"
+  },
+  {
+   "file": "reel-mercadillos-navidad-abren-ya.mp4",
+   "poster": "reel-mercadillos-navidad-abren-ya.jpg",
+   "title": "Mercadillos de Navidad que abren ya",
+   "kind": "viral",
+   "made": "2026-11-26",
+   "caption": "🎄 Los mercadillos de Navidad que abren YA (27–29 nov) 👇\n\nFira de Santa Llúcia y Fira de Nadal del Port (Barcelona), Mercado de Navidad de Oviedo, Fira de Nadal de Mataró, mercadillo solidario de Zaragoza, Tordera, Ascó…\n\nTodos los planes de Navidad, por ciudad, en planikaapp.com\n📌 Guárdalo para ir este finde\n\n#MercadilloNavideño #MercadosDeNavidad #Navidad #FiraDeSantaLlucia #Barcelona #Oviedo #Zaragoza #Mataro #PlanesFinde #Planika",
+   "until": "2026-11-29"
+  },
+  {
+   "file": "reel-puente-con-ninos.mp4",
+   "poster": "reel-puente-con-ninos.jpg",
+   "title": "8 planes con niños para el puente",
+   "kind": "viral",
+   "made": "2026-11-26",
+   "caption": "🧒 8 planes con niños para el puente de diciembre (5–8 dic) 👇\n\nEl Pot Petit en Lleida, Shrek The Musical Jr. en Madrid, Cantajuegos, Cirkomotik en Zaragoza, los belenes vivientes de Navata y Santa Pau y talleres navideños gratis.\n\nMás planes con niños para el puente en planikaapp.com\n📌 Guárdalo y etiqueta a quien tiene peques\n\n#PuenteDeDiciembre #PlanesConNiños #PlanesEnFamilia #Navidad #Madrid #Zaragoza #Lleida #Segovia #Planika",
+   "until": "2026-12-08"
+  },
+  {
+   "file": "reel-publica-tu-evento-gratis.mp4",
+   "poster": "reel-publica-tu-evento-gratis.jpg",
+   "title": "¿Organizas un evento? Publícalo gratis",
+   "kind": "explicacion",
+   "made": "2026-11-26",
+   "caption": "📣 ¿Organizas un concierto, una obra, una feria o un taller? Publícalo GRATIS en Planika 👇\n\n1️⃣ Rellenas el formulario en la web, sin registrarte\n2️⃣ Lo revisamos a mano\n3️⃣ Publicado en 24–48 h en tu provincia, tu ciudad y tu tipo de plan\n\nTu evento tiene ficha propia, botón de entradas y «Añadir al calendario». ¿Quieres más visibilidad? Destácalo desde 5 € (los 10 primeros, gratis).\n\n👉 planikaapp.com/promociona-tu-evento.html\n\n#Organizadores #Eventos #Agenda #Cultura #PublicaTuEvento #Planika"
+  },
+  {
+   "file": "reel-tienes-un-local-de-ocio.mp4",
+   "poster": "reel-tienes-un-local-de-ocio.jpg",
+   "title": "¿Tienes un escape room, un spa o una bodega?",
+   "kind": "explicacion",
+   "made": "2026-11-26",
+   "caption": "🔐🛝🧗🧖🍇 ¿Tienes un escape room, un parque de bolas, una empresa de multiaventura, un spa o una bodega? Publícalo GRATIS en Planika 👇\n\nSale en tu provincia y tu ciudad, con tu horario y el enlace a tu web. Los parques de bolas, también en «Con niños». Y si quieres, destácalo 30 días por 5 €.\n\n👉 planikaapp.com/promociona-tu-evento.html\n🏷️ Etiqueta a ese local que te encanta\n\n#EscapeRoom #ParqueDeBolas #Multiaventura #Spa #Enoturismo #Bodegas #OcioEnFamilia #Planika"
+  },
+  {
+   "file": "reel-planika-en-15-segundos.mp4",
+   "poster": "reel-planika-en-15-segundos.jpg",
+   "title": "Planika en 15 segundos",
+   "kind": "explicacion",
+   "made": "2026-11-26",
+   "caption": "📱 Planika en 15 segundos: la web para saber qué hacer hoy, este finde o en el puente 👇\n\n+13.700 planes en 46 provincias, actualizados cada día con las agendas oficiales. Gratis y sin registrarte.\n\n🔎 Filtra por día, ciudad y tipo de plan\n🧒 Solo con niños o solo gratis\n📍 Qué hay cerca, en el mapa\n👥 Monta el plan en vivo con tu cuadrilla\n🌍 En euskara, català, galego o English\n\n👉 planikaapp.com\n\n#QueHacerHoy #PlanesFinde #Planes #Agenda #Ocio #Planika"
+  },
+  {
+   "file": "novedad-calendario-dias-sueltos.mp4",
+   "poster": "novedad-calendario-dias-sueltos.jpg",
+   "title": "Novedad: elige varios días sueltos",
+   "kind": "explicacion",
+   "made": "2026-11-24",
+   "caption": "📅 Novedad en Planika: ahora puedes elegir varios días en el calendario, aunque no sean seguidos 👇\n\nIdeal para ver los planes de tus días libres de un vistazo.\n\n👉 planikaapp.com\n\n#Planika #Novedad #PlanesFinde #QueHacerHoy"
+  },
+  {
+   "file": "novedad-crea-tu-plan.mp4",
+   "poster": "novedad-crea-tu-plan.jpg",
+   "title": "Novedad: crea tu plan paso a paso",
+   "kind": "explicacion",
+   "made": "2026-11-25",
+   "caption": "🗺️ Novedad en Planika: crea tu plan paso a paso 👇\n\nGuarda los planes que te gustan y ordénalos en tu propio plan del día.\n\n👉 planikaapp.com\n\n#Planika #Novedad #Planes #QueHacerHoy"
+  },
+  {
+   "file": "novedad-mis-planes.mp4",
+   "poster": "novedad-mis-planes.jpg",
+   "title": "Novedad: varios planes, cada uno con su gente",
+   "kind": "explicacion",
+   "made": "2026-11-25",
+   "caption": "👥 Novedad en Planika: ahora tienes varios planes, cada uno con su gente 👇\n\nUno para la cuadrilla, otro para la familia, otro para el puente…\n\n👉 planikaapp.com\n\n#Planika #Novedad #Planes #Cuadrilla"
+  },
+  {
+   "file": "novedad-planes-en-vivo.mp4",
+   "poster": "novedad-planes-en-vivo.jpg",
+   "title": "Novedad: planes en vivo",
+   "kind": "explicacion",
+   "made": "2026-11-25",
+   "caption": "⚡ Novedad en Planika: planes en vivo 👇\n\nComparte tu plan con un enlace: todos lo editan y los cambios llegan a todos los móviles. Sin cuentas y gratis.\n\n👉 planikaapp.com\n\n#Planika #Novedad #Planes #Cuadrilla #PlanesConAmigos"
+  },
+  {
+   "file": "novedad-planika-en-tu-idioma.mp4",
+   "poster": "novedad-planika-en-tu-idioma.jpg",
+   "title": "Novedad: Planika en tu idioma",
+   "kind": "explicacion",
+   "made": "2026-11-25",
+   "caption": "🌍 Planika ya habla tu idioma: euskara, català, galego y English 👇\n\n👉 planikaapp.com\n\n#Planika #Euskara #Català #Galego #Novedad"
+  },
+  {
+   "file": "reel-en-vivo-4-pasos.mp4",
+   "poster": "reel-en-vivo-4-pasos.jpg",
+   "title": "Planes en vivo en 4 pasos",
+   "kind": "explicacion",
+   "made": "2026-11-26",
+   "caption": "👥 Planes en vivo en 4 pasos 👇\n\nCrea tu plan, compártelo con un enlace y todo el grupo lo edita a la vez. Sin cuentas y gratis.\n\n👉 planikaapp.com\n\n#Planika #PlanesConAmigos #Cuadrilla #Planes"
+  },
+  {
+   "file": "reel-en-vivo-6-respuestas.mp4",
+   "poster": "reel-en-vivo-6-respuestas.jpg",
+   "title": "Planes en vivo: 6 respuestas rápidas",
+   "kind": "explicacion",
+   "made": "2026-11-26",
+   "caption": "❓ Planes en vivo: 6 respuestas rápidas 👇\n\n¿Hace falta cuenta? No. ¿Quién puede editarlo? Quien tenga el enlace. ¿Cuánto cuesta? Nada.\n\n👉 planikaapp.com\n\n#Planika #PlanesConAmigos #Cuadrilla"
+  },
+  {
+   "file": "reel-en-vivo-antes-ahora.mp4",
+   "poster": "reel-en-vivo-antes-ahora.jpg",
+   "title": "Deja de organizar planes así",
+   "kind": "viral",
+   "made": "2026-11-26",
+   "caption": "🙃 Deja de organizar planes así 👇\n\nAntes: capturas que se pierden y 50 mensajes para decidir una hora. Ahora: un enlace que todo el grupo edita en vivo.\n\n👉 planikaapp.com\n🏷️ Etiqueta a quien siempre organiza\n\n#Planika #PlanesConAmigos #Cuadrilla #Planes"
+  },
+  {
+   "file": "reel-grupo-planes-en-vivo.mp4",
+   "poster": "reel-grupo-planes-en-vivo.jpg",
+   "title": "El grupo del finde, en vivo",
+   "kind": "viral",
+   "made": "2026-11-25",
+   "caption": "📲 Así se monta un plan con la cuadrilla en Planika 👇\n\nUn enlace, todos editan y el cambio llega a todos los móviles.\n\n👉 planikaapp.com\n\n#Planika #PlanesConAmigos #Cuadrilla"
+  },
+  {
+   "file": "reel-que-hacer-este-finde-en-bilbao-27-29-nov.mp4",
+   "poster": "reel-que-hacer-este-finde-en-bilbao-27-29-nov.jpg",
+   "title": "Qué hacer este finde en Bilbao (27–29 nov)",
+   "kind": "viral",
+   "made": "2026-11-24",
+   "caption": "🗓 Qué hacer este finde en Bilbao (27–29 nov) 👇\n\nTodos los planes, con horarios y mapa, en planikaapp.com\n\n#Bilbao #PlanesBilbao #QueHacerEnBilbao #PlanesFinde #Planika",
+   "until": "2026-11-29"
+  },
+  {
+   "file": "reel-que-hacer-este-finde-en-vitoria-27-29-nov.mp4",
+   "poster": "reel-que-hacer-este-finde-en-vitoria-27-29-nov.jpg",
+   "title": "Qué hacer este finde en Vitoria (27–29 nov)",
+   "kind": "viral",
+   "made": "2026-11-24",
+   "caption": "🗓 Qué hacer este finde en Vitoria-Gasteiz (27–29 nov) 👇\n\nTodos los planes, con horarios y mapa, en planikaapp.com\n\n#Vitoria #VitoriaGasteiz #PlanesVitoria #PlanesFinde #Planika",
+   "until": "2026-11-29"
+  },
+  {
+   "file": "reel-que-hacer-este-finde-en-madrid-27-29-nov.mp4",
+   "poster": "reel-que-hacer-este-finde-en-madrid-27-29-nov.jpg",
+   "title": "Qué hacer este finde en Madrid (27–29 nov)",
+   "kind": "viral",
+   "made": "2026-11-24",
+   "caption": "🗓 Qué hacer este finde en Madrid (27–29 nov) 👇\n\nTodos los planes, con horarios y mapa, en planikaapp.com\n\n#Madrid #PlanesMadrid #QueHacerEnMadrid #PlanesFinde #Planika",
+   "until": "2026-11-29"
+  },
+  {
+   "file": "reel-que-hacer-este-finde-en-barcelona-27-29-nov.mp4",
+   "poster": "reel-que-hacer-este-finde-en-barcelona-27-29-nov.jpg",
+   "title": "Qué hacer este finde en Barcelona (27–29 nov)",
+   "kind": "viral",
+   "made": "2026-11-24",
+   "caption": "🗓 Qué hacer este finde en Barcelona (27–29 nov) 👇\n\nTodos los planes, con horarios y mapa, en planikaapp.com\n\n#Barcelona #PlanesBarcelona #QueFerABarcelona #PlanesFinde #Planika",
+   "until": "2026-11-29"
+  },
+  {
+   "file": "reel-luces-navidad-tu-ciudad.mp4",
+   "poster": "reel-luces-navidad-tu-ciudad.jpg",
+   "title": "¿Cuándo se encienden las luces en tu ciudad?",
+   "kind": "viral",
+   "made": "2026-11-26",
+   "caption": "🎄 ¿Cuándo se encienden las luces de Navidad en tu ciudad? Días y horas de esta semana 👇\n\nMás ciudades y todos los planes de Navidad en planikaapp.com\n💬 Comenta tu ciudad\n\n#LucesDeNavidad #Navidad #Encendido #Vitoria #Sevilla #Zaragoza #Malaga #Pamplona #Planika",
+   "until": "2026-11-29"
+  },
+  {
+   "file": "reel-8-planes-puente.mp4",
+   "poster": "reel-8-planes-puente.jpg",
+   "title": "8 planes para el puente que valen el viaje",
+   "kind": "viral",
+   "made": "2026-11-26",
+   "caption": "🎒 8 planes para el puente de diciembre (5–8 dic) que valen el viaje 👇\n\nDurangoko Azoka, el mercado artesano de Gijón, la Fira de l'Avet, belenes vivientes y más.\n\nMás de 3.300 planes para el puente en planikaapp.com\n📌 Guárdalo y etiqueta a quien te llevas\n\n#PuenteDeDiciembre #Puente #PlanesFinde #Planika",
+   "until": "2026-12-08"
+  },
+  {
+   "file": "reel-pov-grupo-puente.mp4",
+   "poster": "reel-pov-grupo-puente.jpg",
+   "title": "POV: el grupo decidiendo el puente",
+   "kind": "viral",
+   "made": "2026-11-26",
+   "caption": "😅 POV: el grupo decidiendo qué hacer en el puente 👇\n\nTodos los planes del puente en planikaapp.com\n\n#PuenteDeDiciembre #Cuadrilla #PlanesConAmigos #Planika",
+   "until": "2026-12-08"
+  }
+ ]
+}
