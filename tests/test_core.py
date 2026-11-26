@@ -546,6 +546,10 @@ class TestLocalesDeOcio(unittest.TestCase):
         self.assertEqual(classify.CATEGORY_KEYS[-1], "otros")   # el índice de «otros» es el último en core.js
         self.assertTrue(set(classify.ORGANIZER_ONLY) <= set(classify.CATEGORY_KEYS))
         self.assertNotIn("ocio (", llm.SYSTEM)                   # la IA no clasifica planes de las agendas aquí
+        for k in classify.ORGANIZER_ONLY:                        # cada tipo nuevo: nombre de búsqueda y «¿Tienes…? Publícalo»
+            self.assertIn(k, publish.CAT_INTENT)
+            self.assertIn(k, publish.LOCAL_ASK)
+            self.assertNotIn("%s (" % k, llm.SYSTEM)
         for types, title in ((["escape room"], "Escape room: la cárcel"), (["parque infantil"], "Parque de bolas en Navidad")):
             self.assertNotIn(classify.classify(types, title), classify.ORGANIZER_ONLY)
 
@@ -590,6 +594,7 @@ class TestLocalesDeOcio(unittest.TestCase):
         self.assertTrue(evs[1]["featured"])
         self.assertEqual(static.permanent_label(ev), "Todo el año")
         self.assertIn('"@type": "EntertainmentBusiness"', json.dumps(static.event_jsonld(ev, "https://x"), ensure_ascii=False))
+        self.assertEqual(static.event_jsonld(dict(ev, category="bienestar"), "https://x")["@type"], "DaySpa")
         self.assertNotIn(">Permanente<", publish._card(ev, "", util.iso(util.today())))
 
     def test_empty_organizer_categories_have_no_page_nor_link(self):

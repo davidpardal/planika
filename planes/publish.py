@@ -238,7 +238,8 @@ _PROMO = """<!doctype html>
 <p>Una ficha propia que Google entiende (fecha, lugar y entradas), y tu evento en los listados de su provincia, su ciudad y su tipo de plan. Este es un plan publicado hoy:</p>
 %(example)s
 <h2 id="locales" style="margin:26px 0 10px">¿Tienes un local de ocio?</h2>
-<p>Escape rooms, boleras, karts, láser tag, parques de trampolines, parques de bolas e infantiles… Publica tu local gratis: sale en tu provincia y tu ciudad, con «Todo el año», tu horario y tu web, en <strong>🔐 Escape rooms y ocio</strong> o en <strong>🛝 Parques infantiles y de bolas</strong> (también en el filtro «Con niños»).</p>
+<p>Escape rooms, boleras, karts, parques de bolas, multiaventura, spas, bodegas… Publica tu local gratis: sale en tu provincia y tu ciudad, con «Todo el año», tu horario y tu web, en su tipo de plan:</p>
+<p>%(local_cats)s</p>
 <p><a class="btn primary" href="?tipo=lugar#publicar">Publicar mi local</a></p>
 <h2 style="margin:26px 0 10px">¿Tu evento ya está en Planika?</h2>
 <p>Muchos eventos llegan solos desde las agendas de ayuntamientos y diputaciones. Búscalo antes de enviarlo: si ya está y ves algo mal, mándanos la corrección con el formulario.</p>
@@ -251,7 +252,7 @@ _PROMO = """<!doctype html>
 <form class="pf" id="pf" novalidate>
 <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:900;margin-bottom:8px">¿Qué publicas?</legend><div class="opts">
 <label class="opt"><input type="radio" name="kind" value="evento" checked> Un evento con fecha</label>
-<label class="opt"><input type="radio" name="kind" value="lugar"> <span>Un local abierto todo el año <small style="font-weight:600">(escape room, bolera, parque de bolas…)</small></span></label></div></fieldset>
+<label class="opt"><input type="radio" name="kind" value="lugar"> <span>Un local abierto todo el año <small style="font-weight:600">(escape room, parque de bolas, multiaventura, spa, bodega…)</small></span></label></div></fieldset>
 <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:900;margin-bottom:8px">¿Qué quieres?</legend><div class="opts">%(plan_opts)s</div></fieldset>
 <label><span data-ev>Nombre del evento *</span><span data-lu hidden>Nombre del local *</span><input name="title" required minlength="3" maxlength="140" autocomplete="off"></label>
 <div class="two" data-ev><label>Fecha *<input type="date" name="start" required min="%(today)s"></label><label>Hora<input type="time" name="time"></label></div>
@@ -344,8 +345,8 @@ _FAQ = [
      "Publicar es gratis: tu evento tiene ficha propia y aparece en los listados de su provincia y su categoría. Si quieres más visibilidad, destacarlo cuesta 5 € (por evento, o 30 días si es un local) (12 € con Instagram, o 20 € un bono de 5). Los 10 primeros destacados son gratis."),
     ("¿Qué es un evento destacado?",
      "Sale el primero (como mucho tres destacados a la vez) en los listados de su provincia y su categoría, y en «Hoy» y «Este finde» los días que toca, con la etiqueta «Destacado», hasta el día del evento. Al terminar te mandamos cuántas veces apareció en Google y cuántos clics tuvo."),
-    ("¿Puedo publicar mi escape room, bolera o parque de bolas?",
-     "Sí. Elige «Un local abierto todo el año» en el formulario. Tu local sale con «Todo el año», tu horario y tu web en su provincia, su ciudad y en «Escape rooms y ocio» o «Parques infantiles y de bolas». Publicarlo es gratis; destacarlo 30 días cuesta 5 €."),
+    ("¿Puedo publicar mi escape room, parque de bolas, spa o bodega?",
+     "Sí. Elige «Un local abierto todo el año» en el formulario. Tu local sale con «Todo el año», tu horario y tu web en su provincia, su ciudad y su tipo: escape rooms y ocio, parques infantiles y de bolas, aventura y turismo activo, spas y bienestar o bodegas y experiencias. Publicarlo es gratis; destacarlo 30 días cuesta 5 €."),
     ("¿Cuándo se publica mi evento?",
      "Revisamos cada envío a mano para evitar spam. Un evento aprobado suele estar publicado en 24–48 horas."),
     ("¿Puedo poner mi enlace de venta de entradas?",
@@ -380,7 +381,9 @@ def _promo_page(events=(), t0=None):
                         for c, n, _ in sorted(PROVINCIAS, key=lambda x: norm(x[1])) if c.isdigit())
     cat_opts = "".join('<option value="%s">%s %s</option>' % (k, icon, html.escape(name))
                        for k, name, icon in CATEGORIES if k != "otros") + '<option value="otros">✨ Otros planes</option>'
-    return _PROMO % dict(site=SITE_URL, analytics=static.BEACON, faq=faq_html, example=example, prices=prices,
+    local_cats = " · ".join("<strong>%s %s</strong>" % (CAT_ICON[k], html.escape(CAT_NAME[k])) for k in ORGANIZER_ONLY) + \
+        " (los parques también salen en el filtro «Con niños»)."
+    return _PROMO % dict(site=SITE_URL, analytics=static.BEACON, faq=faq_html, example=example, prices=prices, local_cats=local_cats,
                          plan_opts=plan_opts, prov_opts=prov_opts, cat_opts=cat_opts, today=t0,
                          n_events=fmt_n(len(dated)), n_provs=len({e["province_code"] for e in dated}),
                          api=json.dumps(PROMO_API), key=json.dumps(PROMO_KEY),
@@ -434,8 +437,13 @@ CAT_INTENT = {
     "deporte": "Deporte", "gastro": "Ferias, mercados y gastronomía", "infantil": "Planes con niños",
     "navidad": "Planes de Navidad", "fiestas": "Fiestas y tradiciones", "naturaleza": "Rutas y visitas guiadas",
     "charlas": "Charlas, libros y talleres", "ocio": "Escape rooms y ocio", "parques": "Parques infantiles y de bolas",
+    "aventura": "Aventura y turismo activo", "bienestar": "Spas y bienestar", "experiencias": "Bodegas y experiencias",
     "otros": "Otros planes",
 }
+# «¿Tienes …? Publícalo gratis» en las páginas de los tipos que llenan los propios locales
+LOCAL_ASK = {"ocio": "un escape room, una bolera o un karting", "parques": "un parque de bolas o un parque infantil",
+             "infantil": "un parque de bolas o un parque infantil", "aventura": "una empresa de multiaventura o turismo activo",
+             "bienestar": "un spa o un balneario", "experiencias": "una bodega o un taller de experiencias"}
 FIRST_PAGE = 60      # tarjetas en la primera página de cada hub
 ARCHIVE_PAGE = 150   # planes por página en el listado completo de cada provincia
 CITY_MIN = 40        # planes con fecha para que una ciudad (sin provincia del mismo nombre) tenga página
@@ -1176,9 +1184,9 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
             desc = "%s en toda España: %s, con horario, dirección y web, por provincia." % (
                 intent, "1 local" if len(items) == 1 else "%s locales y planes" % fmt_n(len(items)))
         intro = _intro(items, "de Navidad en España" if key == "navidad" else "de %s en España" % intent.lower(), t0)
-        if key in ORGANIZER_ONLY or key == "infantil":  # estas listas las llenan los propios locales
+        if key in LOCAL_ASK:  # estas listas las llenan los propios locales
             intro += ('<p class="hint">¿Tienes %s? <a href="../promociona-tu-evento.html?tipo=lugar#publicar">Publícalo gratis en Planika</a>.</p>'
-                      % ("un escape room, una bolera o un karting" if key == "ocio" else "un parque de bolas o un parque infantil"))
+                      % LOCAL_ASK[key])
         if key == "navidad":
             secs = xmas_sections(upcoming(events), t0)
             yr = season_year(t0)

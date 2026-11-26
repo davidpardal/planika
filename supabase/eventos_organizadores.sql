@@ -1,6 +1,7 @@
 -- Eventos que envían los organizadores desde «Publica tu evento» (proyecto Supabase de Planika, eu-west-1).
 -- Aplicado con las migraciones «eventos_organizadores» y «organizadores_locales» (26/11/2026): la segunda añade los
--- locales abiertos todo el año (kind = lugar: escape rooms, parques de bolas…) y las categorías ocio y parques.
+-- locales abiertos todo el año (kind = lugar: escape rooms, parques de bolas…) y las categorías ocio y parques;
+-- «organizadores_mas_tipos» suma aventura, bienestar y experiencias.
 --
 -- - La tabla tiene RLS sin políticas y sin permisos para anon: nadie puede leerla ni escribirla directamente.
 -- - submit_event(p): valida y guarda un envío. Límites: 5 envíos al día por correo y 300 al día en total.
@@ -93,7 +94,8 @@ begin
   cat := public._sub_text(p, 'category', 20);
   if (cat = '' and k = 'lugar')
      or (cat <> '' and cat not in ('musica', 'escena', 'expos', 'cine', 'deporte', 'gastro', 'infantil', 'navidad',
-                                   'fiestas', 'naturaleza', 'charlas', 'ocio', 'parques', 'otros')) then
+                                   'fiestas', 'naturaleza', 'charlas', 'ocio', 'parques', 'aventura', 'bienestar',
+                                   'experiencias', 'otros')) then
     raise exception 'categoría no válida' using errcode = '22023';
   end if;
   pl := coalesce(nullif(public._sub_text(p, 'plan', 30), ''), 'gratis');

@@ -2121,6 +2121,60 @@
 "Todo o ano",
 "All year round"
 ],
+"Aventura y turismo activo": [
+"Abentura eta turismo aktiboa",
+"Aventura i turisme actiu",
+"Aventura e turismo activo",
+"Adventure and outdoor activities"
+],
+"Aventura y turismo activo en toda España": [
+"Abentura eta turismo aktiboa Espainia osoan",
+"Aventura i turisme actiu a tot Espanya",
+"Aventura e turismo activo en toda España",
+"Adventure and outdoor activities across Spain"
+],
+"Aventura y turismo activo en {x}": [
+"{x}: abentura eta turismo aktiboa",
+"Aventura i turisme actiu a {x}",
+"Aventura e turismo activo en {x}",
+"Adventure and outdoor activities in {x}"
+],
+"Spas y bienestar": [
+"Spa-ak eta ongizatea",
+"Spas i benestar",
+"Spas e benestar",
+"Spas and wellness"
+],
+"Spas y bienestar en toda España": [
+"Spa-ak eta ongizatea Espainia osoan",
+"Spas i benestar a tot Espanya",
+"Spas e benestar en toda España",
+"Spas and wellness across Spain"
+],
+"Spas y bienestar en {x}": [
+"{x}: spa-ak eta ongizatea",
+"Spas i benestar a {x}",
+"Spas e benestar en {x}",
+"Spas and wellness in {x}"
+],
+"Bodegas y experiencias": [
+"Upategiak eta esperientziak",
+"Cellers i experiències",
+"Adegas e experiencias",
+"Wineries and experiences"
+],
+"Bodegas y experiencias en toda España": [
+"Upategiak eta esperientziak Espainia osoan",
+"Cellers i experiències a tot Espanya",
+"Adegas e experiencias en toda España",
+"Wineries and experiences across Spain"
+],
+"Bodegas y experiencias en {x}": [
+"{x}: upategiak eta esperientziak",
+"Cellers i experiències a {x}",
+"Adegas e experiencias en {x}",
+"Wineries and experiences in {x}"
+],
 "Destacado": [
 "Nabarmendua",
 "Destacat",

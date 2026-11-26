@@ -378,6 +378,9 @@ def event_jsonld(e, canonical, t0=None):
     return ld
 
 
+PLACE_TYPE = {"aventura": "SportsActivityLocation", "bienestar": "DaySpa", "experiencias": "TouristAttraction"}
+
+
 def place_jsonld(e, canonical):
     """Las visitas permanentes (museos, monumentos, espacios naturales) no son eventos: Google pide no marcarlas
     como Event. Se describen como TouristAttraction con su dirección y coordenadas."""
@@ -388,7 +391,8 @@ def place_jsonld(e, canonical):
         addr["addressLocality"] = e["city"]
     if e.get("province"):
         addr["addressRegion"] = e["province"]
-    kind = "EntertainmentBusiness" if e.get("category") in ORGANIZER_ONLY else "TouristAttraction"  # escape room, bolera, parque de bolas
+    kind = (PLACE_TYPE.get(e.get("category"), "EntertainmentBusiness") if e.get("category") in ORGANIZER_ONLY
+            else "TouristAttraction")  # locales de ocio que publican sus dueños; museos y monumentos
     ld = {"@context": "https://schema.org", "@type": kind, "name": display_title(e),
           "url": canonical, "address": addr}
     if e.get("lat") is not None and e.get("lon") is not None:

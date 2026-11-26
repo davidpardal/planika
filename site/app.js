@@ -114,7 +114,7 @@
   }
   function isPermanent(e) { return e.subtype === 'Permanente'; }
   // Locales que publican sus dueños (escape rooms, parques de bolas…): abiertos todo el año, no «visitas»
-  var ALL_YEAR = { ocio: 1, parques: 1 };
+  var ALL_YEAR = { ocio: 1, parques: 1, aventura: 1, bienestar: 1, experiencias: 1 };
   function whenText(e) {
     if (isPermanent(e)) return tr(ALL_YEAR[e.category] ? 'Todo el año' : 'Visita permanente');
     if (e.sessions) {

@@ -18,12 +18,16 @@ CATEGORIES = [
     ("charlas", "Charlas, libros y talleres", "📚"),
     ("ocio", "Escape rooms y ocio", "🔐"),
     ("parques", "Parques infantiles y de bolas", "🛝"),
+    ("aventura", "Aventura y turismo activo", "🧗"),
+    ("bienestar", "Spas y bienestar", "🧖"),
+    ("experiencias", "Bodegas y experiencias", "🍇"),
     ("otros", "Otros planes", "✨"),
 ]
 CATEGORY_KEYS = [c[0] for c in CATEGORIES]
-# Solo se llenan con lo que envían sus dueños desde «Publica tu evento» (escape rooms, boleras, parques de bolas…):
-# ninguna regla ni el clasificador con IA mandan aquí planes de las agendas, y mientras estén vacías no se muestran.
-ORGANIZER_ONLY = ("ocio", "parques")
+# Solo se llenan con lo que envían sus dueños desde «Publica tu evento» (escape rooms, parques de bolas, multiaventura,
+# spas, bodegas…): ninguna regla ni el clasificador con IA mandan aquí planes de las agendas, y mientras estén vacías
+# no se muestran.
+ORGANIZER_ONLY = ("ocio", "parques", "aventura", "bienestar", "experiencias")
 
 # Reglas por palabras clave sobre el tipo declarado por la fuente y el título.
 # El orden importa: la primera regla que casa gana.
