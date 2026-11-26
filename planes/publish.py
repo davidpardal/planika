@@ -186,6 +186,9 @@ _PAGE = """<!doctype html>
 # el PR diario de tools/organizadores.py), precios de los destacados, un ejemplo real y cifras del día.
 PROMO_API = "https://rqjrrdtdscvcimwzrwxj.supabase.co/rest/v1/rpc/submit_event"
 PROMO_KEY = "sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF"  # clave pública: solo llama a funciones con validación
+# Enlaces de pago de Stripe (Payment Links) de cada opción de pago. Vacíos: el pago aún no está activo y la página lo dice.
+# Con enlace, al enviar el formulario sale el botón «Pagar» con la referencia del envío y el correo ya rellenos.
+STRIPE_LINKS = {"destacado": "", "destacado_instagram": "", "bono": ""}
 PRICES = [  # (opción del formulario, nombre, precio, qué incluye)
     ("gratis", "Publicar", "0 €", "Ficha propia de tu evento, en los listados de tu provincia y tu categoría, con enlace a tus entradas. Siempre gratis."),
     ("destacado", "Destacado", "5 €", "Arriba en tu provincia y tu categoría (y en «Hoy» y «Este finde» cuando toque) con la etiqueta «Destacado», hasta el día del evento (máx. 30 días; un local, 30 días). Al final, un informe de cuántas veces salió en Google y cuántos clics tuvo."),
@@ -247,7 +250,7 @@ _PROMO = """<!doctype html>
 <h2 id="precios" style="margin:26px 0 10px">Precios</h2>
 <div class="pr-grid">%(prices)s</div>
 <p class="launch">🚀 Lanzamiento: los 10 primeros destacados son gratis. Elige «Destacado» en el formulario y te escribimos.</p>
-<p class="src">Precios por evento, IVA incluido. El pago de los destacados se activará muy pronto; hasta entonces, te contamos cómo hacerlo por correo. Pagar solo cambia el orden dentro de Planika y siempre se marca como «Destacado»: la posición en Google no se puede comprar.</p>
+<p class="src">%(pay_note)s Pagar solo cambia el orden dentro de Planika y siempre se marca como «Destacado»: la posición en Google no se puede comprar.</p>
 <h2 id="publicar" style="margin:26px 0 10px">Publica tu evento o tu local</h2>
 <form class="pf" id="pf" novalidate>
 <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:900;margin-bottom:8px">¿Qué publicas?</legend><div class="opts">
@@ -272,6 +275,7 @@ _PROMO = """<!doctype html>
 <div class="hp" aria-hidden="true"><label>Web<input name="hp" tabindex="-1" autocomplete="off"></label></div>
 <label class="chk"><input type="checkbox" name="ok" required> <span>Confirmo que puedo publicar este evento o local y su imagen, que los datos son correctos y que he leído la <a href="privacidad.html#organizadores">política de privacidad</a>.</span></label>
 <p class="msg" id="pfMsg" hidden></p>
+<p id="pfPay" hidden><a class="btn primary" id="pfPayLink" href="#" rel="noopener">💳 Pagar</a></p>
 <button class="btn primary" type="submit" id="pfSend">Enviar</button>
 </form>
 <h2 style="margin:26px 0 10px">Cómo funciona</h2>
@@ -288,6 +292,7 @@ _PROMO = """<!doctype html>
 <script>
 (function () {
   var f = document.getElementById('pf'), msg = document.getElementById('pfMsg'), btn = document.getElementById('pfSend');
+  var PAY = %(pay)s, PRICE = %(price_map)s;
   var KEYS = ['title', 'start', 'end', 'time', 'horario', 'province_code', 'city', 'venue', 'address', 'category', 'price', 'url', 'tickets_url', 'image', 'description', 'organizer', 'email', 'hp'];
   // Evento con fecha o local abierto todo el año: cambian los campos obligatorios
   function kind() { return (f.querySelector('input[name=kind]:checked') || {}).value || 'evento'; }
@@ -306,6 +311,7 @@ _PROMO = """<!doctype html>
   if (plan && f.querySelector('input[name=plan][value="' + plan + '"]')) f.querySelector('input[name=plan][value="' + plan + '"]').checked = true;
   f.addEventListener('submit', function (ev) {
     ev.preventDefault();
+    document.getElementById('pfPay').hidden = true;
     if (!f.checkValidity()) { f.reportValidity(); return; }
     var p = {};
     KEYS.forEach(function (k) { p[k] = (f.elements[k].value || '').trim(); });
@@ -319,8 +325,16 @@ _PROMO = """<!doctype html>
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (r) {
         if (!r.ok) throw new Error((r.j && r.j.message) || 'error');
+        var pay = PAY[p.plan], ref = String(r.j);
         f.reset(); setKind();
-        show('¡Recibido! (referencia ' + r.j + '). Lo revisamos y normalmente está publicado en 24–48 horas. Si falta algo, te escribimos.', true);
+        if (pay) {
+          var u = pay + (pay.indexOf('?') < 0 ? '?' : '&') + 'client_reference_id=' + encodeURIComponent(ref) + '&prefilled_email=' + encodeURIComponent(p.email);
+          document.getElementById('pfPayLink').href = u;
+          document.getElementById('pfPayLink').textContent = '💳 Pagar ' + (PRICE[p.plan] || '') + ' y activar el destacado';
+          document.getElementById('pfPay').hidden = false;
+        }
+        show('¡Recibido! (referencia ' + r.j + '). Lo revisamos y normalmente está publicado en 24–48 horas. Si falta algo, te escribimos.' +
+             (p.plan === 'gratis' ? '' : pay ? ' Para el destacado, paga con el botón de abajo.' : ' Sobre el destacado, te escribimos al correo.'), true);
         try { if (window.gtag) gtag('event', 'publica_evento_enviado', { plan: p.plan }); } catch (e) {}
       })
       .catch(function (e) {
@@ -383,7 +397,11 @@ def _promo_page(events=(), t0=None):
                        for k, name, icon in CATEGORIES if k != "otros") + '<option value="otros">✨ Otros planes</option>'
     local_cats = " · ".join("<strong>%s %s</strong>" % (CAT_ICON[k], html.escape(CAT_NAME[k])) for k in ORGANIZER_ONLY) + \
         " (los parques también salen en el filtro «Con niños»)."
+    pay = {k: u for k, u in STRIPE_LINKS.items() if u}
+    pay_note = ("Precios por evento, IVA incluido. Al enviar el formulario pagas con tarjeta, Apple Pay o Google Pay (pago seguro con Stripe)."
+                if pay else "Precios por evento, IVA incluido. El pago de los destacados se activará muy pronto; hasta entonces, te contamos cómo hacerlo por correo.")
     return _PROMO % dict(site=SITE_URL, analytics=static.BEACON, faq=faq_html, example=example, prices=prices, local_cats=local_cats,
+                         pay=json.dumps(pay), price_map=json.dumps({k: p for k, _, p, _ in PRICES}, ensure_ascii=False), pay_note=pay_note,
                          plan_opts=plan_opts, prov_opts=prov_opts, cat_opts=cat_opts, today=t0,
                          n_events=fmt_n(len(dated)), n_provs=len({e["province_code"] for e in dated}),
                          api=json.dumps(PROMO_API), key=json.dumps(PROMO_KEY),

@@ -613,3 +613,35 @@ class TestLocalesDeOcio(unittest.TestCase):
             self.assertIn("Hay 1 local abierto todo el año de escape rooms y ocio en España.", page)
             self.assertNotIn("museos, monumentos", page)
             self.assertFalse(os.path.exists(os.path.join(tmp, "t", "parques.html")))
+
+
+class TestAvisosYPagos(unittest.TestCase):
+    """Aviso de envíos nuevos (Telegram) sin repetir los ya propuestos, y enlaces de pago de Stripe en la página."""
+
+    def test_aviso_only_new_submissions(self):
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+        import organizadores as tool
+        a = {"id": "org-aaaa1111", "title": "Concierto", "city": "Bilbao", "start": "2099-05-10", "end": "2099-05-10", "plan": "gratis"}
+        b = {"id": "org-bbbb2222", "kind": "lugar", "title": "Escape room", "city": "Vitoria-Gasteiz", "plan": "destacado"}
+        self.assertEqual(tool.aviso([a, b], {"org-aaaa1111", "org-bbbb2222"}), "")     # ya avisados: nada
+        msg = tool.aviso([a, b], {"org-aaaa1111"})
+        self.assertTrue(msg.startswith("🆕 Planika: 1 envío nuevo para revisar"))
+        self.assertIn("• Escape room — Vitoria-Gasteiz · Todo el año · Destacado (5 €)", msg)
+        self.assertIn("⭐ 1 quiere destacado", msg)
+        self.assertNotIn("Concierto", msg)
+        self.assertIn("2 envíos nuevos", tool.aviso([a, b], set()))
+
+    def test_stripe_links_only_when_configured(self):
+        page = publish._promo_page([], "2026-11-26")
+        self.assertIn("se activará muy pronto", page)
+        self.assertIn("var PAY = {}", page)
+        old = dict(publish.STRIPE_LINKS)
+        publish.STRIPE_LINKS["destacado"] = "https://buy.stripe.com/test_ejemplo"
+        try:
+            page = publish._promo_page([], "2026-11-26")
+        finally:
+            publish.STRIPE_LINKS.clear()
+            publish.STRIPE_LINKS.update(old)
+        self.assertNotIn("se activará muy pronto", page)
+        self.assertIn('"destacado": "https://buy.stripe.com/test_ejemplo"', page)
+        self.assertIn("client_reference_id", page)

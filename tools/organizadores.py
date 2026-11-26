@@ -7,7 +7,10 @@ data/organizadores_descartados.json. El workflow organizadores.yml lo sube a la 
 actualiza) un pull request: fusionarlo es aprobar y publicar. Para descartar un envío, su id va a
 data/organizadores_descartados.json.
 
-python3 tools/organizadores.py [--resumen /tmp/resumen.md]   # escribe el resumen del PR; sale con 0 si no hay nada nuevo
+python3 tools/organizadores.py [--resumen /tmp/resumen.md] [--previos prev.json --aviso /tmp/aviso.txt]
+
+--resumen escribe el texto del PR. --aviso escribe el mensaje de Telegram solo con los envíos que no estaban ya en el PR
+abierto (--previos: su data/organizadores.json), para no avisar dos veces del mismo. Sale con 0 si no hay nada nuevo.
 """
 import argparse
 import json
@@ -100,9 +103,34 @@ def summary(new):
     return "\n".join(lines)
 
 
+def when_text(e):
+    if e.get("kind") == "lugar":
+        return "Todo el año"
+    return e["start"] + (("–" + e["end"]) if e.get("end") and e["end"] != e["start"] else "")
+
+
+def aviso(new, previous_ids):
+    """Mensaje corto para el móvil con los envíos que aún no se habían propuesto; vacío si no hay ninguno."""
+    fresh = [e for e in new if e["id"] not in previous_ids]
+    if not fresh:
+        return ""
+    lines = ["🆕 Planika: %d %s para revisar" % (len(fresh), "envío nuevo" if len(fresh) == 1 else "envíos nuevos")]
+    for e in fresh[:10]:
+        where = e.get("city") or e.get("province") or ""
+        lines.append("• %s — %s · %s · %s" % (e["title"], where, when_text(e), PLANES.get(e.get("plan"), e.get("plan"))))
+    if len(fresh) > 10:
+        lines.append("… y %d más" % (len(fresh) - 10))
+    paid = sum(1 for e in fresh if e.get("plan") not in (None, "", "gratis"))
+    if paid:
+        lines.append("⭐ %d %s destacado" % (paid, "quiere" if paid == 1 else "quieren"))
+    return "\n".join(lines)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--resumen", default="")
+    ap.add_argument("--previos", default="", help="data/organizadores.json del PR ya abierto (para no repetir avisos)")
+    ap.add_argument("--aviso", default="", help="dónde escribir el mensaje de Telegram")
     args = ap.parse_args()
     current = load(DATA, "events")
     known = {e.get("id") for e in current} | set(load(DESCARTADOS, "ids"))
@@ -120,6 +148,12 @@ def main():
     if args.resumen:
         with open(args.resumen, "w", encoding="utf-8") as fh:
             fh.write(summary(new) + "\n")
+    if args.aviso:
+        prev = {e.get("id") for e in load(args.previos, "events")} if args.previos else set()
+        text = aviso(new, prev)
+        if text:
+            with open(args.aviso, "w", encoding="utf-8") as fh:
+                fh.write(text + "\n")
     return 0
 
 
