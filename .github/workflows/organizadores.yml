@@ -1,11 +1,12 @@
 name: Eventos de organizadores
 
-# Cada mañana: si hay eventos nuevos enviados desde «Publica tu evento», los añade a data/organizadores.json en la rama
+# Cada 2 horas: si hay eventos nuevos enviados desde «Publica tu evento», los añade a data/organizadores.json en la rama
 # organizadores-nuevos y abre (o actualiza) un pull request. Fusionarlo es aprobarlos: se publican en la siguiente
 # actualización de la web. Usa solo la clave pública de Supabase, que no da acceso a los correos.
+# Aviso al móvil por Telegram si existen los secretos TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID (si no, se lo salta).
 on:
   schedule:
-    - cron: "37 7 * * *"   # 07:37 UTC (08:37 en Madrid en invierno)
+    - cron: "37 */2 * * *"   # cada 2 horas, a y 37
   workflow_dispatch:
 
 permissions:
@@ -29,7 +30,14 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt
       - name: Buscar envíos nuevos
-        run: python3 tools/organizadores.py --resumen /tmp/resumen.md
+        run: |
+          # Lo que ya está en el PR abierto no se vuelve a avisar
+          if git fetch -q --depth=1 origin organizadores-nuevos 2>/dev/null; then
+            git show FETCH_HEAD:data/organizadores.json > /tmp/previos.json 2>/dev/null || echo '{}' > /tmp/previos.json
+          else
+            echo '{}' > /tmp/previos.json
+          fi
+          python3 tools/organizadores.py --resumen /tmp/resumen.md --previos /tmp/previos.json --aviso /tmp/aviso.txt
       - name: Proponerlos en un pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,16 +52,41 @@ jobs:
           git add data/organizadores.json
           git commit -q -m "Eventos enviados por organizadores para revisar"
           git push -q -f origin organizadores-nuevos
+          title="Eventos de organizadores para aprobar"
+          compare="https://github.com/${{ github.repository }}/compare/main...organizadores-nuevos"
           n=$(gh pr list --head organizadores-nuevos --state open --json number --jq '.[0].number')
           if [ -n "$n" ]; then
             gh pr edit "$n" --body-file /tmp/resumen.md
+            echo "https://github.com/${{ github.repository }}/pull/$n" > /tmp/enlace.txt
             echo "PR #$n actualizado."
-          elif gh pr create --base main --head organizadores-nuevos --title "Eventos de organizadores para aprobar" --body-file /tmp/resumen.md; then
+          elif url=$(gh pr create --base main --head organizadores-nuevos --title "$title" --body-file /tmp/resumen.md); then
+            echo "$url" > /tmp/enlace.txt
             echo "PR creado."
           else
-            # Si Actions no puede abrir PR (ajuste del repositorio), avisa con una incidencia.
-            gh issue create --title "Eventos de organizadores para aprobar" \
-              --body "$(cat /tmp/resumen.md)
-
-          Están en la rama organizadores-nuevos: https://github.com/${{ github.repository }}/compare/main...organizadores-nuevos"
+            # Si Actions no puede abrir PR (ajuste del repositorio), avisa con una incidencia (una sola, que se actualiza).
+            printf '%s\n\nEstán en la rama organizadores-nuevos: %s\n' "$(cat /tmp/resumen.md)" "$compare" > /tmp/issue.md
+            i=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+            if [ -n "$i" ]; then
+              gh issue edit "$i" --body-file /tmp/issue.md
+            else
+              gh issue create --title "$title" --body-file /tmp/issue.md
+            fi
+            echo "$compare" > /tmp/enlace.txt
+          fi
+      - name: Avisar por Telegram
+        if: ${{ always() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ ! -s /tmp/aviso.txt ]; then echo "Sin envíos nuevos que avisar."; exit 0; fi
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then echo "Telegram sin configurar: no se avisa."; exit 0; fi
+          [ -s /tmp/enlace.txt ] && printf '👉 %s\n' "$(cat /tmp/enlace.txt)" >> /tmp/aviso.txt
+          # Sin -v ni respuesta en el log: el repositorio es público
+          if curl -s -o /dev/null --fail -m 20 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+               --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text@/tmp/aviso.txt" \
+               --data-urlencode "disable_web_page_preview=true"; then
+            echo "Aviso enviado por Telegram."
+          else
+            echo "No se pudo enviar el aviso por Telegram."
           fi
