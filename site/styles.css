@@ -471,6 +471,9 @@ body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi p
 .tt { list-style: none; margin: 0; padding: 0; }
 .tt li { display: flex; gap: 10px; align-items: baseline; padding: 7px 0; border-top: 1px dashed #d9d3e3; }
 .tt li:first-child { border-top: 0; }
+.bc-q { margin: 16px 0 4px; font-size: 16px; font-weight: 900; }
+.bc-a { margin: 0; padding-left: 18px; }
+.bc-a li { padding: 3px 0; }
 .tt-h { flex: 0 0 auto; min-width: 54px; text-align: center; font-weight: 900; font-size: 14px; background: var(--yellow); border: var(--b2); border-radius: 999px; padding: 2px 8px; }
 .tt-h.none { background: var(--white); font-weight: 700; font-size: 11px; min-width: 0; color: var(--ink-2); }
 .tt-w { font-size: 14.5px; line-height: 1.4; }

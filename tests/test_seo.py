@@ -458,6 +458,11 @@ class TestTemporada(unittest.TestCase):
             self.assertIn("Sin hora publicada", page)  # Durango no tiene hora: no se inventa
             self.assertIn("e/%s" % static.event_file(evs[0]), page)
             self.assertIn("7 ciudades", page)
+            # Respuesta por ciudad, como se busca («cuándo encienden las luces de navidad en getxo»)
+            self.assertIn('<h3 class="bc-q">¿Cuándo se encienden las luces de Navidad en Getxo?</h3>', page)
+            self.assertIn("Viernes 27 de noviembre a las 18:30", page)
+            self.assertIn("Sábado 28 de noviembre (hora aún sin publicar)", page)  # Durango: no se inventa la hora
+            self.assertLess(page.index("Navidad en Barakaldo?"), page.index("Navidad en Bilbao?"))  # por orden alfabético
             # pocas cabalgatas: la página existe pero no se indexa ni se enlaza
             self.assertNotIn("cabalgatas-reyes.html", pages)
             self.assertIn('content="noindex,follow"', read(tmp, "cabalgatas-reyes.html"))
