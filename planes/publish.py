@@ -726,6 +726,37 @@ def _timetable(items, t0, up=""):
     return '<section class="timetable"><h2 style="margin:22px 0 6px">Día y hora por ciudad</h2>%s</section>' % "".join(out)
 
 
+# Pregunta por ciudad, como se busca: «cuándo encienden las luces de navidad en pamplona», «a qué hora encienden las
+# luces de navidad en sevilla», «cabalgata de reyes madrid horario» (Search Console, noviembre de 2026)
+SEASON_Q = {
+    "luces": "¿Cuándo se encienden las luces de Navidad en %s?",
+    "cabalgatas": "¿Cuándo es la cabalgata de Reyes en %s?",
+}
+
+
+def _by_city(items, t0, question, up=""):
+    """Respuesta directa por ciudad (por orden alfabético, para encontrar la tuya): día, hora y lugar de cada plan,
+    con enlace a la ficha. Solo con los datos del plan: sin hora publicada, se dice."""
+    cities = {}
+    for e in items:
+        c = e.get("city") or e.get("province") or ""
+        if c:
+            cities.setdefault(c, []).append(e)
+    out = []
+    for c in sorted(cities, key=norm):
+        rows = []
+        for e in cities[c]:
+            hour, venue = e.get("time") or "", e.get("venue") or ""
+            if norm(venue) in norm(display_title(e)):
+                venue = ""  # agendas que repiten el nombre del plan como lugar
+            rows.append('<li><a href="%se/%s">%s</a>: %s%s%s</li>' % (
+                up, html.escape(static.event_file(e)), html.escape(display_title(e)), html.escape(_day_long(_first_day(e, t0))),
+                (" a las " + html.escape(hour)) if hour else " (hora aún sin publicar)",
+                (", " + html.escape(venue)) if venue and norm(venue) != norm(c) else ""))
+        out.append('<h3 class="bc-q">%s</h3><ul class="bc-a">%s</ul>' % (html.escape(question % c), "".join(rows)))
+    return '<section class="timetable bycity"><h2 style="margin:22px 0 6px">Por ciudad</h2>%s</section>' % "".join(out)
+
+
 def season_links(events, t0, up=""):
     """Enlaces a las páginas de temporada que hoy se publican (portada, hubs y menú)."""
     on = temporada.active(events, t0)
@@ -1154,7 +1185,8 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
                                label, yr, _join_es(cities_[:4]) if len(cities_) <= 4 else ", ".join(cities_[:4]),
                                "" if len(cities_) <= 4 else " y %s ciudades más" % fmt_n(len(cities_) - 4)),
                            items=its, crumbs=crumbs, params="", t0=t0, updated=upd,
-                           intro=intro + _timetable(its, t0), list_title="Cada plan, con todos los detalles (%s)" % fmt_n(len(its)),
+                           intro=intro + _timetable(its, t0) + (_by_city(its, t0, SEASON_Q[key]) if key in SEASON_Q else ""),
+                           list_title="Cada plan, con todos los detalles (%s)" % fmt_n(len(its)),
                            links=_p(others) + _p(nat("")) + _p(type_links("")))
             done(fn, page)
         else:
