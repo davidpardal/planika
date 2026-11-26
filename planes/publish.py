@@ -76,8 +76,8 @@ def update_health(path, source_meta):
         prev = [x["count"] for x in h[-7:]]
         h.append({"date": day, "count": s["count"], "error": s.get("error", "")})
         hist[s["key"]] = h
-        if s["key"] in ("ticketmaster", "lorca"):
-            continue  # opcional o fuente parada conocida
+        if s["key"] in ("ticketmaster", "lorca", "organizadores"):
+            continue  # opcional, fuente parada conocida o que depende de los envíos
         if s.get("stale_from"):
             alerts.append("%s: hoy no ha respondido; se muestran los planes de la descarga del %s" % (s["name"], s["stale_from"]))
             continue
@@ -182,75 +182,185 @@ _PAGE = """<!doctype html>
 """
 
 
-# Formulario de envío de eventos para organizadores (Google Forms).
-# Se rellena al crear el formulario; si está vacío, la página enlaza a "#".
-FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdEWQEESXI2jmjLywT5KY1SXj1azAQlnmSiwE2ubjnrvDe6ZA/viewform"
+# «Publica tu evento»: formulario propio (los envíos se guardan en Supabase con submit_event y se aprueban al fusionar
+# el PR diario de tools/organizadores.py), precios de los destacados, un ejemplo real y cifras del día.
+PROMO_API = "https://rqjrrdtdscvcimwzrwxj.supabase.co/rest/v1/rpc/submit_event"
+PROMO_KEY = "sb_publishable_1gASlwY1wubC872dD5SJMw_4txaahRF"  # clave pública: solo llama a funciones con validación
+PRICES = [  # (opción del formulario, nombre, precio, qué incluye)
+    ("gratis", "Publicar", "0 €", "Ficha propia de tu evento, en los listados de tu provincia y tu categoría, con enlace a tus entradas. Siempre gratis."),
+    ("destacado", "Destacado", "5 €", "Arriba en tu provincia y tu categoría (y en «Hoy» y «Este finde» cuando toque) con la etiqueta «Destacado», hasta el día del evento (máx. 30 días). Al final, un informe de cuántas veces salió en Google y cuántos clics tuvo."),
+    ("destacado_instagram", "Destacado + Instagram", "12 €", "Todo lo del destacado y, además, tu evento en el contenido de esa semana de @planikaapp en Instagram."),
+    ("bono", "Bono de 5 destacados", "20 €", "Para salas, asociaciones y ayuntamientos con varios eventos: 5 destacados para usar cuando quieras."),
+]
 
 _PROMO = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Promociona tu evento gratis · Planika</title><meta name="description" content="¿Organizas conciertos, teatro, fiestas o talleres? Publica tu evento gratis en Planika: ficha propia en Google, en tu provincia y tu categoría, con enlace a tus entradas.">
+<title>Publica tu evento gratis en una agenda de planes · Planika</title><meta name="description" content="¿Organizas conciertos, teatro, fiestas o talleres? Publica tu evento gratis en Planika: ficha propia en Google, en tu provincia y tu categoría, con enlace a tus entradas. Destácalo desde 5 €.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="%(site)s/promociona-tu-evento.html">
 <meta property="og:site_name" content="Planika"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website">
-<meta property="og:title" content="Promociona tu evento gratis"><meta property="og:description" content="Publica tu evento en Planika: ficha propia, en tu provincia y tu categoría, con enlace a tus entradas. Gratis y sin registro."><meta property="og:url" content="%(site)s/promociona-tu-evento.html">
-<meta property="og:image" content="%(site)s/og.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Promociona tu evento gratis · Planika"><meta name="twitter:description" content="Publica tu evento en Planika: ficha propia, en tu provincia y tu categoría, con enlace a tus entradas. Gratis y sin registro."><meta name="twitter:image" content="%(site)s/og.jpg"><meta name="theme-color" content="#ffd23f">
+<meta property="og:title" content="Publica tu evento gratis en Planika"><meta property="og:description" content="Ficha propia, en tu provincia y tu categoría, con enlace a tus entradas. Gratis y sin registro; destácalo desde 5 €."><meta property="og:url" content="%(site)s/promociona-tu-evento.html">
+<meta property="og:image" content="%(site)s/og.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Publica tu evento gratis · Planika"><meta name="twitter:description" content="Ficha propia, en tu provincia y tu categoría, con enlace a tus entradas. Gratis y sin registro; destácalo desde 5 €."><meta name="twitter:image" content="%(site)s/og.jpg"><meta name="theme-color" content="#ffd23f">
 <link rel="stylesheet" href="styles.css"><link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+.pr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.pr{background:var(--white);border:var(--b);border-radius:var(--r);box-shadow:6px 6px 0 var(--ink);padding:16px 16px 14px}
+.pr.on{background:var(--yellow)}
+.pr h3{margin:0 0 2px;font-size:18px}.pr .eur{font-size:34px;font-weight:900;letter-spacing:-.02em;margin:2px 0 6px}
+.pr p{margin:0;font-size:14px;line-height:1.45}
+.launch{margin:18px 0 0;padding:12px 14px;border:var(--b);border-radius:var(--r-in);background:#e3faf6;font-weight:800}
+.pf{display:grid;gap:14px;background:var(--white);border:var(--b);border-radius:var(--r);box-shadow:6px 6px 0 var(--ink);padding:18px}
+.pf label{display:grid;gap:5px;font-weight:800;font-size:14px}
+.pf label small{font-weight:600;color:#5b556d}
+.pf input,.pf select,.pf textarea{font:inherit;font-size:16px;padding:10px 12px;border:var(--b);border-radius:var(--r-in);background:#fff;color:var(--ink);width:100%%;box-sizing:border-box}
+.pf textarea{min-height:120px;resize:vertical}
+.pf .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pf .opts{display:grid;gap:8px}
+.pf .opt{display:flex;gap:10px;align-items:center;font-weight:700;border:var(--b);border-radius:var(--r-in);padding:9px 12px;background:#fff}
+.pf .opt input,.pf .chk input{width:auto;margin:0}
+.pf .chk{display:flex;gap:10px;align-items:flex-start;font-weight:600}
+.pf .hp{position:absolute;left:-5000px;width:1px;height:1px;overflow:hidden}
+.pf .msg{margin:0;padding:12px 14px;border-radius:var(--r-in);font-weight:800}
+.pf .msg.ok{background:#e3faf6;border:2px solid #1fa99b}.pf .msg.err{background:#ffe3ee;border:2px solid #ff3d81}
+.find{display:flex;gap:10px;flex-wrap:wrap}.find input{flex:1 1 220px;font:inherit;font-size:16px;padding:10px 12px;border:var(--b);border-radius:var(--r-in)}
+@media (max-width:420px){.pf .two{grid-template-columns:1fr}}
+</style>
 <script type="application/ld+json">%(jsonld)s</script>
 %(analytics)s
 </head><body>
 <header class="hero"><div class="wrap"><div class="brand"><a href="./" style="text-decoration:none;color:inherit"><span class="brandname">Planika</span></a></div>
-<h1 class="tagline">Promociona tu evento gratis</h1>
-<p class="lead">¿Organizas conciertos, teatro, fiestas, exposiciones o talleres? Publica tu evento en Planika y llega a la gente que está buscando planes en tu provincia.</p>
-<p class="meta"><a class="btn primary" href="%(form)s" target="_blank" rel="noopener">Publica tu evento</a> &nbsp; <a class="btn" href="./">Explorar Planika</a></p>
-<p class="meta">Más de 12.000 planes publicados · 52 provincias · Actualización diaria</p></div></header>
+<h1 class="tagline">Publica tu evento gratis</h1>
+<p class="lead">¿Organizas conciertos, teatro, fiestas, exposiciones o talleres? Publícalo en Planika y llega a la gente que está buscando planes en tu provincia.</p>
+<p class="meta"><a class="btn primary" href="#publicar">Publicar mi evento</a> &nbsp; <a class="btn" href="#precios">Ver precios</a></p>
+<p class="meta">%(n_events)s planes de %(n_provs)d provincias · Actualización diaria · Sin registro</p></div></header>
 <main class="wrap">
-<h2 style="margin:22px 0 10px">Qué consigues</h2>
-<div class="list">
-<article class="card"><div class="body"><h3>🔎 Ficha propia en Google</h3><p class="desc">Tu evento con página propia y datos estructurados (fecha, lugar y entradas) para que Google lo entienda y pueda mostrarlo destacado.</p></div></article>
-<article class="card"><div class="body"><h3>📍 En tu provincia y tu categoría</h3><p class="desc">Apareces en los listados de tu provincia y de tu tipo de plan, y también en los de «este fin de semana» y «planes gratis» si te encajan.</p></div></article>
-<article class="card"><div class="body"><h3>🎫 Entradas y calendario</h3><p class="desc">Botón directo a tu venta de entradas y botón para añadir el evento a Google Calendar.</p></div></article>
-<article class="card"><div class="body"><h3>🆓 Gratis y sin registro</h3><p class="desc">Sin cuentas ni contraseñas: rellenas el formulario, lo revisamos y queda publicado.</p></div></article>
-</div>
+<h2 style="margin:22px 0 10px">Así quedará tu evento</h2>
+<p>Una ficha propia que Google entiende (fecha, lugar y entradas), y tu evento en los listados de su provincia, su ciudad y su tipo de plan. Este es un plan publicado hoy:</p>
+%(example)s
+<h2 style="margin:26px 0 10px">¿Tu evento ya está en Planika?</h2>
+<p>Muchos eventos llegan solos desde las agendas de ayuntamientos y diputaciones. Búscalo antes de enviarlo: si ya está y ves algo mal, mándanos la corrección con el formulario.</p>
+<form class="find" action="./" method="get" role="search"><input type="search" name="q" placeholder="Nombre del evento o de la sala" aria-label="Buscar tu evento" required><button class="btn" type="submit">Buscar</button></form>
+<h2 id="precios" style="margin:26px 0 10px">Precios</h2>
+<div class="pr-grid">%(prices)s</div>
+<p class="launch">🚀 Lanzamiento: los 10 primeros destacados son gratis. Elige «Destacado» en el formulario y te escribimos.</p>
+<p class="src">Precios por evento, IVA incluido. El pago de los destacados se activará muy pronto; hasta entonces, te contamos cómo hacerlo por correo. Pagar solo cambia el orden dentro de Planika y siempre se marca como «Destacado»: la posición en Google no se puede comprar.</p>
+<h2 id="publicar" style="margin:26px 0 10px">Publica tu evento</h2>
+<form class="pf" id="pf" novalidate>
+<fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:900;margin-bottom:8px">¿Qué quieres?</legend><div class="opts">%(plan_opts)s</div></fieldset>
+<label>Nombre del evento *<input name="title" required minlength="3" maxlength="140" autocomplete="off"></label>
+<div class="two"><label>Fecha *<input type="date" name="start" required min="%(today)s"></label><label>Hora<input type="time" name="time"></label></div>
+<label>Último día <small>(solo si dura varios días)</small><input type="date" name="end" min="%(today)s"></label>
+<div class="two"><label>Provincia *<select name="province_code" required><option value="">Elige…</option>%(prov_opts)s</select></label><label>Ciudad o pueblo *<input name="city" required minlength="2" maxlength="80"></label></div>
+<label>Lugar * <small>(sala, teatro, plaza…)</small><input name="venue" required minlength="2" maxlength="120"></label>
+<label>Dirección<input name="address" maxlength="160"></label>
+<div class="two"><label>Tipo de plan<select name="category"><option value="">Elige…</option>%(cat_opts)s</select></label><label>Precio <small>(p. ej. 12 €)</small><input name="price" maxlength="80"></label></div>
+<label class="chk"><input type="checkbox" name="free"> Es gratis</label>
+<label>Web con la información * <small>(empieza por https://)</small><input type="url" name="url" required maxlength="400" placeholder="https://"></label>
+<label>Enlace de entradas<input type="url" name="tickets_url" maxlength="400" placeholder="https://"></label>
+<label>Imagen <small>(enlace a una foto o cartel)</small><input type="url" name="image" maxlength="400" placeholder="https://"></label>
+<label>Descripción * <small>(qué es, para quién, qué hace especial a tu evento)</small><textarea name="description" required minlength="20" maxlength="2000"></textarea></label>
+<label>Organizador<input name="organizer" maxlength="120" autocomplete="organization"></label>
+<label>Tu correo * <small>(solo para avisarte; no se publica)</small><input type="email" name="email" required maxlength="160" autocomplete="email"></label>
+<div class="hp" aria-hidden="true"><label>Web<input name="hp" tabindex="-1" autocomplete="off"></label></div>
+<label class="chk"><input type="checkbox" name="ok" required> <span>Confirmo que puedo publicar este evento y su imagen, que los datos son correctos y que he leído la <a href="privacidad.html#organizadores">política de privacidad</a>.</span></label>
+<p class="msg" id="pfMsg" hidden></p>
+<button class="btn primary" type="submit" id="pfSend">Enviar mi evento</button>
+</form>
 <h2 style="margin:26px 0 10px">Cómo funciona</h2>
 <ol>
-<li><strong>Rellena el formulario</strong> con los datos de tu evento: título, fecha, lugar, precio y enlace de entradas.</li>
-<li><strong>Lo revisamos</strong> para evitar spam y errores. Si falta algo, te escribimos.</li>
-<li><strong>Publicado en 24 horas.</strong> Planika se actualiza cada día; tu evento entra en el siguiente ciclo.</li>
+<li><strong>Rellenas el formulario</strong> con los datos de tu evento.</li>
+<li><strong>Lo revisamos</strong> a mano para evitar spam y errores. Si falta algo, te escribimos.</li>
+<li><strong>Publicado en 24–48 horas</strong>, en su provincia, su ciudad y su tipo de plan.</li>
 </ol>
-<h2 style="margin:26px 0 10px">¿Cuánto cuesta?</h2>
-<div class="list">
-<article class="card"><div class="body"><div class="badges"><span class="badge">Publicar</span><span class="badge free">Gratis</span></div><h3>0 €</h3><p class="desc">Tu evento publicado con ficha propia y en todos los listados que le correspondan. Gratis, para siempre.</p></div></article>
-</div>
 <h2 style="margin:26px 0 10px">Preguntas frecuentes</h2>
 %(faq)s
-<p class="meta" style="margin-top:26px"><a class="btn primary" href="%(form)s" target="_blank" rel="noopener">Publica tu evento gratis</a></p>
 <p class="src">Al enviar el formulario confirmas que tienes derecho a publicar el evento y su imagen. La exactitud de fechas, horarios y precios es responsabilidad del organizador.</p>
-<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="planes-este-fin-de-semana.html">Planes este fin de semana</a> · <a href="t/musica.html">Conciertos</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
-</main></body></html>
+<nav class="foot" style="border:0;margin-top:30px"><h2>Otras páginas</h2><p><a href="./">Inicio</a> · <a href="planes-este-fin-de-semana.html">Planes este fin de semana</a> · <a href="t/musica.html">Conciertos</a> · <a href="fuentes.html">Fuentes</a> · <a href="privacidad.html">Privacidad y cookies</a> · <a href="privacidad.html#cookies" data-privacy-settings>Configurar cookies</a> · <a href="aviso-legal.html">Aviso legal</a> · <a href="https://www.instagram.com/planikaapp/" target="_blank" rel="noopener">Instagram</a></p></nav>
+</main>
+<script>
+(function () {
+  var f = document.getElementById('pf'), msg = document.getElementById('pfMsg'), btn = document.getElementById('pfSend');
+  var KEYS = ['title', 'start', 'end', 'time', 'province_code', 'city', 'venue', 'address', 'category', 'price', 'url', 'tickets_url', 'image', 'description', 'organizer', 'email', 'hp'];
+  function show(text, ok) { msg.textContent = text; msg.className = 'msg ' + (ok ? 'ok' : 'err'); msg.hidden = false; msg.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  var plan = new URLSearchParams(location.search).get('opcion');
+  if (plan && f.querySelector('input[name=plan][value="' + plan + '"]')) f.querySelector('input[name=plan][value="' + plan + '"]').checked = true;
+  f.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!f.checkValidity()) { f.reportValidity(); return; }
+    var p = {};
+    KEYS.forEach(function (k) { p[k] = (f.elements[k].value || '').trim(); });
+    p.free = f.elements.free.checked;
+    p.plan = (f.querySelector('input[name=plan]:checked') || {}).value || 'gratis';
+    if (p.end && p.end < p.start) { show('El último día no puede ser anterior a la fecha de inicio.', false); return; }
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    fetch(%(api)s, { method: 'POST', headers: { apikey: %(key)s, 'Content-Type': 'application/json' }, body: JSON.stringify({ p: p }) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (r) {
+        if (!r.ok) throw new Error((r.j && r.j.message) || 'error');
+        f.reset();
+        show('¡Recibido! (referencia ' + r.j + '). Lo revisamos y normalmente está publicado en 24–48 horas. Si falta algo, te escribimos.', true);
+        try { if (window.gtag) gtag('event', 'publica_evento_enviado', { plan: p.plan }); } catch (e) {}
+      })
+      .catch(function (e) {
+        var m = String(e && e.message || ''), F = { title: 'el nombre', url: 'la web', tickets_url: 'el enlace de entradas', image: 'el enlace de la imagen',
+          description: 'la descripción (mínimo 20 letras)', email: 'el correo', venue: 'el lugar', city: 'la ciudad', time: 'la hora', 'fechas fuera de rango': 'las fechas' };
+        var bad = Object.keys(F).filter(function (k) { return m.indexOf(k) === 0; })[0];
+        show(/demasiados/.test(m) ? 'Has enviado muchos eventos hoy. Prueba mañana.'
+          : bad ? 'Revisa ' + F[bad] + '.'
+          : /no válid/.test(m) ? 'Revisa el formulario: ' + m + '.'
+          : 'No se ha podido enviar. Comprueba la conexión y vuelve a probar.', false);
+      })
+      .then(function () { btn.disabled = false; btn.textContent = 'Enviar mi evento'; });
+  });
+})();
+</script>
+</body></html>
 """
 
 _FAQ = [
     ("¿Cuánto cuesta publicar un evento en Planika?",
-     "Publicar es gratis: tu evento tendrá ficha propia y aparecerá en los listados de su provincia y categoría sin coste. Más adelante ofreceremos opciones de destacado de pago para quien quiera más visibilidad."),
+     "Publicar es gratis: tu evento tiene ficha propia y aparece en los listados de su provincia y su categoría. Si quieres más visibilidad, destacarlo cuesta 5 € por evento (12 € con Instagram, o 20 € un bono de 5). Los 10 primeros destacados son gratis."),
+    ("¿Qué es un evento destacado?",
+     "Sale el primero (como mucho tres destacados a la vez) en los listados de su provincia y su categoría, y en «Hoy» y «Este finde» los días que toca, con la etiqueta «Destacado», hasta el día del evento. Al terminar te mandamos cuántas veces apareció en Google y cuántos clics tuvo."),
     ("¿Cuándo se publica mi evento?",
-     "Revisamos cada envío a mano para evitar spam. Planika se regenera cada día, así que un evento aprobado suele estar publicado en unas 24 horas."),
+     "Revisamos cada envío a mano para evitar spam. Un evento aprobado suele estar publicado en 24–48 horas."),
     ("¿Puedo poner mi enlace de venta de entradas?",
-     "Sí. La ficha de tu evento incluye un botón de entradas con tu enlace, y otro para que el público lo añada a su Google Calendar."),
+     "Sí. La ficha de tu evento incluye un botón de entradas con tu enlace, y otro para que el público lo añada a su calendario."),
     ("¿Saldrá mi evento el primero en Google?",
-     "Nadie puede garantizar la primera posición. Lo que sí hacemos es dar a tu evento una ficha con los datos estructurados que Google usa para mostrar eventos, que es donde un evento local tiene opciones reales de salir arriba: en su propio nombre y en búsquedas de su zona."),
+     "Nadie puede garantizar la primera posición, y en Google no se puede pagar por ella. Lo que sí hacemos es dar a tu evento una ficha con los datos estructurados que Google usa para mostrar eventos, que es donde un evento local tiene opciones reales de salir arriba: en su propio nombre y en búsquedas de su zona."),
     ("¿Puedo corregir o retirar mi evento?",
-     "Sí: vuelve a enviar el formulario indicando el cambio, o responde al correo de confirmación, y lo actualizamos en el siguiente ciclo diario."),
+     "Sí: vuelve a enviar el formulario con los datos correctos y empieza la descripción por «Corrección» o «Retirar». Lo cambiamos en la siguiente actualización diaria."),
 ]
 
 
-def _promo_page():
+def _promo_page(events=(), t0=None):
+    t0 = t0 or iso(today())
+    dated = [e for e in events if not is_permanent(e) and e["end"] >= t0]
     ld = {"@context": "https://schema.org", "@type": "FAQPage",
           "mainEntity": [{"@type": "Question", "name": q,
                           "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in _FAQ]}
     faq_html = "".join("<h3>%s</h3><p>%s</p>" % (html.escape(q), html.escape(a)) for q, a in _FAQ)
-    return _PROMO % dict(site=SITE_URL, form=html.escape(FORM_URL or "#"), analytics=static.BEACON,
-                         jsonld=json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c"),
-                         faq=faq_html)
+    # Ejemplo real: un plan de los próximos días con la información completa (descripción, lugar, hora, precio…)
+    soon = iso(datetime.strptime(t0, "%Y-%m-%d") + timedelta(days=10))
+    good = [e for e in dated if t0 <= max(e["start"], t0) <= soon and seo.quality_score(e) >= 5 and e.get("description")]
+    good.sort(key=lambda e: (e["start"] < t0, e["start"], e["id"]))
+    example = ('<div class="list" style="max-width:420px">%s</div>' % _card(good[0], "", t0)) if good else ""
+    prices = "".join(
+        '<div class="pr%s"><h3>%s</h3><div class="eur">%s</div><p>%s</p><p style="margin-top:10px"><a class="btn%s" href="?opcion=%s#publicar">%s</a></p></div>'
+        % (" on" if k == "destacado" else "", html.escape(n), html.escape(p), html.escape(d), " primary" if k == "destacado" else "",
+           k, "Publicar gratis" if k == "gratis" else "Lo quiero")
+        for k, n, p, d in PRICES)
+    plan_opts = "".join('<label class="opt"><input type="radio" name="plan" value="%s"%s> %s · %s</label>'
+                        % (k, " checked" if k == "gratis" else "", html.escape(n), html.escape(p)) for k, n, p, _ in PRICES)
+    prov_opts = "".join('<option value="%s">%s</option>' % (c, html.escape(n))
+                        for c, n, _ in sorted(PROVINCIAS, key=lambda x: norm(x[1])) if c.isdigit())
+    cat_opts = "".join('<option value="%s">%s %s</option>' % (k, icon, html.escape(name))
+                       for k, name, icon in CATEGORIES if k != "otros") + '<option value="otros">✨ Otros planes</option>'
+    return _PROMO % dict(site=SITE_URL, analytics=static.BEACON, faq=faq_html, example=example, prices=prices,
+                         plan_opts=plan_opts, prov_opts=prov_opts, cat_opts=cat_opts, today=t0,
+                         n_events=fmt_n(len(dated)), n_provs=len({e["province_code"] for e in dated}),
+                         api=json.dumps(PROMO_API), key=json.dumps(PROMO_KEY),
+                         jsonld=json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c"))
 
 _SOURCES = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -459,7 +569,8 @@ def _card(e, up="../", t0=None):
             when += " (+%d fechas)" % more
     where = " · ".join(x for x in (e.get("venue"), e.get("city"), e.get("province")) if x)
     link = up + "e/" + static.event_file(e)  # la ficha propia del plan: enlazado interno para buscadores
-    badges = ("<span class=\"badge free\">Gratis</span>" if e.get("free") else "") + (
+    badges = ("<span class=\"badge featured\">⭐ Destacado</span>" if e.get("featured") else "") + (
+        "<span class=\"badge free\">Gratis</span>" if e.get("free") else "") + (
         "<span class=\"badge\">Permanente</span>" if is_permanent(e) else "")
     desc = static.clip(e.get("description") or "", 220)
     return ("<article class=\"card\"><div class=\"body\"><div class=\"badges\"><span class=\"badge\">%s %s</span>%s</div>"
@@ -775,7 +886,9 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
 
     def upcoming(items):
         # Primero la agenda con fecha; después las visitas permanentes.
-        return sorted(items, key=lambda e: (1 if is_permanent(e) else 0, max(e["start"], t0), e.get("time") or "99", e.get("title") or ""))
+        # Los destacados (pagados por el organizador) van primero; después la agenda con fecha y al final lo permanente.
+        return sorted(items, key=lambda e: (0 if e.get("featured") else 1, 1 if is_permanent(e) else 0, max(e["start"], t0),
+                                            e.get("time") or "99", e.get("title") or ""))
 
     def done(path, page):
         pages.append(path)
@@ -1202,7 +1315,7 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
                     links=_p(type_links("")))
 
     # ---- páginas fijas
-    promo = _promo_page()
+    promo = _promo_page(events, t0)
     with open(os.path.join(site_dir, "promociona-tu-evento.html"), "w", encoding="utf-8") as fh:
         fh.write(promo)
     done("promociona-tu-evento.html", promo)

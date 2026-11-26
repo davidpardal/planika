@@ -2078,6 +2078,12 @@
 "No s'ha pogut carregar el pla compartit. Prova-ho d'aquí a una estona.",
 "Non se puido cargar o plan compartido. Proba nun anaco.",
 "The shared plan couldn't be loaded. Try again in a while."
+],
+"Destacado": [
+"Nabarmendua",
+"Destacat",
+"Destacado",
+"Featured"
 ]
 };
   /*END*/

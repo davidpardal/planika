@@ -29,7 +29,7 @@ from planes.util import PROVINCIAS, iso, norm, today  # noqa: E402
 
 SOURCES = ["madrid", "esmadrid", "barcelona", "diba", "euskadi", "catalunya", "cyl", "gva", "malaga", "andalucia",
            "galicia", "zaragoza", "cartagena", "murcia", "vitoria", "jimmyjazz", "tribe", "municipios", "tenerife_deporte", "deporte_pro", "sportsdb",
-           "ticketmaster", "burdeos", "destacados", "curated"]
+           "ticketmaster", "burdeos", "organizadores", "destacados", "curated"]
 
 
 def load_dotenv(path):
@@ -200,11 +200,11 @@ def main():
             payload = json.load(fh)
         # Regenerar también mezcla las visitas permanentes, para poder refrescar
         # la web sin volver a descargar las agendas (y sin dejarlas caducar).
-        # Lo mismo con las citas con fecha comprobadas a mano (data/destacados.json).
-        from planes import src_curated, src_destacados
+        # Lo mismo con las citas con fecha comprobadas a mano (data/destacados.json) y los eventos de organizadores.
+        from planes import src_curated, src_destacados, src_organizadores
         sources = list(payload.get("sources") or [])
         counts = {}
-        for key, mod in (("destacados", src_destacados), ("curated", src_curated)):
+        for key, mod in (("organizadores", src_organizadores), ("destacados", src_destacados), ("curated", src_curated)):
             payload["events"] = mod.replace_events(payload.get("events") or [], log)
             counts[key] = sum(1 for e in payload["events"] if e.get("source") == mod.NAME)
             sources = [s for s in sources if s.get("key") != key]

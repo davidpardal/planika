@@ -291,7 +291,7 @@ def write_data(out_dir, payload):
             src_names.append(e["source"])
     rows = []
     for e in events:
-        flags = (1 if e.get("free") else 0) | (2 if safe_url(e.get("tickets_url")) else 0) | (4 if e.get("xmas") else 0)
+        flags = (1 if e.get("free") else 0) | (2 if safe_url(e.get("tickets_url")) else 0) | (4 if e.get("xmas") else 0) | (8 if e.get("featured") else 0)
         rows.append(_trim([
             e["id"], e["title"], CAT_KEYS.index(e["category"]) if e["category"] in CAT_KEYS else len(CAT_KEYS) - 1,
             e.get("subtype") or "", e["start"], e["end"], e.get("time") or "", e["province_code"],

@@ -254,10 +254,14 @@ class TestPermanent(unittest.TestCase):
             self.assertIn("promociona-tu-evento.html", pages)
             with open(os.path.join(tmp, "promociona-tu-evento.html"), encoding="utf-8") as fh:
                 promo = fh.read()
-            self.assertIn("Promociona tu evento gratis", promo)
+            self.assertIn("Publica tu evento gratis", promo)
             self.assertIn("FAQPage", promo)
-            self.assertNotIn("9,90", promo)       # sin precios de destacados hasta validarlos con organizadores
-            self.assertNotIn("Pack Sala", promo)
+            self.assertIn("rpc/submit_event", promo)          # formulario propio (Supabase), sin Google Forms
+            self.assertNotIn("docs.google.com/forms", promo)
+            for price in ("0 €", "5 €", "12 €", "20 €"):
+                self.assertIn(price, promo)
+            self.assertNotIn('value="FR33"', promo)           # el formulario solo admite provincias españolas
+            self.assertRegex(promo, r"\d+ planes de \d+ provincias")  # cifras del día, no escritas a mano
             with open(os.path.join(tmp, "p", "zaragoza.html"), encoding="utf-8") as fh:
                 self.assertIn("../promociona-tu-evento.html", fh.read())
             with _all_sitemaps(tmp) as fh:
@@ -469,3 +473,53 @@ class TestDestacados(unittest.TestCase):
         self.assertIn("end anterior a start", d.problems(dict(good, end="2026-11-01")))
         self.assertIn("time no es HH:MM", d.problems(dict(good, time="18h")))
         self.assertIn("falta url", d.problems(dict(good, url="")))
+
+
+class TestOrganizadores(unittest.TestCase):
+    """Eventos enviados por organizadores: del envío de Supabase al fichero aprobado y a la web, con destacados."""
+
+    def _row(self, **d):
+        base = {"title": "Concierto en la sala", "start": "2099-05-10", "end": "2099-05-10", "time": "20:30", "city": "Vitoria-Gasteiz",
+                "province_code": "01", "venue": "Sala Jimmy Jazz", "description": "Concierto de presentación del nuevo disco.",
+                "category": "musica", "url": "https://example.org/concierto", "free": False, "price": "12 €"}
+        base.update(d)
+        return {"sub_id": "1234abcd-0000-0000-0000-000000000000", "sent": "2099-04-01", "plan": "destacado", "data": base}
+
+    def test_entry_from_submission_has_no_email_and_is_not_featured_yet(self):
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+        import organizadores as tool
+        e = tool.entry(self._row(), checked="2099-04-02")
+        self.assertEqual(e["id"], "org-1234abcd")
+        self.assertEqual(e["province"], "Álava")
+        self.assertFalse(e["destacado"])          # el destacado se activa a mano cuando está pagado
+        self.assertNotIn("email", json.dumps(e))
+        from planes import src_organizadores
+        self.assertEqual(src_organizadores.problems(e), [])
+        self.assertIn("Destacado (5 €)", tool.summary([e]))
+
+    def test_featured_events_go_first_with_badge(self):
+        from planes import src_organizadores
+        raw = {"id": "org-1", "title": "Concierto destacado", "start": "2099-05-10", "url": "https://example.org/x",
+               "province": "Álava", "city": "Vitoria-Gasteiz", "checked": "2099-04-02", "destacado": True}
+        self.assertTrue(src_organizadores.is_featured(raw, "2099-05-01"))
+        self.assertFalse(src_organizadores.is_featured(raw, "2099-05-11"))
+        self.assertFalse(src_organizadores.is_featured(dict(raw, destacado_hasta="2099-04-30"), "2099-05-01"))
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "organizadores.json")
+            with open(path, "w", encoding="utf-8") as fh:
+                json.dump({"events": [raw]}, fh)
+            old = src_organizadores.PATH
+            src_organizadores.PATH = path
+            try:
+                evs = src_organizadores.fetch(lambda m: None)
+            finally:
+                src_organizadores.PATH = old
+        self.assertEqual(len(evs), 1)
+        self.assertTrue(evs[0]["featured"])
+        other = util.event("Agenda", "2", "Antes en el calendario", "2099-05-01", province_code="01", city="Vitoria-Gasteiz", category="musica")
+        with tempfile.TemporaryDirectory() as tmp:
+            publish.write_pages(tmp, [other, evs[0]])
+            with open(os.path.join(tmp, "p", "alava.html"), encoding="utf-8") as fh:
+                page = fh.read()
+        self.assertIn("⭐ Destacado", page)
+        self.assertLess(page.index("Concierto destacado"), page.index("Antes en el calendario"))
