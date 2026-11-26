@@ -258,6 +258,7 @@
 "20|legazpi|museo del hierro vasco": {"checked": "2026-11-21", "ok": false},
 "20|legazpi|museo territorio lenbur": {"checked": "2026-11-21", "ok": false},
 "20|legorreta|biblioteca de legorreta": {"checked": "2026-11-21", "ok": false},
+"20|legorreta|herri antzokia legorreta": {"checked": "2026-11-26", "lat": 43.053371, "lon": -2.178296, "nombre": "Ordiziako Herri Antzokia", "ok": true, "osm": "way/401119814", "q": "Herri Antzokia", "tipo": "amenity=cinema"},
 "20|lezo|biblioteca de lezo": {"checked": "2026-11-21", "ok": false},
 "20|lezo|gezala auditoriuma": {"checked": "2026-11-21", "ok": false},
 "20|mendaro|biblioteca de mendaro": {"checked": "2026-11-21", "ok": false},
