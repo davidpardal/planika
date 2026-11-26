@@ -114,7 +114,9 @@ class TestInstagram(unittest.TestCase):
         page = instagram.index_page([ed], {ed["slug"]: ["bilbao/bilbao-1.jpg"]}, "26/11/2026", reels)
         self.assertIn('<video controls playsinline preload="none" poster="reels/nuevo.jpg" src="reels/nuevo.mp4">', page)
         self.assertIn("Guardar el vídeo", page)
-        self.assertIn('href="#reels">🎬 Reels (1)', page)
+        self.assertIn('href="#reels" data-kind="reels">🎬 Reels (1)', page)
+        self.assertIn('data-city="bilbao" data-kind="finde"', page)   # para el filtro por ciudad
+        self.assertIn('id="cityNote"', page)
         self.assertIn("Explicación de la web", page)
         self.assertIn('<option value="bilbao">Bilbao</option>', page)
 

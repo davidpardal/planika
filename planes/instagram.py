@@ -307,12 +307,13 @@ def index_page(eds, files, updated, reels=()):
             continue
         cap = caption(ed)
         groups[ed.get("kind", "finde")].append(
-            '<section class="ed" data-slug="%(slug)s" data-city="%(cslug)s"><h3>%(title)s <small>%(n)d imágenes</small></h3>'
+            '<section class="ed" data-slug="%(slug)s" data-city="%(cslug)s" data-kind="%(kind)s"><h3>%(title)s <small>%(n)d imágenes</small></h3>'
             '<div class="strip">%(imgs)s</div>'
             '<p class="acts"><button type="button" class="btn primary" data-save>📲 Guardar las %(n)d imágenes</button> '
             '<button type="button" class="btn" data-copy>📋 Copiar el texto</button></p>'
             '<pre class="cap">%(cap)s</pre></section>'
-            % dict(slug=html.escape(ed["slug"]), cslug=html.escape(slugify(ed["city"])), title=html.escape(ed.get("title") or ed["city"]),
+            % dict(slug=html.escape(ed["slug"]), cslug=html.escape(slugify(ed["city"])), kind=ed.get("kind", "finde"),
+                   title=html.escape(ed.get("title") or ed["city"]),
                    n=len(imgs), cap=html.escape(cap),
                    imgs="".join('<a href="%s" download><img src="%s" alt="Diapositiva %d" loading="lazy" width="270" height="338"></a>'
                                 % (html.escape(f), html.escape(f), k + 1) for k, f in enumerate(imgs))))
@@ -328,8 +329,8 @@ def index_page(eds, files, updated, reels=()):
         for r in reels)
     rng = {k: date_range(next(e for e in eds if e.get("kind", "finde") == k)) for k in KIND_ORDER
            if any(e.get("kind", "finde") == k for e in eds)}
-    nav = ['<a href="#reels">🎬 Reels (%d)</a>' % len(reels)] if reels else []
-    nav += ['<a href="#%s">%s (%d)</a>' % (k, KIND_TITLE[k], len(groups[k])) for k in KIND_ORDER if groups[k]]
+    nav = ['<a href="#reels" data-kind="reels">🎬 Reels (%d)</a>' % len(reels)] if reels else []
+    nav += ['<a href="#%s" data-kind="%s">%s (%d)</a>' % (k, k, KIND_TITLE[k], len(groups[k])) for k in KIND_ORDER if groups[k]]
     body = ('<h2 class="grp" id="reels">🎬 Reels</h2>' + reel_html) if reels else ""
     body += "".join('<h2 class="grp" id="%s">%s <small>%s</small></h2>%s' % (k, KIND_TITLE[k], html.escape(rng.get(k, "")), "".join(groups[k]))
                     for k in KIND_ORDER if groups[k])
@@ -345,7 +346,9 @@ h1{font-size:26px;margin:6px 0 4px} h2.grp{font-size:24px;margin:28px 0 12px} h2
 h3{font-size:19px;margin:0 0 10px}
 .note{color:#4a4263;margin:0 0 12px}
 .jump{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}.jump a{font-weight:800;color:%(ink)s;background:#fff;border:2px solid %(ink)s;border-radius:999px;padding:6px 12px;text-decoration:none}
-.filter{margin:0 0 6px}.filter select{font:inherit;font-weight:700;padding:8px 10px;border:2px solid %(ink)s;border-radius:12px;background:#fff}
+.filter{margin:0 -16px 6px;padding:8px 16px;position:sticky;top:0;z-index:5;background:%(page)s;border-bottom:2px solid #e9e3f2}
+.filter select{font:inherit;font-weight:700;padding:8px 10px;border:2px solid %(ink)s;border-radius:12px;background:#fff;max-width:100%%}
+.filter small{display:block;color:#4a4263;font-weight:700;margin-top:4px}
 .ed{background:#fff;border:3px solid %(ink)s;border-radius:18px;box-shadow:4px 4px 0 %(ink)s;padding:14px;margin:0 0 22px}
 .strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory}
 .strip img{width:200px;height:250px;border:2px solid %(ink)s;border-radius:10px;scroll-snap-align:start;display:block}
@@ -358,7 +361,7 @@ h3{font-size:19px;margin:0 0 10px}
 <p class="note">Hechos con la agenda del %(updated)s. En el iPhone, «Guardar» lleva las imágenes o el vídeo a Fotos de una vez
 (o mantén pulsada cada imagen). Después, «Copiar el texto» para el pie del post. Esta página no está enlazada ni sale en Google.</p>
 <nav class="jump">%(nav)s</nav>
-<p class="filter"><label>Ciudad: <select id="city"><option value="">Todas</option>%(city_opts)s</select></label></p>
+<p class="filter"><label>Ciudad: <select id="city"><option value="">Todas</option>%(city_opts)s</select></label><small id="cityNote"></small></p>
 %(body)s
 </main>
 <script>
@@ -387,10 +390,29 @@ document.querySelectorAll('.ed').forEach(function (sec) {
     var u = sec.dataset.file; shareFiles([u], [u.split('/').pop()], 'video/mp4', this);
   });
 });
-document.getElementById('city').addEventListener('change', function () {
-  var c = this.value;
+// Filtro por ciudad: solo sus carruseles (los reels no son de una ciudad y se esconden mientras se filtra), sin los
+// temas vacíos, y la página baja hasta ellos. Se recuerda en la dirección (#ciudad=bilbao) para volver a la misma.
+function applyCity(c, scroll) {
+  var sel = document.getElementById('city');
   document.querySelectorAll('.ed[data-city]').forEach(function (sec) { sec.hidden = !!c && sec.dataset.city !== c; });
-});
+  document.querySelectorAll('.ed.reel').forEach(function (sec) { sec.hidden = !!c; });
+  document.querySelectorAll('h2.grp, .jump a').forEach(function (el) {
+    var k = el.id || el.dataset.kind;
+    el.hidden = !!c && (k === 'reels' || !document.querySelector('.ed[data-kind="' + k + '"][data-city="' + c + '"]'));
+  });
+  var n = c ? document.querySelectorAll('.ed[data-city="' + c + '"]').length : 0;
+  document.getElementById('cityNote').textContent = c ? (n === 1 ? '1 carrusel' : n + ' carruseles') + ' de ' + sel.options[sel.selectedIndex].text : '';
+  try { history.replaceState(null, '', c ? '#ciudad=' + c : location.pathname + location.search); } catch (e) {}
+  if (c && scroll) {
+    var first = document.querySelector('h2.grp:not([hidden])');
+    if (first) window.scrollTo({ top: first.getBoundingClientRect().top + window.scrollY - document.querySelector('.filter').offsetHeight - 8, behavior: 'smooth' });
+  }
+}
+document.getElementById('city').addEventListener('change', function () { applyCity(this.value, true); });
+(function () {
+  var m = /ciudad=([a-z0-9-]+)/.exec(location.hash), sel = document.getElementById('city');
+  if (m && sel.querySelector('option[value="' + m[1] + '"]')) { sel.value = m[1]; applyCity(m[1], true); }
+})();
 </script></body></html>
 """ % dict(ink=INK, page=PAGE, hot=HOT, updated=html.escape(updated), nav=" ".join(nav), city_opts=city_opts,
            body=body or "<p>Hoy no hay ciudades con planes suficientes.</p>")
