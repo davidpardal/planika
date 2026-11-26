@@ -130,8 +130,8 @@
    },
    {
     "date": "2026-11-26",
-    "count": 5099,
-    "error": ""
+    "count": 4821,
+    "error": "HTTPError: 403 Client Error: Forbidden for url: https://opendata-ajuntament.barcelona.cat/data/api/3/action/datastore_search?resour"
    }
   ],
   "euskadi": [
@@ -264,7 +264,7 @@
    },
    {
     "date": "2026-11-26",
-    "count": 1338,
+    "count": 1340,
     "error": ""
    }
   ],
@@ -1276,7 +1276,7 @@
    },
    {
     "date": "2026-11-26",
-    "count": 156,
+    "count": 157,
     "error": ""
    }
   ],
@@ -1535,8 +1535,8 @@
    }
   ]
  },
- "updated_at": "2026-11-26T19:35",
+ "updated_at": "2026-11-26T20:41",
  "alerts": [
-  "Agendas turísticas (Palma, Elche): hoy no ha respondido; se muestran los planes de la descarga del 2026-11-26"
+  "Ajuntament de Barcelona: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-26"
  ]
 }
