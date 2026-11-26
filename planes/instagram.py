@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Carruseles de Instagram del fin de semana, uno por ciudad: «Este finde en Bilbao».
+"""Carruseles de Instagram por ciudad: «Este finde en Bilbao», «Gratis este finde en Bilbao», «Con niños este finde
+en Bilbao» y, en temporada, «Puente de diciembre en Bilbao».
 
 Cada día se preparan con la agenda del día (como el boletín): portada, 5 planes elegidos (uno por diapositiva) y
 cierre, en 1080×1350 (el formato vertical de Instagram), más el texto del post con hashtags. tools/instagram.py
-los dibuja y los deja en site/ig/ (noindex, fuera del sitemap y de git) para guardarlos desde el móvil.
+los dibuja y los deja en site/ig/ (noindex, fuera del sitemap y de git) para guardarlos desde el móvil, junto con
+los reels de la rama «reels».
 
 No se inventa nada: cada plan sale de la agenda, con su día, hora, lugar y precio tal como vienen. No se usan las
 fotos de los organizadores (tienen derechos): las diapositivas son de texto, con los colores de Planika.
@@ -17,11 +19,24 @@ from .classify import CATEGORIES
 from .util import country, display_title, iso, norm
 
 PER_CITY = 5      # planes por carrusel
-MIN_PLANS = 15    # ciudades con al menos estos planes el finde
-MAX_CITIES = 8
+MIN_PLANS = 7     # ciudades con al menos estos planes el finde (o el puente): 5 elegidos de 7 como poco
+MAX_CITIES = 20
+MIN_THEME = 6     # «gratis» y «con niños»: ciudades con al menos estos planes de ese tipo
 # Primero las ciudades del público de Planika; después, las demás por número de planes
 CITY_ORDER = ["bilbao", "vitoria-gasteiz", "donostia-san-sebastian", "pamplona-iruna", "madrid", "barcelona",
-              "zaragoza", "valencia", "sevilla", "malaga"]
+              "zaragoza", "valencia", "sevilla", "malaga", "santander", "logrono", "burgos", "oviedo", "gijon",
+              "valladolid", "salamanca", "a-coruna", "vigo", "granada", "cordoba", "alicante", "murcia", "palma"]
+# Temas de carrusel: (etiqueta de la portada, «de los N … que hay», «Hay N planes …», final del cierre, hashtags)
+KINDS = {
+    "finde": ("Este finde en", "que hay en la agenda", "planes", "este finde en", ["#PlanesFinde"]),
+    "gratis": ("Gratis este finde en", "planes gratis que hay", "planes gratis", "este finde en", ["#PlanesGratis", "#PlanesFinde"]),
+    "ninos": ("Con niños este finde en", "planes con niños que hay", "planes con niños", "este finde en",
+              ["#PlanesConNiños", "#PlanesEnFamilia"]),
+    "puente": ("Puente de diciembre en", "que hay en el puente", "planes", "en el puente en", ["#PuenteDeDiciembre", "#Puente"]),
+}
+KIND_ORDER = ["finde", "gratis", "ninos", "puente"]
+KIND_TITLE = {"finde": "Este finde", "gratis": "Gratis este finde", "ninos": "Con niños este finde", "puente": "Puente de diciembre"}
+_KIDS = re.compile(r"\b(nin|infan|famil|haur|nens|txiki|peques)")
 # Lo que no se anuncia: suspendido, agotado o que no es un plan de finde (congresos, jornadas técnicas…)
 _SKIP = re.compile(r"\b(suspendid[oa]s?|cancelad[oa]s?|aplazad[oa]s?|agotad[oa]s?|sold out|completo|congreso|seminario|asamblea|"
                    r"jornadas? tecnicas?)\b")
@@ -44,10 +59,13 @@ def short_city(name):
     return name.split(" / ")[0].strip()
 
 
-def editions(events, t0):
-    """[{city, province, code, slug, total, free, plans, fri, sun, first}] del finde en curso o el próximo."""
-    fri, sun, first = boletin.weekend(t0)
-    a, b = iso(first), iso(sun)
+def is_kids(e):
+    return e.get("category") in ("infantil", "parques") or bool(_KIDS.search(norm(e.get("audience") or "")))
+
+
+def _groups(events, first, last):
+    """{(código, ciudad): [planes de esas fechas, mejores primero]} y sus nombres."""
+    a, b = iso(first), iso(last)
     pool = [e for e in events if boletin._in_weekend(e, a, b) and country(e.get("province_code")) == "ES"]
     pool.sort(key=lambda e: (-boletin.score(e), boletin._day(e, a, b), e.get("time") or "99", e["title"]))
     pool = [e for e in pool if not _SKIP.search(norm("%s %s" % (display_title(e), e.get("price") or "")))]
@@ -58,28 +76,68 @@ def editions(events, t0):
             continue
         groups.setdefault(k, []).append(e)
         names.setdefault(k, (e["city"], e.get("province") or ""))
-    keys = [k for k in groups if len(groups[k]) >= MIN_PLANS]
+    return groups, names
+
+
+def _ranked(groups, names, minimum, limit):
     rank = {c: i for i, c in enumerate(CITY_ORDER)}
+    keys = [k for k in groups if len(groups[k]) >= minimum]
     keys.sort(key=lambda k: (rank.get(slugify(names[k][0]), 99), -len(groups[k])))
+    return keys[:limit]
+
+
+def _puente(t0):
+    """(primer día, último día) del puente de diciembre si empieza en los próximos 16 días o está en curso; si no, None."""
+    from datetime import timedelta
+    from .publish import puente_diciembre
+    a, b = puente_diciembre(t0.year)
+    return (max(a, t0), b) if a - timedelta(days=16) <= t0 <= b else None
+
+
+def editions(events, t0):
+    """[{kind, title, city, province, code, slug, total, free, plans, fri, sun, first}]: los carruseles del día.
+    Este finde en las MAX_CITIES ciudades con más agenda; «gratis» y «con niños» donde hay MIN_THEME planes de ese
+    tipo; y, las dos semanas antes del puente de diciembre, el puente en las ciudades con más planes."""
+    fri, sun, first = boletin.weekend(t0)
+    groups, names = _groups(events, first, sun)
     out = []
-    for k in keys[:MAX_CITIES]:
-        items = groups[k]
-        picked, cats, titles = [], {}, set()
-        for limit, low in ((1, False), (2, False), (9, True)):  # variedad: primero uno de cada tipo de plan
-            for e in items:
-                t = norm(display_title(e))
-                if len(picked) >= PER_CITY or e in picked or t in titles or cats.get(e["category"], 0) >= limit:
-                    continue
-                if e["category"] in _LOW and not low:
-                    continue
-                picked.append(e)
-                titles.add(t)
-                cats[e["category"]] = cats.get(e["category"], 0) + 1
-        picked.sort(key=lambda e: (boletin._day(e, a, b), e.get("time") or "99"))
-        out.append({"city": names[k][0], "province": names[k][1], "code": k[0], "slug": slugify(names[k][0]),
-                    "total": len(items), "free": sum(1 for e in items if e.get("free")), "plans": picked,
-                    "fri": fri, "sun": sun, "first": first})
+    cities = _ranked(groups, names, MIN_PLANS, MAX_CITIES)
+    for kind in ("finde", "gratis", "ninos"):
+        for k in cities:
+            items = groups[k]
+            if kind == "gratis":
+                items = [e for e in items if e.get("free")]
+            elif kind == "ninos":
+                items = [e for e in items if is_kids(e)]
+            if kind != "finde" and len(items) < MIN_THEME:
+                continue
+            out.append(_edition(kind, names[k], k[0], items, fri, sun, first))
+    pw = _puente(t0)
+    if pw:
+        pg, pn = _groups(events, pw[0], pw[1])
+        for k in _ranked(pg, pn, MIN_PLANS, MAX_CITIES):
+            out.append(_edition("puente", pn[k], k[0], pg[k], pw[0], pw[1], pw[0]))
     return out
+
+
+def _edition(kind, name, code, items, fri, sun, first):
+    a, b = iso(first), iso(sun)
+    picked, cats, titles = [], {}, set()
+    for limit, low in ((1, False), (2, False), (9, True)):  # variedad: primero uno de cada tipo de plan
+        for e in items:
+            t = norm(display_title(e))
+            if len(picked) >= PER_CITY or e in picked or t in titles or cats.get(e["category"], 0) >= limit:
+                continue
+            if e["category"] in _LOW and not low:
+                continue
+            picked.append(e)
+            titles.add(t)
+            cats[e["category"]] = cats.get(e["category"], 0) + 1
+    picked.sort(key=lambda e: (boletin._day(e, a, b), e.get("time") or "99"))
+    slug = slugify(name[0]) + {"finde": "", "gratis": "-gratis", "ninos": "-con-ninos", "puente": "-puente"}[kind]
+    return {"kind": kind, "title": "%s %s" % (KINDS[kind][0], name[0]), "city": name[0], "province": name[1],
+            "code": code, "slug": slug, "total": len(items), "free": sum(1 for e in items if e.get("free")),
+            "plans": picked, "fri": fri, "sun": sun, "first": first}
 
 
 def date_range(ed):
@@ -120,20 +178,23 @@ def _hashtag(s):
 
 def caption(ed):
     """Texto del post: los 5 planes con día, hora y lugar, y hashtags de la ciudad."""
-    lines = ["🗓 Este finde en %s (%s): %d planes elegidos de los %d que hay 👇" % (
-        ed["city"], date_range(ed), len(ed["plans"]), ed["total"]), ""]
+    kind = ed.get("kind", "finde")
+    icon = {"finde": "🗓", "gratis": "🆓", "ninos": "🧒", "puente": "🎒"}[kind]
+    of = {"finde": "que hay", "gratis": "gratis que hay", "ninos": "con niños que hay", "puente": "que hay"}[kind]
+    lines = ["%s %s %s (%s): %d planes elegidos de los %d %s 👇" % (
+        icon, KINDS[kind][0], ed["city"], date_range(ed), len(ed["plans"]), ed["total"], of), ""]
     nums = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"]
     for i, e in enumerate(ed["plans"]):
         extra = [where(e)] + (["gratis"] if e.get("free") else [])
         lines.append("%s %s — %s · %s" % (nums[i], display_title(e), when(e, ed).lower(), " · ".join(x for x in extra if x)))
-    lines += ["", "Todos los planes del finde, con horarios y mapa: planikaapp.com",
+    lines += ["", "Todos los planes %s, con horarios y mapa: planikaapp.com" % ("del puente" if kind == "puente" else "del finde"),
               "📌 Guárdalo y compártelo con quien se venga.", ""]
     tags = []
     for part in ed["city"].split(" / "):
         h = _hashtag(part)
         if h:
             tags += ["#%s" % h, "#Planes%s" % h, "#QueHacerEn%s" % h]
-    tags += ["#PlanesFinde", "#Planika"]
+    tags += KINDS[kind][4] + ["#Planika"]
     lines.append(" ".join(dict.fromkeys(tags)))
     return "\n".join(lines)
 
@@ -193,17 +254,19 @@ def slides(ed):
     big = 170 if len(name) <= 7 else 140 if len(name) <= 10 else 112 if len(name) <= 14 else 92
     n = len(ed["plans"])
     free_n = sum(1 for e in ed["plans"] if e.get("free"))
+    kind = ed.get("kind", "finde")
+    kd = KINDS[kind]
     out = [_page(
         _top(ed, date_range(ed)) +
         '<div style="position:absolute;left:64px;right:64px;top:300px">'
-        '<div class="sticker" style="font-size:64px">Este finde en</div>'
+        '<div class="sticker" style="font-size:64px">%s</div>'
         '<div style="font-size:%dpx;font-weight:900;line-height:1;letter-spacing:-.03em;margin:46px 0 0;overflow-wrap:anywhere">%s</div>'
         '<div style="font-size:52px;font-weight:800;margin-top:46px;line-height:1.25">%d planes elegidos%s</div>'
-        '<div style="font-size:38px;font-weight:600;margin-top:18px;color:#4a4263">de los %d que hay en la agenda%s</div>'
+        '<div style="font-size:38px;font-weight:600;margin-top:18px;color:#4a4263">de los %d %s%s</div>'
         '<ul style="list-style:none;margin-top:54px;display:flex;flex-direction:column;gap:18px">%s</ul></div>'
         '<div class="foot"><span class="url">planikaapp.com</span><span>Desliza →</span></div>'
-        % (big, html.escape(name), n, (" · %d gratis" % free_n) if free_n else "", ed["total"],
-           (" (%d gratis)" % ed["free"]) if ed["free"] else "",
+        % (html.escape(kd[0]), big, html.escape(name), n, (" · %d gratis" % free_n) if free_n and kind != "gratis" else "", ed["total"],
+           html.escape(kd[1]), (" (%d gratis)" % ed["free"]) if ed["free"] and kind in ("finde", "puente") else "",
            "".join('<li style="font-size:36px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">%s %s</li>'
                    % (CAT.get(e.get("category"), ("", "✨"))[1], html.escape(display_title(e))) for e in ed["plans"])))]
     for i, e in enumerate(ed["plans"]):
@@ -223,73 +286,111 @@ def slides(ed):
     out.append(_page(
         _top(ed, date_range(ed)) +
         '<div style="position:absolute;left:64px;right:64px;top:330px">'
-        '<div style="font-size:64px;font-weight:900;line-height:1.15">Hay <span class="sticker" style="font-size:72px;background:%s">%d planes</span></div>'
-        '<div style="font-size:64px;font-weight:900;line-height:1.15;margin-top:30px">este finde en %s</div>'
+        '<div style="font-size:64px;font-weight:900;line-height:1.15">Hay <span class="sticker" style="font-size:72px;background:%s">%d %s</span></div>'
+        '<div style="font-size:64px;font-weight:900;line-height:1.15;margin-top:30px">%s %s</div>'
         '<div style="font-size:46px;font-weight:700;margin-top:60px;line-height:1.35">Todos, con horarios y mapa, en<br>'
         '<span style="background:%s;color:#fff;border-radius:999px;padding:6px 26px;display:inline-block;margin-top:16px;font-weight:900">planikaapp.com</span></div>'
         '<div style="font-size:42px;font-weight:800;margin-top:70px">📌 Guárdalo y compártelo<br>con quien se venga</div></div>'
         '<div class="foot"><span>@planikaapp</span><span>%s</span></div>'
-        % (TEAL, ed["total"], html.escape(name), INK, LOGO % (80, 80))))
+        % (TEAL, ed["total"], html.escape(kd[2]), html.escape(kd[3]), html.escape(name).replace("-", "\u2011"), INK, LOGO % (80, 80))))
     return out
 
 
 # ---------------------------------------------------------------- página para guardarlos desde el móvil
 
-def index_page(eds, files, updated):
-    """files: {slug: [rutas relativas de las imágenes]}."""
-    blocks = []
+def index_page(eds, files, updated, reels=()):
+    """files: {slug: [rutas relativas de las imágenes]}; reels: [{file, poster, title, caption, kind}] (rutas relativas)."""
+    groups = {k: [] for k in KIND_ORDER}
     for ed in eds:
         imgs = files.get(ed["slug"]) or []
         if not imgs:
             continue
         cap = caption(ed)
-        blocks.append(
-            '<section class="ed" data-slug="%(slug)s"><h2>Este finde en %(city)s <small>%(n)d imágenes</small></h2>'
+        groups[ed.get("kind", "finde")].append(
+            '<section class="ed" data-slug="%(slug)s" data-city="%(cslug)s"><h3>%(title)s <small>%(n)d imágenes</small></h3>'
             '<div class="strip">%(imgs)s</div>'
             '<p class="acts"><button type="button" class="btn primary" data-save>📲 Guardar las %(n)d imágenes</button> '
             '<button type="button" class="btn" data-copy>📋 Copiar el texto</button></p>'
             '<pre class="cap">%(cap)s</pre></section>'
-            % dict(slug=html.escape(ed["slug"]), city=html.escape(ed["city"]), n=len(imgs), cap=html.escape(cap),
+            % dict(slug=html.escape(ed["slug"]), cslug=html.escape(slugify(ed["city"])), title=html.escape(ed.get("title") or ed["city"]),
+                   n=len(imgs), cap=html.escape(cap),
                    imgs="".join('<a href="%s" download><img src="%s" alt="Diapositiva %d" loading="lazy" width="270" height="338"></a>'
                                 % (html.escape(f), html.escape(f), k + 1) for k, f in enumerate(imgs))))
-    rng = date_range(eds[0]) if eds else ""
+    reel_html = "".join(
+        '<section class="ed reel" data-file="%(file)s"><h3>%(title)s <small>%(kind)s</small></h3>'
+        '<video controls playsinline preload="none" poster="%(poster)s" src="%(file)s"></video>'
+        '<p class="acts"><button type="button" class="btn primary" data-save-video>📲 Guardar el vídeo</button> '
+        '<button type="button" class="btn" data-copy>📋 Copiar el texto</button></p>'
+        '<pre class="cap">%(cap)s</pre></section>'
+        % dict(file=html.escape(r["file"]), poster=html.escape(r.get("poster") or ""), title=html.escape(r.get("title") or r["file"]),
+               kind=html.escape({"viral": "Viral", "explicacion": "Explicación de la web"}.get(r.get("kind"), "")),
+               cap=html.escape(r.get("caption") or ""))
+        for r in reels)
+    rng = {k: date_range(next(e for e in eds if e.get("kind", "finde") == k)) for k in KIND_ORDER
+           if any(e.get("kind", "finde") == k for e in eds)}
+    nav = ['<a href="#reels">🎬 Reels (%d)</a>' % len(reels)] if reels else []
+    nav += ['<a href="#%s">%s (%d)</a>' % (k, KIND_TITLE[k], len(groups[k])) for k in KIND_ORDER if groups[k]]
+    body = ('<h2 class="grp" id="reels">🎬 Reels</h2>' + reel_html) if reels else ""
+    body += "".join('<h2 class="grp" id="%s">%s <small>%s</small></h2>%s' % (k, KIND_TITLE[k], html.escape(rng.get(k, "")), "".join(groups[k]))
+                    for k in KIND_ORDER if groups[k])
+    cities = sorted({(slugify(e["city"]), e["city"]) for e in eds}, key=lambda c: norm(c[1]))
+    city_opts = "".join('<option value="%s">%s</option>' % (html.escape(c), html.escape(n)) for c, n in cities)
     return """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>Carruseles de Instagram · Planika</title>
+<meta name="robots" content="noindex,nofollow"><title>Instagram · Planika</title>
 <style>
 body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:%(ink)s;background:%(page)s}
 main{max-width:900px;margin:0 auto;padding:18px 16px 60px}
-h1{font-size:26px;margin:6px 0 4px} h2{font-size:20px;margin:0 0 10px} h2 small{font-weight:600;color:#4a4263;font-size:14px}
-.note{color:#4a4263;margin:0 0 18px}
+h1{font-size:26px;margin:6px 0 4px} h2.grp{font-size:24px;margin:28px 0 12px} h2 small,h3 small{font-weight:600;color:#4a4263;font-size:14px}
+h3{font-size:19px;margin:0 0 10px}
+.note{color:#4a4263;margin:0 0 12px}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}.jump a{font-weight:800;color:%(ink)s;background:#fff;border:2px solid %(ink)s;border-radius:999px;padding:6px 12px;text-decoration:none}
+.filter{margin:0 0 6px}.filter select{font:inherit;font-weight:700;padding:8px 10px;border:2px solid %(ink)s;border-radius:12px;background:#fff}
 .ed{background:#fff;border:3px solid %(ink)s;border-radius:18px;box-shadow:4px 4px 0 %(ink)s;padding:14px;margin:0 0 22px}
 .strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory}
 .strip img{width:200px;height:250px;border:2px solid %(ink)s;border-radius:10px;scroll-snap-align:start;display:block}
-.btn{font:inherit;font-weight:800;border:2px solid %(ink)s;border-radius:999px;background:#fff;padding:10px 16px;box-shadow:3px 3px 0 %(ink)s;margin:4px 6px 4px 0}
+.reel video{display:block;width:100%%;max-width:300px;aspect-ratio:9/16;background:#000;border:2px solid %(ink)s;border-radius:12px}
+.btn{font:inherit;font-weight:800;border:2px solid %(ink)s;border-radius:999px;background:#fff;padding:10px 16px;box-shadow:3px 3px 0 %(ink)s;margin:4px 6px 4px 0;color:%(ink)s}
 .btn.primary{background:%(hot)s;color:#fff}
 .cap{white-space:pre-wrap;font-size:14px;line-height:1.45;font-family:inherit;background:%(page)s;border:2px dashed #cfc7dc;border-radius:12px;padding:10px;margin:10px 0 0}
 </style></head><body><main>
-<h1>📸 Carruseles de Instagram · finde %(rng)s</h1>
-<p class="note">Hechos con la agenda del %(updated)s. En el iPhone, «Guardar las imágenes» las lleva a Fotos de una vez (o mantén pulsada cada una).
-Después, «Copiar el texto» para el pie del post. Esta página no está enlazada ni sale en Google.</p>
-%(blocks)s
+<h1>📸 Instagram de Planika</h1>
+<p class="note">Hechos con la agenda del %(updated)s. En el iPhone, «Guardar» lleva las imágenes o el vídeo a Fotos de una vez
+(o mantén pulsada cada imagen). Después, «Copiar el texto» para el pie del post. Esta página no está enlazada ni sale en Google.</p>
+<nav class="jump">%(nav)s</nav>
+<p class="filter"><label>Ciudad: <select id="city"><option value="">Todas</option>%(city_opts)s</select></label></p>
+%(body)s
 </main>
 <script>
+function copyCap(sec, b) {
+  var t = sec.querySelector('.cap').textContent;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { b.textContent = '✓ Texto copiado'; })
+    .catch(function () { var r = document.createRange(); r.selectNodeContents(sec.querySelector('.cap')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+}
+function shareFiles(urls, names, type, b) {
+  return Promise.all(urls.map(function (u, k) {
+    return fetch(u).then(function (r) { return r.blob(); }).then(function (bl) { return new File([bl], names[k], { type: type }); });
+  })).then(function (files) {
+    if (navigator.canShare && navigator.canShare({ files: files })) return navigator.share({ files: files });
+    files.forEach(function (f, k) { setTimeout(function () { var a = document.createElement('a'); a.href = urls[k]; a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); }, k * 300); });
+  }).catch(function () { b.textContent = 'Mantén pulsado para guardarlo'; });
+}
 document.querySelectorAll('.ed').forEach(function (sec) {
-  var imgs = Array.prototype.map.call(sec.querySelectorAll('.strip img'), function (i) { return i.getAttribute('src'); });
-  sec.querySelector('[data-save]').addEventListener('click', function () {
-    var b = this;
-    Promise.all(imgs.map(function (u, k) {
-      return fetch(u).then(function (r) { return r.blob(); }).then(function (bl) { return new File([bl], sec.dataset.slug + '-' + (k + 1) + '.jpg', { type: 'image/jpeg' }); });
-    })).then(function (files) {
-      if (navigator.canShare && navigator.canShare({ files: files })) return navigator.share({ files: files });
-      files.forEach(function (f, k) { setTimeout(function () { var a = document.createElement('a'); a.href = imgs[k]; a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); }, k * 300); });
-    }).catch(function () { b.textContent = 'Mantén pulsada cada imagen para guardarla'; });
+  sec.querySelector('[data-copy]').addEventListener('click', function () { copyCap(sec, this); });
+  var s = sec.querySelector('[data-save]');
+  if (s) s.addEventListener('click', function () {
+    var imgs = Array.prototype.map.call(sec.querySelectorAll('.strip img'), function (i) { return i.getAttribute('src'); });
+    shareFiles(imgs, imgs.map(function (u, k) { return sec.dataset.slug + '-' + (k + 1) + '.jpg'; }), 'image/jpeg', this);
   });
-  sec.querySelector('[data-copy]').addEventListener('click', function () {
-    var t = sec.querySelector('.cap').textContent, b = this;
-    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { b.textContent = '✓ Texto copiado'; })
-      .catch(function () { var r = document.createRange(); r.selectNodeContents(sec.querySelector('.cap')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+  var v = sec.querySelector('[data-save-video]');
+  if (v) v.addEventListener('click', function () {
+    var u = sec.dataset.file; shareFiles([u], [u.split('/').pop()], 'video/mp4', this);
   });
 });
+document.getElementById('city').addEventListener('change', function () {
+  var c = this.value;
+  document.querySelectorAll('.ed[data-city]').forEach(function (sec) { sec.hidden = !!c && sec.dataset.city !== c; });
+});
 </script></body></html>
-""" % dict(ink=INK, page=PAGE, hot=HOT, rng=html.escape(rng), updated=html.escape(updated), blocks="".join(blocks) or "<p>Este finde no hay ciudades con planes suficientes.</p>")
+""" % dict(ink=INK, page=PAGE, hot=HOT, updated=html.escape(updated), nav=" ".join(nav), city_opts=city_opts,
+           body=body or "<p>Hoy no hay ciudades con planes suficientes.</p>")
