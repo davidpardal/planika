@@ -1,0 +1,58 @@
+name: Eventos de organizadores
+
+# Cada mañana: si hay eventos nuevos enviados desde «Publica tu evento», los añade a data/organizadores.json en la rama
+# organizadores-nuevos y abre (o actualiza) un pull request. Fusionarlo es aprobarlos: se publican en la siguiente
+# actualización de la web. Usa solo la clave pública de Supabase, que no da acceso a los correos.
+on:
+  schedule:
+    - cron: "37 7 * * *"   # 07:37 UTC (08:37 en Madrid en invierno)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: organizadores
+  cancel-in-progress: false
+
+jobs:
+  proponer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Buscar envíos nuevos
+        run: python3 tools/organizadores.py --resumen /tmp/resumen.md
+      - name: Proponerlos en un pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- data/organizadores.json; then
+            echo "Nada nuevo."
+            exit 0
+          fi
+          git config user.name "planika-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B organizadores-nuevos
+          git add data/organizadores.json
+          git commit -q -m "Eventos enviados por organizadores para revisar"
+          git push -q -f origin organizadores-nuevos
+          n=$(gh pr list --head organizadores-nuevos --state open --json number --jq '.[0].number')
+          if [ -n "$n" ]; then
+            gh pr edit "$n" --body-file /tmp/resumen.md
+            echo "PR #$n actualizado."
+          elif gh pr create --base main --head organizadores-nuevos --title "Eventos de organizadores para aprobar" --body-file /tmp/resumen.md; then
+            echo "PR creado."
+          else
+            # Si Actions no puede abrir PR (ajuste del repositorio), avisa con una incidencia.
+            gh issue create --title "Eventos de organizadores para aprobar" \
+              --body "$(cat /tmp/resumen.md)
+
+          Están en la rama organizadores-nuevos: https://github.com/${{ github.repository }}/compare/main...organizadores-nuevos"
+          fi

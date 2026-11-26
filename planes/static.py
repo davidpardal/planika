@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - Python < 3.9
     ZoneInfo = None
 
 from . import seo, temporada
-from .classify import CATEGORIES
+from .classify import CATEGORIES, ORGANIZER_ONLY
 from .util import SMALL_WORDS, clean_title, country, display_title, is_permanent, iso, norm, series_split, today
 
 SITE_URL = (os.environ.get("PLANIKA_SITE_URL") or "https://planikaapp.com").rstrip("/")
@@ -291,7 +291,7 @@ def write_data(out_dir, payload):
             src_names.append(e["source"])
     rows = []
     for e in events:
-        flags = (1 if e.get("free") else 0) | (2 if safe_url(e.get("tickets_url")) else 0) | (4 if e.get("xmas") else 0)
+        flags = (1 if e.get("free") else 0) | (2 if safe_url(e.get("tickets_url")) else 0) | (4 if e.get("xmas") else 0) | (8 if e.get("featured") else 0)
         rows.append(_trim([
             e["id"], e["title"], CAT_KEYS.index(e["category"]) if e["category"] in CAT_KEYS else len(CAT_KEYS) - 1,
             e.get("subtype") or "", e["start"], e["end"], e.get("time") or "", e["province_code"],
@@ -300,7 +300,9 @@ def write_data(out_dir, payload):
             e.get("price") or "", flags, e.get("audience") or "", src_names.index(e["source"]),
             e.get("sessions") or 0, e.get("title_es") or "", _shown_title(e)]))
     version = payload["updated_at"]
-    core = {k: payload[k] for k in ("updated_at", "from", "to", "days", "categories", "provinces", "sources")}
+    core = {k: payload[k] for k in ("updated_at", "from", "to", "days", "provinces", "sources")}
+    # Siempre la lista del código: los índices de cada plan (CAT_KEYS) salen de ella, aunque events.json sea de antes
+    core["categories"] = [{"key": k, "name": n, "icon": i} for k, n, i in CATEGORIES]
     core.update({"v": version, "chunk": CHUNK, "srcNames": src_names, "events": rows})
     os.makedirs(out_dir, exist_ok=True)
     core_path = os.path.join(out_dir, "core.js")
@@ -376,6 +378,9 @@ def event_jsonld(e, canonical, t0=None):
     return ld
 
 
+PLACE_TYPE = {"aventura": "SportsActivityLocation", "bienestar": "DaySpa", "experiencias": "TouristAttraction"}
+
+
 def place_jsonld(e, canonical):
     """Las visitas permanentes (museos, monumentos, espacios naturales) no son eventos: Google pide no marcarlas
     como Event. Se describen como TouristAttraction con su dirección y coordenadas."""
@@ -386,7 +391,9 @@ def place_jsonld(e, canonical):
         addr["addressLocality"] = e["city"]
     if e.get("province"):
         addr["addressRegion"] = e["province"]
-    ld = {"@context": "https://schema.org", "@type": "TouristAttraction", "name": display_title(e),
+    kind = (PLACE_TYPE.get(e.get("category"), "EntertainmentBusiness") if e.get("category") in ORGANIZER_ONLY
+            else "TouristAttraction")  # locales de ocio que publican sus dueños; museos y monumentos
+    ld = {"@context": "https://schema.org", "@type": kind, "name": display_title(e),
           "url": canonical, "address": addr}
     if e.get("lat") is not None and e.get("lon") is not None:
         ld["geo"] = {"@type": "GeoCoordinates", "latitude": e["lat"], "longitude": e["lon"]}
@@ -469,9 +476,15 @@ def _pop(eid):
     return h % 4
 
 
+def permanent_label(e):
+    """Lo que se pone en lugar de la fecha: «Todo el año» en locales de ocio (escape rooms, parques de bolas…),
+    «Visita permanente» en museos, monumentos y espacios naturales."""
+    return "Todo el año" if e.get("category") in ORGANIZER_ONLY else "Visita permanente"
+
+
 def _when(e, t0):
     if is_permanent(e):
-        return "Visita permanente"
+        return permanent_label(e)
     t = (" · " + e["time"]) if e.get("time") else ""
     if e.get("sessions"):
         return fmt_day(next_session(e, t0)) + t

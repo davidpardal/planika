@@ -59,7 +59,8 @@ def build(tmp, events):
     provs = sorted({e["province_code"] for e in events})
     links = "".join('<a href="p/%s.html">p</a>' % publish.slug(n) for c, n, _ in util.PROVINCIAS if c in provs)
     links += '<a href="planes-hoy.html">h</a><a href="planes-este-fin-de-semana.html">f</a><a href="planes-gratis.html">g</a>'
-    links += "".join('<a href="t/%s.html">t</a>' % k for k, _, _ in classify.CATEGORIES)
+    has = {e["category"] for e in events}  # escape rooms y parques de bolas: sin página mientras nadie los publique
+    links += "".join('<a href="t/%s.html">t</a>' % k for k, _, _ in classify.CATEGORIES if k not in classify.ORGANIZER_ONLY or k in has)
     with open(os.path.join(tmp, "index.html"), "w", encoding="utf-8") as fh:
         fh.write('<html><head><link rel="canonical" href="%s/"></head><body>%s</body></html>' % (SITE, links))
     for fn in ("styles.css", "icon.svg"):

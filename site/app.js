@@ -18,7 +18,7 @@
     var p = PROV[r[7]] || {}, c = DATA.categories[r[2]] || {};
     var e = { i: i, id: r[0], title: r[1], category: c.key || 'otros', subtype: r[3] || '', start: r[4], end: r[5], time: r[6] || '',
       province_code: r[7], province: p.name || '', ccaa: p.ccaa || '', city: r[8] || '', venue: r[9] || '',
-      lat: r[10] == null ? null : r[10], lon: r[11] == null ? null : r[11], price: r[12] || '', free: !!(r[13] & 1), tk: !!(r[13] & 2), xm: !!(r[13] & 4),
+      lat: r[10] == null ? null : r[10], lon: r[11] == null ? null : r[11], price: r[12] || '', free: !!(r[13] & 1), tk: !!(r[13] & 2), xm: !!(r[13] & 4), ft: !!(r[13] & 8),
       audience: r[14] || '', source: DATA.srcNames[r[15]] || '', sessions: r[16] || null, title_es: r[17] || '', tc: r[18] || '',
       description: '', url: '', tickets_url: '', image: '', address: '', _d: false };
     BY_ID[e.id] = e;
@@ -113,8 +113,10 @@
     return e.sessions[e.sessions.length - 1];
   }
   function isPermanent(e) { return e.subtype === 'Permanente'; }
+  // Locales que publican sus dueños (escape rooms, parques de bolas…): abiertos todo el año, no «visitas»
+  var ALL_YEAR = { ocio: 1, parques: 1, aventura: 1, bienestar: 1, experiencias: 1 };
   function whenText(e) {
-    if (isPermanent(e)) return tr('Visita permanente');
+    if (isPermanent(e)) return tr(ALL_YEAR[e.category] ? 'Todo el año' : 'Visita permanente');
     if (e.sessions) {
       var n = nextSession(e); var rest = e.sessions.filter(function (d) { return d > n; }).length;
       return fmtD(n) + (e.time ? ' · ' + e.time : '') + (rest ? ' (' + tr('+{n} fechas', { n: rest }) + ')' : '');
@@ -209,7 +211,8 @@
     var pc = provCounts();
     $('seoLinks').innerHTML = DATA.provinces.filter(function (p) { return pc[p.code]; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); })
       .map(function (p) { return '<a href="p/' + slug(p.name) + '.html">' + esc(p.name) + '</a>'; }).join(' · ') + '<br>' +
-      DATA.categories.map(function (c) { return '<a href="t/' + c.key + '.html">' + c.icon + ' ' + esc(tr(c.name)) + '</a>'; }).join(' · ');
+      DATA.categories.filter(function (c) { return !ALL_YEAR[c.key] || EVENTS.some(function (e) { return e.category === c.key; }); })
+        .map(function (c) { return '<a href="t/' + c.key + '.html">' + c.icon + ' ' + esc(tr(c.name)) + '</a>'; }).join(' · ');
     $('q').value = state.q; $('from').value = state.from; $('to').value = state.to; $('free').checked = state.free; $('tickets').checked = state.tickets;
     $('tod').value = state.tod; $('aud').value = state.aud; $('pmax').value = state.pmax; $('favs').checked = state.favs; $('radius').value = String(state.radius);
     saveFavs();
@@ -434,8 +437,9 @@
       if (state.tod === 'tarde' && (h < 14 || h >= 20)) return false;
       if (state.tod === 'noche' && h < 20) return false;
     }
-    if (state.aud === 'familiar' && e.category !== 'infantil' && !/nin|infan|famil|haur|nens/.test(norm(e.audience || ''))) return false;
-    if (state.aud === 'adultos' && e.category === 'infantil') return false;
+    var kids = e.category === 'infantil' || e.category === 'parques';
+    if (state.aud === 'familiar' && !kids && !/nin|infan|famil|haur|nens/.test(norm(e.audience || ''))) return false;
+    if (state.aud === 'adultos' && kids) return false;
     if (state.pmax !== '') { var pn = priceNum(e); if (pn === null || pn > +state.pmax) return false; }
     if (state.geo) { var d = dist(e); if (d === null || d > state.radius) return false; }
     if (!ignoreDates && !inDates(e)) return false;
@@ -456,7 +460,10 @@
   }
   function sorted(list) {
     if (state.geo) return list.slice().sort(function (a, b) { return dist(a) - dist(b); });
-    return list.map(function (e) { return [sortKey(e), e]; }).sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; }).map(function (x) { return x[1]; });
+    var out = list.map(function (e) { return [sortKey(e), e]; }).sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; }).map(function (x) { return x[1]; });
+    // Destacados (pagados por el organizador): arriba de la lista que encajan con los filtros, como mucho 3, con su etiqueta
+    var top = out.filter(function (e) { return e.ft; }).slice(0, 3);
+    return top.length ? top.concat(out.filter(function (e) { return top.indexOf(e) < 0; })) : out;
   }
 
   // ---------- tarjetas
@@ -467,7 +474,7 @@
     var pop = opts.i != null ? opts.i % 4 : popOf(e.id);
     var c = CATS[e.category] || { icon: '✨', name: 'Otros planes' };
     var ongoing = !e.sessions && !isPermanent(e) && e.start < TODAY && e.end >= TODAY;
-    var permBadge = isPermanent(e) ? '<span class="badge">' + tr('Permanente') + '</span>' : '';
+    var permBadge = isPermanent(e) && !ALL_YEAR[e.category] ? '<span class="badge">' + tr('Permanente') + '</span>' : '';
     var img = e.image ? '<img src="' + esc(e.image) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
     var where = [e.venue, e.city, e.province && e.province !== e.city ? e.province : ''].filter(Boolean).join(' · ');
     var price = e.free ? '<span class="badge free">' + tr('Gratis') + '</span>' : (e.price ? '<span class="badge">' + esc(e.price) + '</span>' : '');
@@ -481,7 +488,7 @@
     }
     var fav = '<button type="button" class="fav corner' + (favSet.has(e.id) ? ' on' : '') + '" data-fav="' + e.id + '" title="' + tr('Guardar en favoritos') + '" aria-label="' + tr('Guardar en favoritos') + '">' + (favSet.has(e.id) ? '★' : '☆') + '</button>';
     return '<article class="card pop' + pop + '" data-id="' + e.id + '" data-c="' + Math.floor(e.i / CHUNK) + '" data-pop="' + pop + '"' + (opts.noOngoing ? ' data-no="1"' : '') + '>' + fav + img + '<div class="body">' +
-      '<div class="badges"><span class="badge">' + c.icon + ' ' + esc(tr(c.name)) + '</span>' + price + permBadge + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">' + tr('En curso') + '</span>' : '') + (d !== null ? '<span class="badge dist">' + tr('a {n} km', { n: d < 10 ? d.toFixed(1) : Math.round(d) }) + '</span>' : '') + '</div>' +
+      '<div class="badges">' + (e.ft ? '<span class="badge featured">⭐ ' + tr('Destacado') + '</span>' : '') + '<span class="badge">' + c.icon + ' ' + esc(tr(c.name)) + '</span>' + price + permBadge + (ongoing && !opts.noOngoing ? '<span class="badge ongoing">' + tr('En curso') + '</span>' : '') + (d !== null ? '<span class="badge dist">' + tr('a {n} km', { n: d < 10 ? d.toFixed(1) : Math.round(d) }) + '</span>' : '') + '</div>' +
       // El título lleva a la ficha del plan en Planika (enlace rastreable); la web oficial sigue en "Entradas" y "Más info".
       '<h3><a href="' + esc(evFile(e)) + '">' + esc(title(e)) + '</a></h3>' +
       (e.title_es ? '<div class="where">' + esc(e.title) + '</div>' : '') +

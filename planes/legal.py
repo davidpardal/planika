@@ -11,7 +11,7 @@ import os
 from . import static
 
 SITE_URL = static.SITE_URL
-UPDATED = "25 de noviembre de 2026"
+UPDATED = "26 de noviembre de 2026"
 CONTACT_FALLBACK = "https://github.com/davidpardal/planika/issues"
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "legal.json")
 
@@ -81,8 +81,8 @@ def privacy_page(cfg=None):
 <p>Cuando marcas un plan como favorito, Planika lo guarda en el almacenamiento local de tu navegador (clave <code>planika_favs</code>). Se queda en tu dispositivo, no se envía a ningún servidor y puedes borrarlo en cualquier momento limpiando los datos del sitio. Es un almacenamiento necesario para una función que tú pides, por lo que no requiere consentimiento.</p>
 <h3>Ubicación («Cerca de mí»)</h3>
 <p>Solo si pulsas el botón, el navegador te pide permiso y Planika usa tu posición para ordenar los planes por distancia. El cálculo se hace en tu dispositivo: la posición no se envía ni se guarda.</p>
-<h3>Formulario para organizadores</h3>
-<p>Si publicas un evento con el formulario (Google Forms), recibimos los datos que escribes: los del evento y los de contacto. Los usamos para revisar y publicar tu evento y para ponernos en contacto contigo si hace falta. Base jurídica: tu consentimiento y la gestión de tu solicitud (art. 6.1.a y 6.1.b). Los conservamos mientras sean necesarios para esa gestión. Google trata los datos del formulario como proveedor del servicio.</p>
+<h3 id="organizadores">Formulario para organizadores</h3>
+<p>Si envías un evento o un local con el formulario de «Publica tu evento», recibimos los datos que escribes: los del evento o el local, que se publican si los aprobamos, y tu correo, que no se publica y solo usamos para escribirte sobre ese envío (por ejemplo, si falta algo o sobre el destacado). Base jurídica: tu consentimiento y la gestión de tu solicitud (art. 6.1.a y 6.1.b). Los envíos se guardan en Supabase, con servidores en la Unión Europea (Irlanda), que actúa como proveedor del servicio, y se borran 6 meses después de enviarlos.</p>
 <h3>Servidores y contenidos de terceros</h3>
 <p>La web se aloja en GitHub Pages, que registra datos técnicos de conexión (como la dirección IP) para prestar el servicio. Las imágenes de algunos planes se cargan directamente desde los servidores de sus organizadores o fuentes, que pueden ver tu dirección IP al pedirlas. Si compartes un plan de «Mis planes» con un enlace, ese plan (su nombre, los planes que incluye con su día y sus notas) se guarda en Supabase, con servidores en la Unión Europea (Irlanda), para que quien tenga el enlace pueda verlo y editarlo; Supabase registra datos técnicos de conexión (como la dirección IP) y los planes compartidos se borran 6 meses después de su último cambio. Los enlaces a webs de organizadores, entradas y Google Calendar llevan a sitios con sus propias políticas.</p>
 

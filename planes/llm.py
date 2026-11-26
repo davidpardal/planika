@@ -8,7 +8,7 @@ import json
 import os
 import re
 
-from .classify import CATEGORIES, CATEGORY_KEYS
+from .classify import CATEGORIES, CATEGORY_KEYS, ORGANIZER_ONLY
 from .util import DATA_DIR
 
 CACHE = os.path.join(DATA_DIR, "llm_cache.json")
@@ -18,7 +18,7 @@ BATCH = 40
 SYSTEM = (
     "Eres el clasificador de Planika, una agenda de planes de ocio en España. "
     "Para cada evento devuelve la categoría más adecuada entre estas claves: "
-    + ", ".join("%s (%s)" % (k, n) for k, n, _ in CATEGORIES)
+    + ", ".join("%s (%s)" % (k, n) for k, n, _ in CATEGORIES if k not in ORGANIZER_ONLY)
     + ". Además, si el título no está en castellano, da una traducción breve al castellano en 'titulo_es'; "
     "si ya está en castellano deja 'titulo_es' vacío. Responde únicamente con un array JSON de objetos "
     "{\"id\": ..., \"categoria\": ..., \"titulo_es\": ...}, sin texto adicional."
@@ -59,7 +59,7 @@ def enrich(events, log, mode="otros"):
             continue
         for a in answers:
             cat = a.get("categoria")
-            if a.get("id") and cat in CATEGORY_KEYS:
+            if a.get("id") and cat in CATEGORY_KEYS and cat not in ORGANIZER_ONLY:
                 cache[a["id"]] = {"category": cat, "title_es": (a.get("titulo_es") or "").strip()[:200]}
                 done += 1
     changed = 0

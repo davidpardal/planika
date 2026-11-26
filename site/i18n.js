@@ -2078,6 +2078,108 @@
 "No s'ha pogut carregar el pla compartit. Prova-ho d'aquí a una estona.",
 "Non se puido cargar o plan compartido. Proba nun anaco.",
 "The shared plan couldn't be loaded. Try again in a while."
+],
+"Escape rooms y ocio": [
+"Escape room-ak eta aisialdia",
+"Escape rooms i oci",
+"Escape rooms e lecer",
+"Escape rooms and leisure"
+],
+"Escape rooms y ocio en toda España": [
+"Escape room-ak eta aisialdia Espainia osoan",
+"Escape rooms i oci a tot Espanya",
+"Escape rooms e lecer en toda España",
+"Escape rooms and leisure across Spain"
+],
+"Escape rooms y ocio en {x}": [
+"{x}: escape room-ak eta aisialdia",
+"Escape rooms i oci a {x}",
+"Escape rooms e lecer en {x}",
+"Escape rooms and leisure in {x}"
+],
+"Parques infantiles y de bolas": [
+"Haur-parkeak eta bola-parkeak",
+"Parcs infantils i de boles",
+"Parques infantís e de bólas",
+"Indoor play and soft play"
+],
+"Parques infantiles y de bolas en toda España": [
+"Haur-parkeak eta bola-parkeak Espainia osoan",
+"Parcs infantils i de boles a tot Espanya",
+"Parques infantís e de bólas en toda España",
+"Indoor play and soft play across Spain"
+],
+"Parques infantiles y de bolas en {x}": [
+"{x}: haur-parkeak eta bola-parkeak",
+"Parcs infantils i de boles a {x}",
+"Parques infantís e de bólas en {x}",
+"Indoor play and soft play in {x}"
+],
+"Todo el año": [
+"Urte osoan",
+"Tot l'any",
+"Todo o ano",
+"All year round"
+],
+"Aventura y turismo activo": [
+"Abentura eta turismo aktiboa",
+"Aventura i turisme actiu",
+"Aventura e turismo activo",
+"Adventure and outdoor activities"
+],
+"Aventura y turismo activo en toda España": [
+"Abentura eta turismo aktiboa Espainia osoan",
+"Aventura i turisme actiu a tot Espanya",
+"Aventura e turismo activo en toda España",
+"Adventure and outdoor activities across Spain"
+],
+"Aventura y turismo activo en {x}": [
+"{x}: abentura eta turismo aktiboa",
+"Aventura i turisme actiu a {x}",
+"Aventura e turismo activo en {x}",
+"Adventure and outdoor activities in {x}"
+],
+"Spas y bienestar": [
+"Spa-ak eta ongizatea",
+"Spas i benestar",
+"Spas e benestar",
+"Spas and wellness"
+],
+"Spas y bienestar en toda España": [
+"Spa-ak eta ongizatea Espainia osoan",
+"Spas i benestar a tot Espanya",
+"Spas e benestar en toda España",
+"Spas and wellness across Spain"
+],
+"Spas y bienestar en {x}": [
+"{x}: spa-ak eta ongizatea",
+"Spas i benestar a {x}",
+"Spas e benestar en {x}",
+"Spas and wellness in {x}"
+],
+"Bodegas y experiencias": [
+"Upategiak eta esperientziak",
+"Cellers i experiències",
+"Adegas e experiencias",
+"Wineries and experiences"
+],
+"Bodegas y experiencias en toda España": [
+"Upategiak eta esperientziak Espainia osoan",
+"Cellers i experiències a tot Espanya",
+"Adegas e experiencias en toda España",
+"Wineries and experiences across Spain"
+],
+"Bodegas y experiencias en {x}": [
+"{x}: upategiak eta esperientziak",
+"Cellers i experiències a {x}",
+"Adegas e experiencias en {x}",
+"Wineries and experiences in {x}"
+],
+"Destacado": [
+"Nabarmendua",
+"Destacat",
+"Destacado",
+"Featured"
 ]
 };
   /*END*/
