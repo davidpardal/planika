@@ -1,0 +1,94 @@
+name: Publicar en Instagram
+
+# Lo dispara el botón «Publicar en Instagram» de planikaapp.com/ig (solo con la clave de GitHub de David, guardada en su
+# móvil; dispararlo exige permiso de escritura en el repositorio). Publica en @planikaapp con la API oficial de Instagram:
+# la clave está en el secreto INSTAGRAM_TOKEN. Los lunes comprueba que la clave sigue valiendo y la renueva 60 días
+# (para guardarla hace falta el secreto PLANIKA_SECRETS_TOKEN; sin él, solo avisa si deja de valer).
+on:
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: "carrusel o reel"
+        required: true
+        type: choice
+        options: [carrusel, reel]
+      ruta:
+        description: "Carrusel: su nombre en /ig (p. ej. bilbao-gratis). Reel: reels/archivo.mp4"
+        required: true
+      texto:
+        description: "Pie del post"
+        required: false
+  schedule:
+    - cron: "11 6 * * 1"   # lunes 06:11 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: instagram
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - name: Publicar
+        env:
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
+          TIPO: ${{ inputs.tipo }}
+          RUTA: ${{ inputs.ruta }}
+          TEXTO: ${{ inputs.texto }}
+        run: |
+          printf '%s' "$TEXTO" > /tmp/texto.txt
+          python3 tools/ig_publicar.py "$TIPO" "$RUTA" --texto-archivo /tmp/texto.txt --resultado /tmp/resultado.txt
+      - name: Avisar por Telegram
+        if: ${{ always() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          [ -s /tmp/resultado.txt ] || echo "❌ No se ha publicado (mira el registro del workflow)" > /tmp/resultado.txt
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then exit 0; fi
+          curl -s -o /dev/null -m 20 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text@/tmp/resultado.txt" || true
+
+  clave:
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - name: Comprobar y renovar la clave de Instagram
+        env:
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
+        run: |
+          if [ -z "$INSTAGRAM_TOKEN" ]; then echo "Instagram sin configurar."; exit 0; fi
+          python3 tools/ig_publicar.py comprobar --nuevo /tmp/nuevo --resultado /tmp/resultado.txt
+          if [ -s /tmp/nuevo ]; then echo "::add-mask::$(cat /tmp/nuevo)"; fi
+      - name: Guardar la clave renovada
+        env:
+          GH_TOKEN: ${{ secrets.PLANIKA_SECRETS_TOKEN }}
+        run: |
+          if [ ! -s /tmp/nuevo ]; then echo "Hoy no hay clave nueva que guardar."; exit 0; fi
+          if [ -z "$GH_TOKEN" ]; then echo "Sin PLANIKA_SECRETS_TOKEN: la clave no se guarda (renuévala a mano cada 60 días)."; exit 0; fi
+          gh secret set INSTAGRAM_TOKEN --repo "${{ github.repository }}" < /tmp/nuevo
+          echo "Clave de Instagram renovada y guardada."
+      - name: Avisar si la clave ya no vale
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "⚠️ Planika: la clave de Instagram ya no vale. Genera otra en Meta y guárdala en el secreto INSTAGRAM_TOKEN." > /tmp/aviso.txt
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then exit 0; fi
+          curl -s -o /dev/null -m 20 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text@/tmp/aviso.txt" || true

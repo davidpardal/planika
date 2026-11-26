@@ -353,6 +353,8 @@ h3{font-size:19px;margin:0 0 10px}
 .btn{font:inherit;font-weight:800;border:2px solid %(ink)s;border-radius:999px;background:#fff;padding:10px 16px;box-shadow:3px 3px 0 %(ink)s;margin:4px 6px 4px 0;color:%(ink)s}
 .btn.primary{background:%(hot)s;color:#fff}
 .cap{white-space:pre-wrap;font-size:14px;line-height:1.45;font-family:inherit;background:%(page)s;border:2px dashed #cfc7dc;border-radius:12px;padding:10px;margin:10px 0 0}
+.btn.pub{background:%(ink)s;color:#fff}
+.admin{margin:30px 0 0;text-align:center}.admin button{font:inherit;font-size:13px;color:#4a4263;background:none;border:0;text-decoration:underline}
 </style></head><body><main>
 <h1>📸 Instagram de Planika</h1>
 <p class="note">Hechos con la agenda del %(updated)s. En el iPhone, «Guardar» lleva las imágenes o el vídeo a Fotos de una vez
@@ -360,6 +362,7 @@ h3{font-size:19px;margin:0 0 10px}
 <nav class="jump">%(nav)s</nav>
 <p class="filter"><label>Ciudad: <select id="city"><option value="">Todas</option>%(city_opts)s</select></label></p>
 %(body)s
+<p class="admin"><button type="button" id="igKey">🔑 Publicar en Instagram (solo Planika)</button></p>
 </main>
 <script>
 function copyCap(sec, b) {
@@ -387,6 +390,46 @@ document.querySelectorAll('.ed').forEach(function (sec) {
     var u = sec.dataset.file; shareFiles([u], [u.split('/').pop()], 'video/mp4', this);
   });
 });
+// Publicar en @planikaapp: dispara el workflow instagram.yml con la clave de GitHub guardada solo en el móvil de David
+// (una clave de grano fino con permiso de Actions en este repositorio). Sin clave, el botón no aparece.
+var GH = 'https://api.github.com/repos/davidpardal/planika/actions/workflows/instagram.yml/dispatches';
+function ghKey() { try { return localStorage.getItem('planika_ig_gh') || ''; } catch (e) { return ''; } }
+function addPublish() {
+  if (!ghKey()) return;
+  document.getElementById('igKey').textContent = '🔑 Publicación activada en este móvil (tocar para quitarla)';
+  document.querySelectorAll('.ed').forEach(function (sec) {
+    if (sec.querySelector('[data-pub]')) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn pub'; b.dataset.pub = '1'; b.textContent = '📤 Publicar en Instagram';
+    sec.querySelector('.acts').appendChild(b);
+    b.addEventListener('click', function () {
+      var reel = sec.classList.contains('reel'), ruta = reel ? sec.dataset.file : sec.dataset.slug;
+      var title = sec.querySelector('h3').firstChild.textContent.trim();
+      if (!confirm('¿Publicar «' + title + '» en @planikaapp?')) return;
+      b.disabled = true; b.textContent = 'Enviando…';
+      fetch(GH, { method: 'POST', headers: { Authorization: 'Bearer ' + ghKey(), Accept: 'application/vnd.github+json' },
+        body: JSON.stringify({ ref: 'main', inputs: { tipo: reel ? 'reel' : 'carrusel', ruta: ruta, texto: sec.querySelector('.cap').textContent } }) })
+        .then(function (r) {
+          if (r.status === 204 || r.status === 200) { b.textContent = '✓ Enviado: en 1–3 minutos estará en Instagram'; return; }
+          b.disabled = false;
+          b.textContent = r.status === 401 || r.status === 403 ? '🔑 La clave no vale o no tiene permiso' : '❌ Error ' + r.status + ': vuelve a probar';
+        })
+        .catch(function () { b.disabled = false; b.textContent = '❌ Sin conexión: vuelve a probar'; });
+    });
+  });
+}
+document.getElementById('igKey').addEventListener('click', function () {
+  if (ghKey()) {
+    if (confirm('¿Quitar la clave de publicación de este móvil?')) { try { localStorage.removeItem('planika_ig_gh'); } catch (e) {} location.reload(); }
+    return;
+  }
+  var k = (prompt('Clave de GitHub para publicar en Instagram:') || '').trim();
+  if (!k) return;
+  if (!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(k)) { alert('Esa clave no parece de GitHub.'); return; }
+  try { localStorage.setItem('planika_ig_gh', k); } catch (e) { alert('Este navegador no deja guardarla.'); return; }
+  addPublish();
+});
+addPublish();
 document.getElementById('city').addEventListener('change', function () {
   var c = this.value;
   document.querySelectorAll('.ed[data-city]').forEach(function (sec) { sec.hidden = !!c && sec.dataset.city !== c; });
