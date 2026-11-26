@@ -220,20 +220,31 @@ def _short_names(name, place):
     return [x for x in out if x and x != name]
 
 
+def title_year(e, t0):
+    """Año de la (última) fecha del título: «2027» en «sáb 27 feb 2027»; vacío en visitas permanentes."""
+    if is_permanent(e):
+        return ""
+    return (next_session(e, t0) if e.get("sessions") else e["end"])[:4]
+
+
 def seo_title(e, t0, place, full=False):
-    """Título de la ficha: «Ara Malikian en Vitoria-Gasteiz · sáb 27 feb» (más " | Planika"), en unos 60 caracteres.
+    """Título de la ficha: «Ara Malikian en Vitoria-Gasteiz · sáb 27 feb 2027» (más " | Planika"), en unos 60 caracteres.
 
     Lo que se busca es el nombre y la ciudad («ara malikian vitoria»), así que van primero y nunca se cortan a
-    media palabra. Si no cabe todo, por orden: se quita el día de la semana; de «Ciclo Bernaola 2026-2027: Trío
-    Zukan» queda «Trío Zukan»; se recorta el final del nombre (no por debajo de NAME_MIN); y, en último caso, se
-    quita la fecha. La ciudad no se repite si el nombre ya la lleva («Feria de Navidad de Bilbao»).
+    media palabra. Muchas búsquedas llevan el año («encendido luces pamplona 2026»), así que la fecha lo lleva
+    si cabe (y si el nombre no lo lleva ya). Si no cabe todo, por orden: se quita el día de la semana; luego el
+    año; de «Ciclo Bernaola 2026-2027: Trío Zukan» queda «Trío Zukan»; se recorta el final del nombre (no por
+    debajo de NAME_MIN); y, en último caso, se quita la fecha. La ciudad no se repite si el nombre ya la lleva
+    («Feria de Navidad de Bilbao»).
     full: el nombre no se recorta nunca (planes que solo se distinguen por el final del nombre)."""
-    when, day = title_when(e, t0), short_when(e, t0)
+    when, day, year = title_when(e, t0), short_when(e, t0), title_year(e, t0)
     place = " ".join(str(place or "").split())
 
     def tails(name):
         where = (" en " + place) if place and norm(place) not in norm(name) else ""
-        return where, [where + ((" · " + w) if w else "") for w in (when, day)]  # con y sin día de la semana
+        y = (" " + year) if year and day and year not in name else ""
+        whens = [when + y, day + y, when, day] if y else [when, day]  # con y sin día de la semana y año
+        return where, [where + ((" · " + w) if w else "") for w in whens]
 
     name = " ".join(display_title(e).split())
     where, ts = tails(name)
@@ -254,7 +265,7 @@ def seo_title(e, t0, place, full=False):
     room = TITLE_MAX - len(ts[-1])
     if room >= NAME_MIN:
         short = clip(name, room)
-        return short + (ts[0] if len(short) + len(ts[0]) <= TITLE_MAX else ts[-1])
+        return short + next(tail for tail in ts if len(short) + len(tail) <= TITLE_MAX)  # el último siempre cabe
     return clip(name, max(NAME_MIN, TITLE_MAX - len(where))) + where
 
 

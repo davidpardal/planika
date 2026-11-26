@@ -142,40 +142,50 @@ class TestEventPage(unittest.TestCase):
         e = util.event("Agenda", "1", "Concierto de la Orquesta Sinfónica de Euskadi con obras de Ravel y Debussy",
                        "2026-11-21", city="Bilbao", province_code="48")
         t = static.seo_title(e, "2026-11-18", "Bilbao")
-        self.assertEqual(t, "Concierto de la Orquesta Sinfónica… en Bilbao · sáb 21 nov")  # sin «…de…» suelto
+        self.assertEqual(t, "Concierto de la Orquesta Sinfónica… en Bilbao · sáb 21 nov 2026")  # sin «…de…» suelto
         self.assertLessEqual(len(t), static.TITLE_MAX)
         exp = util.event("Agenda", "2", "Expo", "2026-10-01", end="2027-01-15", city="Bilbao", province_code="48")
-        self.assertEqual(static.seo_title(exp, "2026-11-18", "Bilbao"), "Expo en Bilbao · hasta el 15 ene")
+        self.assertEqual(static.seo_title(exp, "2026-11-18", "Bilbao"), "Expo en Bilbao · hasta el 15 ene 2027")
 
     def test_title_is_clean_and_never_cut_mid_word(self):
         """El caso real de Search Console: «Ara Malikian (27 de febrero - Buesa… · 27 feb · Vitoria-Gaste…»."""
         e = util.event("Open Data Euskadi", "4", "Ara Malikian (27 de febrero - Buesa Arena)", "2027-02-27",
                        city="Vitoria-Gasteiz", venue="Fernando Buesa Arena", province_code="01")
-        self.assertEqual(static.seo_title(e, "2026-11-24", "Vitoria-Gasteiz"), "Ara Malikian en Vitoria-Gasteiz · sáb 27 feb")
+        self.assertEqual(static.seo_title(e, "2026-11-24", "Vitoria-Gasteiz"), "Ara Malikian en Vitoria-Gasteiz · sáb 27 feb 2027")
         self.assertEqual(static.event_file(e), "ara-malikian-27-de-febrero-buesa-arena-%s.html" % e["id"])  # la URL no cambia
         feria = util.event("Agenda", "5", "Feria de Navidad de Bilbao", "2026-12-05", city="Bilbao", province_code="48")
-        self.assertEqual(static.seo_title(feria, "2026-11-24", "Bilbao"), "Feria de Navidad de Bilbao · sáb 5 dic")
+        self.assertEqual(static.seo_title(feria, "2026-11-24", "Bilbao"), "Feria de Navidad de Bilbao · sáb 5 dic 2026")
         largo = util.event("Agenda", "6", "Museo San Telmo (exposición permanente y visitas guiadas al claustro y a la iglesia)",
                            "2026-11-01", end="2027-06-30", city="Donostia / San Sebastián", province_code="20")
         t = static.seo_title(largo, "2026-11-24", "Donostia / San Sebastián")
         self.assertTrue(t.endswith(" en Donostia / San Sebastián"), t)  # la ciudad entera; se cae la fecha
         self.assertNotIn("(", t)  # sin paréntesis abierto
 
+    def test_title_year_matches_searches(self):
+        """«encendido luces pamplona 2026»: el año va en la fecha si cabe, no se repite y no quita sitio al nombre."""
+        e = util.event("Agenda", "7", "Encendido de las luces de Navidad", "2026-11-27", city="Pamplona", province_code="31")
+        self.assertEqual(static.seo_title(e, "2026-11-24", "Pamplona"), "Encendido de las luces de Navidad en Pamplona · vie 27 nov 2026")
+        poteo = util.event("Agenda", "8", "Poteo musical de Orduña 2026", "2026-11-28", city="Orduña", province_code="48")
+        self.assertEqual(static.seo_title(poteo, "2026-11-24", "Orduña"), "Poteo musical de Orduña 2026 · sáb 28 nov")
+        justo = util.event("Agenda", "10", "Concierto de Navidad de la Banda Municipal", "2026-12-20", city="Bilbao",
+                           province_code="48")  # con el año no cabe: el nombre entero y el día de la semana mandan
+        self.assertEqual(static.seo_title(justo, "2026-11-24", "Bilbao"), "Concierto de Navidad de la Banda Municipal en Bilbao · dom 20 dic")
+
     def test_long_name_keeps_priority_over_place(self):
         e = util.event("Agenda", "3", "Taller per a la gent gran: Humanitats", "2026-11-10", end="2026-12-21",
                        city="Barcelona", province_code="08")
         t = static.seo_title(e, "2026-11-18", "Carrer de Sicília 321")
-        self.assertEqual(t, "Humanitats en Carrer de Sicília 321 · hasta el 21 dic")  # lo que lo distingue, entero
+        self.assertEqual(t, "Humanitats en Carrer de Sicília 321 · hasta el 21 dic 2026")  # lo que lo distingue, entero
 
     def test_series_and_quoted_names_keep_the_specific_part(self):
         def t(title, city="Vitoria-Gasteiz", day="2027-02-28"):
             return static.seo_title(util.event("Agenda", "9", title, day, city=city, province_code="01"), "2026-11-24", city)
         self.assertEqual(t("Ciclo Bernaola 2026-2027: Trío Zukan"), "Ciclo Bernaola 2026-2027: Trío Zukan en Vitoria-Gasteiz · 28 feb")
-        self.assertEqual(t("Ciclo Bernaola 2026-2027: Sonografia de la memoria"), "Sonografia de la memoria en Vitoria-Gasteiz · dom 28 feb")
+        self.assertEqual(t("Ciclo Bernaola 2026-2027: Sonografia de la memoria"), "Sonografia de la memoria en Vitoria-Gasteiz · dom 28 feb 2027")
         self.assertEqual(t('CANDLELIGHT Vitoria-Gasteiz: "Coldplay VS. Imagine Dragons"'),
-                         "Coldplay VS. Imagine Dragons en Vitoria-Gasteiz · dom 28 feb")
+                         "Coldplay VS. Imagine Dragons en Vitoria-Gasteiz · dom 28 feb 2027")
         self.assertEqual(t('Conferència "Egipte. Deir El-Medina: Els artesans de les tombes de la vall dels reis"', "Barcelona"),
-                         "Egipte. Deir El-Medina: Els artesans… en Barcelona · dom 28 feb")
+                         "Egipte. Deir El-Medina: Els artesans… en Barcelona · 28 feb 2027")
         # Lo de antes de los dos puntos es el artista: se queda
         self.assertTrue(t('Ainara Ortega & Joaquín Chacón: "So in love, canciones de Cole Porter y más"').startswith("Ainara Ortega"))
 
