@@ -264,7 +264,7 @@
    },
    {
     "date": "2026-11-26",
-    "count": 1336,
+    "count": 1338,
     "error": ""
    }
   ],
@@ -1276,7 +1276,7 @@
    },
    {
     "date": "2026-11-26",
-    "count": 153,
+    "count": 156,
     "error": ""
    }
   ],
@@ -1328,7 +1328,7 @@
    },
    {
     "date": "2026-11-26",
-    "count": 11,
+    "count": 9,
     "error": ""
    }
   ],
@@ -1526,8 +1526,17 @@
     "count": 190,
     "error": ""
    }
+  ],
+  "organizadores": [
+   {
+    "date": "2026-11-26",
+    "count": 0,
+    "error": ""
+   }
   ]
  },
- "updated_at": "2026-11-26T18:39",
- "alerts": []
+ "updated_at": "2026-11-26T19:35",
+ "alerts": [
+  "Agendas turísticas (Palma, Elche): hoy no ha respondido; se muestran los planes de la descarga del 2026-11-26"
+ ]
 }
