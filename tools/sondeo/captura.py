@@ -449,12 +449,120 @@ def reel_envivo(browser):
     ctx_b.close()
 
 
+def seed_plan(page, ids, notes=()):
+    """Plan de partida «Sábado en Bilbao» con planes reales del sábado 28 (y planes propios), como si ya lo tuvieras."""
+    page.evaluate("""a => { var p = { id: 'sabado', n: 'Sábado en Bilbao', i: a[0].map(function (x) { return [x, '2026-11-28']; }), o: a[1] };
+      localStorage.setItem('planika_plans', JSON.stringify({ a: 'sabado', p: [p] })); }""", [ids, list(notes)])
+
+
+def reel_propio(browser):
+    """Novedad: planes propios. En «Sábado en Bilbao» (planes reales del sábado 28) apuntas la comida y algo el domingo."""
+    ctx, page = new_page(browser)
+    r = Reel(page, "propio")
+    url = SITE + "?prov=48&city=Bilbao&dias=2026-11-28"
+    open_site(page, url)
+    cards = page.locator("#list article[data-id]")
+    seed_plan(page, [cards.nth(k).get_attribute("data-id") for k in pick_cards(page, n=2, gap=240)])
+    open_site(page, url)
+    r.shot(1.8, "intro")
+    dlg = "#planDlg"
+    cap = "1 · Abre tu plan"
+    r.tap(page.locator("#planPill"), cap, wait=900, hold=1.2)
+    cap = "2 · Escribe tu plan propio"
+    r.glide_in_to(dlg, page.locator("#planNoteForm"), 430, 0.9, cap)
+    r.tap(page.locator("#planNoteText"), cap, wait=250, hold=0.2)
+    for chunk in ("Comer en ", "casa de ", "la amona"):
+        page.keyboard.type(chunk, delay=40)
+        r.shot(0.3, cap)
+    r.shot(0.5, cap)
+    cap = "3 · Ponle hora"
+    t = page.locator("#planNoteTime")
+    r.tap(t, cap, wait=200, hold=0.2)
+    t.fill("14:30")
+    r.shot(0.7, cap)
+    r.tap(page.locator("#planNoteForm button[type=submit]"), cap, wait=700, hold=0.3)
+    cap = "4 · Se coloca solo, por hora"
+    r.glide_in_to(dlg, page.locator("#planList .plan-item.note"), 250, 0.9, cap)
+    r.shot(1.6, cap)
+    cap = "5 · ¿Otro día? También"
+    r.glide_in_to(dlg, page.locator("#planNoteForm"), 430, 0.8, cap)
+    day = page.locator("#planNoteDay")
+    r.tap(day, cap, wait=200, hold=0.2)
+    day.select_option("")
+    page.wait_for_timeout(300)
+    r.shot(0.5, cap)
+    page.locator("#planNoteDate").fill("2026-11-29")
+    r.shot(0.4, cap)
+    t.fill("11:00")
+    r.tap(page.locator("#planNoteText"), cap, wait=200, hold=0.2)
+    for chunk in ("Subir a ", "Artxanda"):
+        page.keyboard.type(chunk, delay=40)
+        r.shot(0.3, cap)
+    r.tap(page.locator("#planNoteForm button[type=submit]"), cap, wait=700, hold=0.3)
+    r.glide_in_to(dlg, page.locator("#planList .plan-day").last, 170, 0.9, cap)
+    r.shot(2.0, cap)
+    ctx.close()
+
+
+def reel_editar(browser):
+    """Novedad: editar un plan propio (nombre, hora y día) en «Sábado en Bilbao»."""
+    ctx, page = new_page(browser)
+    r = Reel(page, "editar")
+    url = SITE + "?prov=48&city=Bilbao&dias=2026-11-28"
+    open_site(page, url)
+    cards = page.locator("#list article[data-id]")
+    seed_plan(page, [cards.nth(k).get_attribute("data-id") for k in pick_cards(page, n=2, gap=240)],
+              [{"d": "2026-11-28", "t": "12:30", "x": "Vermú en el Casco Viejo"},
+               {"d": "2026-11-28", "t": "14:30", "x": "Comer en casa de la amona"}])
+    open_site(page, url)
+    r.shot(1.8, "intro")
+    dlg = "#planDlg"
+    cap = "1 · Abre tu plan"
+    r.tap(page.locator("#planPill"), cap, wait=900, hold=1.0)
+    comer = page.locator("#planList .plan-item.note", has_text="Comer en casa")
+    r.glide_in_to(dlg, comer, 300, 0.8, cap)
+    r.shot(0.5, cap)
+    cap = "2 · Toca ✎"
+    r.tap(comer.locator(".plan-ed"), cap, wait=600, hold=0.9)
+    cap = "3 · Cambia el nombre…"
+    x = page.locator("#planList .editing .ne-x")
+    r.tap(x, cap, wait=200, hold=0.2)
+    x.fill("")
+    r.shot(0.4, cap)
+    for chunk in ("Comida ", "en el ", "txoko"):
+        page.keyboard.type(chunk, delay=40)
+        r.shot(0.3, cap)
+    r.shot(0.4, cap)
+    cap = "4 · …y la hora"
+    tm = page.locator("#planList .editing .ne-t")
+    r.tap(tm, cap, wait=200, hold=0.3)
+    tm.fill("15:30")
+    r.shot(0.8, cap)
+    cap = "5 · Guarda y se recoloca"
+    r.tap(page.locator("#planList .editing button[type=submit]"), cap, wait=700, hold=0.4)
+    r.glide_in_to(dlg, page.locator("#planList .plan-item.note", has_text="txoko"), 300, 0.8, cap)
+    r.shot(1.5, cap)
+    cap = "6 · ¿Cambia el día? También"
+    verm = page.locator("#planList .plan-item.note", has_text="Vermú")
+    r.glide_in_to(dlg, verm, 300, 0.7, cap)
+    r.tap(verm.locator(".plan-ed"), cap, wait=600, hold=0.6)
+    d = page.locator("#planList .editing .ne-d")
+    r.tap(d, cap, wait=200, hold=0.3)
+    d.fill("2026-11-29")
+    r.shot(0.8, cap)
+    r.tap(page.locator("#planList .editing button[type=submit]"), cap, wait=700, hold=0.4)
+    r.glide_in_to(dlg, page.locator("#planList .plan-day").last, 170, 0.9, cap)
+    r.shot(2.0, cap)
+    ctx.close()
+
+
 def main():
     import shutil
     os.makedirs(OUT, exist_ok=True)
     only = [x for x in os.environ.get("REELS", "buscar,guardar,cerca").split(",") if x]
     fns = {"buscar": reel_buscar, "guardar": reel_guardar, "cerca": reel_cerca, "dias": reel_dias,
-           "miplan": reel_miplan, "misplanes": reel_misplanes, "idiomas": reel_idiomas, "envivo": reel_envivo}
+           "miplan": reel_miplan, "misplanes": reel_misplanes, "idiomas": reel_idiomas, "envivo": reel_envivo,
+           "propio": reel_propio, "editar": reel_editar}
     old = []
     try:  # se conservan las capturas de los reels que no se repiten
         with open(os.path.join(OUT, "timeline.json"), encoding="utf-8") as fh:
