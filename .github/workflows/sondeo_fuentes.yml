@@ -2,7 +2,7 @@ name: Sondeo de fuentes Valencia y Sevilla (rama de pruebas, no desplegar)
 on:
   push:
     branches: [sondeo]
-    paths: ["tools/sondeo/fuentes_vs.py", "tools/sondeo/fuentes_vs.txt", ".github/workflows/sondeo_fuentes.yml"]
+    paths: ["tools/sondeo/fuentes_vs*.py", "tools/sondeo/fuentes_vs.txt", ".github/workflows/sondeo_fuentes.yml"]
 permissions:
   contents: read
 jobs:
@@ -12,4 +12,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install -q requests
-      - run: python3 tools/sondeo/fuentes_vs.py tools/sondeo/fuentes_vs.txt
+      - run: python3 tools/sondeo/fuentes_vs2.py
