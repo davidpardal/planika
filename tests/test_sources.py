@@ -446,3 +446,114 @@ class TestSameVenueDedupe(unittest.TestCase):
         self.assertEqual(fetch_events.fill_venue_coords([a, b]), 1)
         self.assertEqual((b["lat"], b["lon"]), (42.85, -2.67))
 
+
+
+class TestAgendaCulturalAndalucia(unittest.TestCase):
+    """Listado público de la Agenda Cultural de Andalucía (tarjetas recortadas del marcado real)."""
+
+    @staticmethod
+    def card(slug, title, dates, place, when, img="/aaiicc/agendaculturaldeandalucia/sites/default/files/x.jpg.webp?itok=1"):
+        days = "".join('<div><div class="text-4xl font-light">%s</div><div><div class="text-sm">%s</div><div class="text-xs">%s</div></div></div>'
+                       % d if isinstance(d, tuple) else '<div class="mx-2"> al </div>' for d in dates)
+        return ('<div class="flex flex-col"><article role="article" class="flex flex-col flex-1"><div><div class="relative">'
+                '<a href="/aaiicc/agendaculturaldeandalucia/evento/%s"><div><picture><source srcset="x 1x"/>'
+                '<img src="%s" alt="%s" /></picture></div></a><div class="pt-6"><div class="flex">%s</div></div></div>'
+                '<div><div><a href="/aaiicc/agendaculturaldeandalucia/evento/%s">\n  %s\n  </a></div>'
+                '<div><div><i class="icon"></i></div><div><a href="/aaiicc/agendaculturaldeandalucia/espacios/x" hreflang="es">%s</a></div></div>'
+                '<div><div><i></i></div><div><div><p>%s</p></div></div></div></div></div></article></div>'
+                % (slug, img, title, days, slug, title, place, when))
+
+    def page(self):
+        c = self.card
+        return (
+            '<select data-drupal-selector="edit-topic" name="topic"><option value="All">- Cualquiera -</option>'
+            '<option value="1429">Espectáculos</option><option value="1430">Exposiciones</option></select>'
+            '<select name="province"><option value="All">- Cualquiera -</option><option value="1440">Córdoba</option>'
+            '<option value="1445">Sevilla</option></select><header><div class="headline">771 Actividades</div></header>'
+            + c("el-guiton-onofre-2", "el guitón onofre", [("27", "Noviembre", "2026")],
+                "Teatro Municipal Calixto Sánchez - Mairena del Alcor (Sevilla)", "A las 21:00")
+            + c("mujer-en-cinta-4", "Mujer en cinta de correr sobre fondo negro", [("27", "Noviembre", "2026")],
+                "Teatro Central - Sevilla", "27/11/2026 - 20:30")
+            + c("vitrales", "Exposición &#039;Vitrales y Suturas&#039; en el Palacio de Viana",
+                [("01", "Noviembre", "2026"), None, ("29", "Noviembre", "2026")], "Palacio de Viana - Córdoba", "De 10:00 a 19:00")
+            + c("love-love-love-2", "love, love, love", [("26", "Mayo", "2027")],
+                "Espacio por determinar - Línea de la Concepción (La)", "Sin determinar")
+            + c("nina-pastori", "Actuación de Niña Pastori en la Plaza de San Francisco", [("27", "Noviembre", "2026")],
+                "Sevilla. Plaza de San Francisco - Sevilla", "Sin determinar")
+            + c("concierto-julio", "Concierto de la Orquesta Ciudad de Granada", [("28", "Noviembre", "2026")],
+                "Palacio de Congresos y Exposiciones - Granada", "20:00 horas"))
+
+    def test_cards(self):
+        from planes import src_aaiicc as a
+        page = self.page()
+        self.assertEqual(a.total(page), 771)
+        self.assertEqual(a.topics(page), [("1429", "Espectáculos"), ("1430", "Exposiciones")])
+        self.assertEqual(a.options(page, "province"), [("1440", "Córdoba"), ("1445", "Sevilla")])
+        cards = {c["slug"]: c for c in a.parse_cards(page)}
+        self.assertEqual(len(cards), 6)
+        g = cards["el-guiton-onofre-2"]
+        self.assertEqual((g["title"], g["start"], g["end"], g["venue"], g["city"], g["province"]),
+                         ("el guitón onofre", "2026-11-27", "2026-11-27", "Teatro Municipal Calixto Sánchez", "Mairena del Alcor", "Sevilla"))
+        self.assertEqual(g["url"], "https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/evento/el-guiton-onofre-2")
+        self.assertTrue(g["image"].startswith("https://www.juntadeandalucia.es/aaiicc/"))
+        v = cards["vitrales"]
+        self.assertEqual((v["title"], v["start"], v["end"], v["city"], v["province"]),
+                         ("Exposición 'Vitrales y Suturas' en el Palacio de Viana", "2026-11-01", "2026-11-29", "Córdoba", "Córdoba"))
+        lo = cards["love-love-love-2"]
+        self.assertEqual((lo["venue"], lo["city"], lo["province"], lo["when"]), ("", "La Línea de la Concepción", "", ""))
+        n = cards["nina-pastori"]
+        self.assertEqual((n["venue"], n["city"], n["province"]), ("Plaza de San Francisco", "Sevilla", "Sevilla"))
+
+    def test_events(self):
+        from planes import src_aaiicc as a
+        cards = {c["slug"]: c for c in a.parse_cards(self.page())}
+        g = a.to_event(cards["el-guiton-onofre-2"], "Espectáculos")
+        self.assertEqual((g["category"], g["time"], g["province"], g["source"]), ("escena", "21:00", "Sevilla", a.NAME))
+        self.assertEqual(g["image"], "")  # sin imágenes hasta que la Agencia confirme que se pueden reutilizar
+        m = a.to_event(cards["mujer-en-cinta-4"], "Espectáculos")
+        self.assertEqual((m["time"], m["city"], m["province"]), ("20:30", "Sevilla", "Sevilla"))
+        j = a.to_event(cards["concierto-julio"], "Espectáculos")
+        self.assertEqual((j["category"], j["time"], j["province"]), ("musica", "20:00", "Granada"))
+        v = a.to_event(cards["vitrales"], "Exposiciones")
+        self.assertEqual((v["category"], v["time"]), ("expos", ""))  # el horario de apertura no es la hora de un evento
+        lo = a.to_event(cards["love-love-love-2"], "Agenda infantil y juvenil", "Cádiz")
+        self.assertEqual((lo["category"], lo["province"], lo["city"], lo["time"]), ("infantil", "Cádiz", "La Línea de la Concepción", ""))
+        # la provincia del filtro manda cuando la tarjeta no nombra el municipio
+        sin = dict(cards["nina-pastori"], city="", province="")
+        self.assertEqual(a.to_event(sin, "Espectáculos", "Sevilla")["province"], "Sevilla")
+
+    def test_fetch_combines_filters(self):
+        from unittest import mock
+        from planes import src_aaiicc as a
+        page = self.page().replace("771 Actividades", "6 Actividades")
+        calls = []
+
+        def fake(url, params=None, **kw):
+            calls.append(dict(params or {}))
+            return page
+        logs = []
+        with mock.patch.object(a, "http_text", fake), mock.patch.object(a, "PAUSE", 0):
+            evs = a.fetch(logs.append)
+        self.assertEqual(len(evs), 6)  # cada plan una sola vez aunque salga en todas las combinaciones
+        self.assertEqual(len(calls), 1 + 2 * 2)  # listado general + 2 temáticas × 2 provincias, una página cada una
+        # manda la temática prioritaria (Exposiciones antes que Espectáculos) y su provincia
+        self.assertEqual({(e["subtype"], e["province"]) for e in evs}, {("Exposiciones", "Córdoba")})
+        self.assertIn("6 eventos de 6 en el listado", logs[0])
+
+    def test_skip(self):
+        from planes import src_aaiicc as a
+        base = {"title": "Visita guiada al Monasterio", "start": "2026-11-27", "end": "2026-11-27"}
+        self.assertFalse(a.skip(base))
+        self.assertTrue(a.skip(dict(base, title="Visitas escolares en el Archivo de Indias")))
+        self.assertTrue(a.skip(dict(base, title="Taller escolar de flamenco en Sevilla")))
+        self.assertTrue(a.skip(dict(base, title="Actividades educativas para primaria")))
+        self.assertTrue(a.skip(dict(base, start="2024-08-01", end="2028-01-01")))  # oferta de varios años
+        self.assertTrue(a.skip(dict(base, title="Tour Sevilla Misteriosa", start="2026-01-01", end="2026-12-31")))  # todo el año
+        self.assertFalse(a.skip(dict(base, start="2026-10-17", end="2027-02-13")))  # visitas nocturnas de temporada
+        expo = dict(base, title="América. Conexiones diaspóricas", start="2026-02-27", end="2027-01-10")
+        self.assertTrue(a.skip(expo))
+        self.assertFalse(a.skip(expo, "Exposiciones"))  # una exposición sí puede durar casi un año
+
+    def test_registered(self):
+        import fetch_events
+        self.assertIn("aaiicc", fetch_events.SOURCES)
