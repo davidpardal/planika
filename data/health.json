@@ -212,7 +212,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 3661,
+    "count": 3695,
     "error": ""
    }
   ],
@@ -284,7 +284,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 1325,
+    "count": 1333,
     "error": ""
    }
   ],
@@ -1237,7 +1237,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 913,
+    "count": 926,
     "error": ""
    }
   ],
@@ -1371,7 +1371,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 148,
+    "count": 149,
     "error": ""
    }
   ],
@@ -1621,8 +1621,8 @@
    },
    {
     "date": "2026-11-27",
-    "count": 23,
-    "error": "HTTPError: 403 Client Error: Forbidden for url: https://jimmyjazzgasteiz.com/wp-json/wp/v2/posts?categories=1336&per_page=100&page="
+    "count": 66,
+    "error": ""
    }
   ],
   "burdeos": [
@@ -1667,13 +1667,13 @@
   "aaiicc": [
    {
     "date": "2026-11-27",
-    "count": 572,
+    "count": 573,
     "error": ""
    }
   ]
  },
- "updated_at": "2026-11-27T09:53",
+ "updated_at": "2026-11-27T12:50",
  "alerts": [
-  "Salas Jimmy Jazz y Kubik: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-27"
+  "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-27"
  ]
 }
