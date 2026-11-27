@@ -10,8 +10,9 @@ plan: lo que no está en la tarjeta (precio, descripción) se queda vacío en ve
 
 Se recorre cada combinación de temática y provincia (tres páginas a la vez): así cada plan sale con su tipo y
 su provincia aunque la tarjeta no diga el municipio. Temáticas y provincias se leen del propio formulario de
-filtros, así que un cambio de identificadores no rompe nada. Se descartan las visitas escolares y las ofertas
-que duran más de un año (visitas fijas a monumentos, tours): no son planes con fecha.
+filtros, así que un cambio de identificadores no rompe nada. Se descartan las actividades escolares y lo que dura
+más de medio año (tours y visitas de todo el año, clases, programas de curso): no son planes con fecha. Las
+exposiciones pueden durar hasta un año.
 """
 import html
 import re
@@ -30,8 +31,10 @@ PER_PAGE = 10
 MAX_PAGES = 60  # por temática y provincia; hoy la combinación más grande ronda las 15 páginas
 PAUSE = 0.3  # segundos entre páginas de cada hilo, para no cargar el servidor
 WORKERS = 3  # el servidor tarda ~4 s por página: tres a la vez dejan la fuente en 2-3 minutos
-MAX_SPAN = 365  # días: lo que dura más que eso (visitas fijas, tours, programas escolares) no es un plan con fecha
-_SCHOOL = re.compile(r"\bescolar(es)?\b|centros educativos|para estudiantes")
+# días: lo que dura más (tours de todo el año, clases, programas de curso, ciclos de temporada) no es un plan con
+# fecha; las exposiciones sí pueden durar meses, hasta un año
+MAX_SPAN, MAX_SPAN_EXPO = 180, 365
+_SCHOOL = re.compile(r"\bescolar(es)?\b|centros educativos|para estudiantes|actividades educativas|\bprimaria\b|\bsecundaria\b")
 
 # temática del filtro (en minúsculas y sin tildes) -> (tipos para classify, categoría si el título no aclara nada)
 TOPICS = {
@@ -145,11 +148,12 @@ def total(page_html):
     return int(m.group(1)) if m else 0
 
 
-def skip(c):
-    """Lo que no es un plan para el público: visitas escolares y ofertas de varios años (tours, visitas fijas)."""
+def skip(c, topic=""):
+    """Lo que no es un plan para el público: actividades escolares y ofertas de todo el año (tours, clases, ciclos)."""
     if _SCHOOL.search(norm(c["title"])):
         return True
-    return (date.fromisoformat(c["end"]) - date.fromisoformat(c["start"])).days > MAX_SPAN
+    expo = norm(topic) == "exposiciones" or "exposici" in norm(c["title"])
+    return (date.fromisoformat(c["end"]) - date.fromisoformat(c["start"])).days > (MAX_SPAN_EXPO if expo else MAX_SPAN)
 
 
 def to_event(c, topic="", province=""):
@@ -223,7 +227,7 @@ def fetch(log):
         for card in parse_cards(pages[(c, n)]):
             if card["slug"] in found:
                 continue
-            if skip(card):
+            if skip(card, tname):
                 found[card["slug"]] = None
                 skipped += 1
                 continue
@@ -240,7 +244,7 @@ def fetch(log):
         raise RuntimeError("el listado no ha devuelto ninguna tarjeta legible")
     if failed and len(failed) > len(pages) // 4:
         raise RuntimeError("%d de %d páginas sin respuesta" % (len(failed), len(failed) + len(pages)))
-    log("%s: %d eventos de %d en el listado (%d descartados: escolares o de varios años; %d páginas leídas%s)" % (
+    log("%s: %d eventos de %d en el listado (%d descartados: escolares o de todo el año; %d páginas leídas%s)" % (
         NAME, len(out), n_all, skipped, len(pages), (", %d sin respuesta" % len(failed)) if failed else ""))
     log("  -> por temática: %s" % ", ".join("%s %d" % kv for kv in by_topic.items()))
     log("  -> por provincia: %s" % ", ".join("%s %d" % kv for kv in by_prov.items()))

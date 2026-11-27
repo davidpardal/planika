@@ -545,8 +545,13 @@ class TestAgendaCulturalAndalucia(unittest.TestCase):
         self.assertFalse(a.skip(base))
         self.assertTrue(a.skip(dict(base, title="Visitas escolares en el Archivo de Indias")))
         self.assertTrue(a.skip(dict(base, title="Taller escolar de flamenco en Sevilla")))
+        self.assertTrue(a.skip(dict(base, title="Actividades educativas para primaria")))
         self.assertTrue(a.skip(dict(base, start="2024-08-01", end="2028-01-01")))  # oferta de varios años
-        self.assertFalse(a.skip(dict(base, start="2026-10-01", end="2027-03-31")))  # exposición de temporada
+        self.assertTrue(a.skip(dict(base, title="Tour Sevilla Misteriosa", start="2026-01-01", end="2026-12-31")))  # todo el año
+        self.assertFalse(a.skip(dict(base, start="2026-10-17", end="2027-02-13")))  # visitas nocturnas de temporada
+        expo = dict(base, title="América. Conexiones diaspóricas", start="2026-02-27", end="2027-01-10")
+        self.assertTrue(a.skip(expo))
+        self.assertFalse(a.skip(expo, "Exposiciones"))  # una exposición sí puede durar casi un año
 
     def test_registered(self):
         import fetch_events
