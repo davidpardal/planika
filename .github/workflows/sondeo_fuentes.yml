@@ -1,0 +1,15 @@
+name: Sondeo de fuentes Valencia y Sevilla (rama de pruebas, no desplegar)
+on:
+  push:
+    branches: [sondeo]
+    paths: ["tools/sondeo/fuentes_vs.py", "tools/sondeo/fuentes_vs.txt", ".github/workflows/sondeo_fuentes.yml"]
+permissions:
+  contents: read
+jobs:
+  sondeo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -q requests
+      - run: python3 tools/sondeo/fuentes_vs.py tools/sondeo/fuentes_vs.txt

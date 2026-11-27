@@ -1,0 +1,50 @@
+# --- Andalucía: Agenda Cultural de Andalucía (AAIICC, Drupal 9)
+https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/actividades
+https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/actividades?page=1
+https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/sevilla
+https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/evento/love-love-love-2
+JSON https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/jsonapi
+https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/rss.xml
+JSON https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/evento/love-love-love-2?_format=json
+# --- Sevilla: ICAS (Plone)
+https://icas.sevilla.org/agenda
+https://icas.sevilla.org/agenda/ics_view
+https://icas.sevilla.org/agenda/RSS
+JSON https://icas.sevilla.org/++api++/agenda
+JSON https://icas.sevilla.org/@search?portal_type=Event&b_size=3&sort_on=start&sort_order=descending&fullobjects=1
+https://icas.sevilla.org/agenda/viii-ciclo-teatreves-los-jovenes-y-el-teatro-programacion-24-25-teatro-alameda/ics_view
+https://www.sevilla.org/agenda
+JSON https://www.sevilla.org/@search?portal_type=Event&b_size=3&sort_on=start&sort_order=descending
+# --- Turismo Andaluz / Visita Sevilla
+https://www.andalucia.org/wp-json/tribe/events/v1/events?per_page=3
+https://www.andalucia.org/es/sevilla-eventos-biocultura-sevilla
+https://visitasevilla.es/agenda
+https://visitasevilla.es/wp-json/tribe/events/v1/events?per_page=3
+JSON https://visitasevilla.es/jsonapi
+# --- Sevilla: salas
+https://www.teatrodelamaestranza.es/wp-json/tribe/events/v1/events?per_page=3
+https://cartujacenter.com/wp-json/tribe/events/v1/events?per_page=3
+https://www.fundacioncajasol.com/wp-json/tribe/events/v1/events?per_page=3
+https://cicus.us.es/wp-json/tribe/events/v1/events?per_page=3
+https://www.alcazarsevilla.org/wp-json/tribe/events/v1/events?per_page=3
+# --- Valencia
+https://www.visitvalencia.com/agenda-valencia/agenda-mensual?date=2026-12
+JSON https://www.visitvalencia.com/jsonapi
+https://www.visitvalencia.com/rss.xml
+https://www.valencia.es/ayuntamiento/agenda_accesible.nsf/vDocumentosTituloAux?ReadViewEntries&OutputFormat=JSON&Count=3
+https://www.valencia.es/ayuntamiento/agenda_accesible.nsf/vDocumentosTituloAux/val_agenda_cultural?lang=1
+https://www.comunitatvalenciana.com/es/agenda
+JSON https://www.comunitatvalenciana.com/jsonapi
+https://www.lasnaves.com/wp-json/tribe/events/v1/events?per_page=3
+https://larambleta.com/wp-json/tribe/events/v1/events?per_page=3
+https://ivam.es/wp-json/tribe/events/v1/events?per_page=3
+https://www.bombasgens.com/wp-json/tribe/events/v1/events?per_page=3
+https://www.palauvalencia.com/wp-json/tribe/events/v1/events?per_page=3
+https://www.lesarts.com/wp-json/tribe/events/v1/events?per_page=3
+https://www.teatro-olympia.com/wp-json/tribe/events/v1/events?per_page=3
+https://www.salarussafa.es/wp-json/tribe/events/v1/events?per_page=3
+https://www.muvim.es/wp-json/tribe/events/v1/events?per_page=3
+https://www.dival.es/wp-json/tribe/events/v1/events?per_page=3
+https://www.roigarena.com/wp-json/tribe/events/v1/events?per_page=3
+https://www.visitgandia.com/wp-json/tribe/events/v1/events?per_page=3
+https://www.sagunto.es/wp-json/tribe/events/v1/events?per_page=3
