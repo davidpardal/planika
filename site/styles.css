@@ -410,10 +410,19 @@ body.menu-open { overflow: hidden; }
 .plan-item.note > div > span { color: #6b5600; font-weight: 700; }
 .plan-item.gone { background: #f3f1f6; opacity: .8; }
 .plan-x { margin-left: auto; border: 0; background: none; font-size: 16px; cursor: pointer; padding: 2px 4px; color: var(--ink-2); }
+.plan-ed { margin-left: auto; border: 0; background: none; font-size: 17px; cursor: pointer; padding: 2px 6px; color: var(--ink-2); }
+.plan-ed + .plan-x { margin-left: 0; }
+.plan-item .ne-open { cursor: pointer; flex: 1; }  /* tocar tu plan propio lo abre para editar */
+.plan-item.note.editing { flex-wrap: wrap; gap: 6px; transform: none; }
+.plan-item.editing input { font: inherit; border: var(--b2); border-radius: 10px; padding: 6px 8px; background: var(--white); color: var(--ink); }
+.plan-item.editing .ne-d, .plan-item.editing .ne-t { flex: 1 1 120px; min-width: 0; }
+.plan-item.editing .ne-x { flex: 1 1 100%; font-weight: 700; }
+.plan-item.editing .ne-b { display: flex; gap: 14px; align-items: center; color: var(--ink); font-size: 15px; }
 .plan-walk { font-size: 13px; color: var(--ink-2); padding: 6px 0 6px 64px; }
 .plan-warn { font-size: 13px; font-weight: 700; color: #a3361f; padding: 0 0 6px 64px; }
 .plan-note { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
 .plan-note input[type=text] { flex: 1 1 180px; }
+.plan-note input[type=date] { min-width: 0; }
 .plan-note input, .plan-note select { font: inherit; border: var(--b2); border-radius: 10px; padding: 6px 8px; background: var(--white); color: var(--ink); }
 .plan-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; align-items: center; }
 body.has-plan .toast { bottom: 84px; }  /* que el aviso no tape el botón «Mi plan» */

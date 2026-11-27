@@ -997,11 +997,12 @@
 
   // ---------- mis planes
   // Varios planes tuyos («Sábado en Bilbao», «Navidad con los primos»…). Cada uno lleva planes de la agenda (con el
-  // día elegido) y notas propias, ordenados por hora. Se guardan en el móvil (como los favoritos), sin cuentas ni
+  // día elegido) y planes propios (comer, quedar…: en los datos, «o»), ordenados por hora. Se guardan en el móvil (como los favoritos), sin cuentas ni
   // servidor, y cada uno viaja entero en su enlace para compartir (?miplan=…).
   var MAX_PLANS = 20;
   var PLAN_Q = location.search;  // al arrancar, writeURL() reescribe la URL con los filtros: se guarda antes
   var store = loadPlans(), sharedPlan = null, planMode = 'one', pickFor = null, pickThenOpen = false;
+  var noteEdit = null;  // el plan propio que se está editando (el objeto de plan.o)
   var plan = byPlanId(store.a);  // el plan activo: el último que abriste o al que añadiste algo
   function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function cleanPlan(p) {
@@ -1033,7 +1034,7 @@
     return { a: seen[s.a] ? s.a : ps[0] ? ps[0].id : '', p: ps };
   }
   function byPlanId(id) { return store.p.filter(function (p) { return p.id === id; })[0] || null; }
-  function setActive(p) { plan = p; store.a = p ? p.id : ''; }
+  function setActive(p) { plan = p; store.a = p ? p.id : ''; noteEdit = null; }
   function planSize(p) { return p.i.length + p.o.length; }
   function planTitle(p) { return p.n || tr('Plan sin nombre'); }
   function planDays(p) {
@@ -1124,7 +1125,7 @@
     var d = planDays(p), bits = [], ni = p.i.length, no = p.o.length;
     if (d.length) bits.push(fmtD(d[0]).replace(',', '') + (d.length > 1 ? ' – ' + fmtD(d[d.length - 1]).replace(',', '') : ''));
     if (ni) bits.push(ni === 1 ? tr('1 plan') : tr('{n} planes', { n: ni }));
-    if (no) bits.push(no === 1 ? tr('1 nota') : tr('{n} notas', { n: no }));
+    if (no) bits.push(no === 1 ? tr('1 plan propio') : tr('{n} planes propios', { n: no }));
     if (!ni && !no) bits.push(tr('Vacío'));
     if (p.s) bits.push('👥 ' + tr('Compartido'));
     return bits.join(' · ');
@@ -1254,7 +1255,7 @@
     $('planLive').textContent = '👥 ' + (shared ? tr('Es un plan en vivo: guárdalo y verás los cambios que hagan los demás.')
       : tr('Plan compartido: quien tenga el enlace lo ve y lo edita, y los cambios les llegan a todos.'));
     if (!rows.length) {
-      h = '<div class="empty">' + tr('Tu plan está vacío. Pulsa «＋ Mi plan» en cualquier plan de la lista o de su ficha y aparecerá aquí, ordenado por hora.') + '</div>';
+      h = '<div class="empty">' + tr('Tu plan está vacío. Pulsa «＋ Mi plan» en cualquier plan de la lista o de su ficha, o apunta abajo un plan propio (comer, quedar…). Todo sale aquí, ordenado por hora.') + '</div>';
     }
     rows.forEach(function (r) {
       if (r.d !== lastDay) {
@@ -1270,9 +1271,20 @@
         var gap = mins(r.t) - mins(prev.t);
         h += '<div class="plan-warn">⚠ ' + (gap <= 0 ? tr('Empieza a la vez que el anterior') : tr('Empieza solo {n} min después del anterior', { n: gap })) + '</div>';
       }
-      if (r.note != null) {
-        h += '<div class="plan-item note"><span class="tm">' + (r.t || '—') + '</span><div><b>' + esc(r.note) + '</b><span>📌 ' + tr('Nota') + '</span></div>' +
-          (shared ? '' : '<button type="button" class="plan-x" data-plan-note="' + r.k + '" aria-label="' + tr('Quitar nota') + '">✕</button>') + '</div>';
+      if (r.note != null && !shared && noteEdit && p.o[r.k] === noteEdit) {
+        // Editando: día, hora y nombre en su sitio; «Guardar» lo recoloca por hora
+        h += '<form class="plan-item note editing" data-note-form="' + r.k + '">' +
+          '<input type="date" class="ne-d" value="' + r.d + '" required aria-label="' + tr('Día') + '">' +
+          '<input type="time" class="ne-t" value="' + (r.t || '') + '" aria-label="' + tr('Hora') + '">' +
+          '<input type="text" class="ne-x" maxlength="80" value="' + esc(r.note) + '" required aria-label="' + tr('Plan propio') + '">' +
+          '<span class="ne-b"><button type="submit" class="btn primary">' + tr('Guardar') + '</button>' +
+          '<button type="button" class="linklike" data-note-cancel>' + tr('Cancelar') + '</button></span></form>';
+      } else if (r.note != null) {
+        h += '<div class="plan-item note"><span class="tm">' + (r.t || '—') + '</span>' +
+          (shared ? '<div><b>' + esc(r.note) + '</b><span>📌 ' + tr('Plan propio') + '</span></div>'
+            : '<div class="ne-open" data-plan-edit="' + r.k + '"><b>' + esc(r.note) + '</b><span>📌 ' + tr('Plan propio') + '</span></div>' +
+              '<button type="button" class="plan-ed" data-plan-edit="' + r.k + '" aria-label="' + tr('Editar plan propio') + '">✎</button>' +
+              '<button type="button" class="plan-x" data-plan-note="' + r.k + '" aria-label="' + tr('Quitar plan propio') + '">✕</button>') + '</div>';
       } else if (!r.e) {
         h += '<div class="plan-item gone"><span class="tm">—</span><div><b>' + tr('Este plan ya no está en la agenda') + '</b><span>' + tr('Puede que se haya cancelado o que ya haya pasado') + '</span></div>' +
           (shared ? '' : '<button type="button" class="plan-x" data-plan-del="' + r.id + '" aria-label="' + tr('Quitar') + '">✕</button>') + '</div>';
@@ -1286,11 +1298,23 @@
       prev = r;
     });
     $('planList').innerHTML = h;
-    $('planNoteForm').hidden = shared || !rows.length;
+    $('planNoteForm').hidden = shared;
     $('planActions').hidden = shared;
-    var days = planDays();
-    $('planNoteDay').innerHTML = days.map(function (d) { return '<option value="' + d + '">' + esc(fmtD(d).replace(',', '')) + '</option>'; }).join('');
-    $('planNoteDay').hidden = days.length < 2;
+    // Día del plan propio: los días del plan y «Otro día…» (calendario); con el plan vacío, directamente el calendario
+    var days = shared ? [] : planDays(), sel = $('planNoteDay'), want = sel.dataset.pref || sel.value;
+    sel.dataset.pref = '';
+    sel.innerHTML = days.map(function (d) { return '<option value="' + d + '">' + esc(fmtD(d).replace(',', '')) + '</option>'; }).join('') +
+      '<option value="">' + esc(tr('Otro día…')) + '</option>';
+    sel.value = days.indexOf(want) >= 0 || (want === '' && sel.dataset.other) ? want : (days[0] || '');
+    sel.hidden = !days.length;
+    noteDayUI();
+    if (noteEdit) { var f = $('planList').querySelector('.ne-x'); if (f && document.activeElement !== f) f.focus(); }
+  }
+  function noteDayUI() {
+    var sel = $('planNoteDay'), dt = $('planNoteDate'), other = !sel.value;
+    sel.dataset.other = other ? '1' : '';
+    dt.hidden = !other;
+    if (other && !dt.value) dt.value = planDays()[0] || TODAY;
   }
   function planURL(p) {
     var json = JSON.stringify({ n: p.n, i: p.i, o: p.o });
@@ -1317,7 +1341,7 @@
     if (navigator.share) { navigator.share({ title: plan.n || tr('Mi plan'), text: text, url: url }).catch(function () {}); return; }
     window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n\n' + tr('Ábrelo en Planika:') + ' ' + url), '_blank', 'noopener');
   }
-  // Notas propias como citas del calendario: a su hora (1 h) o de todo el día
+  // Planes propios como citas del calendario: a su hora (1 h) o de todo el día
   function noteTimes(r) {
     var d = r.d.replace(/-/g, '');
     if (!r.t) return { allDay: true, start: d, end: addDays(r.d, 1).replace(/-/g, '') };
@@ -1326,7 +1350,7 @@
     return { allDay: false, start: d + 'T' + r.t.replace(':', '') + '00', end: endDay.replace(/-/g, '') + 'T' + pad(hh) + r.t.slice(3) + '00' };
   }
   function planEvent(r) { return Object.assign({}, r.e, { start: r.d, end: r.d, sessions: null, subtype: '' }); }  // el día elegido en el plan
-  function noteDetails() { return tr('Nota de tu plan') + (plan.n ? ' «' + plan.n + '»' : '') + ' · Planika'; }
+  function noteDetails() { return tr('Plan propio') + (plan.n ? ' · «' + plan.n + '»' : '') + ' · Planika'; }
   function calRows() { return planRows(plan).filter(function (r) { return r.e || r.note != null; }); }
   // Todo el plan (planes de la agenda y notas) en un .ics: iPhone, Apple Calendar y Outlook lo añaden de una vez
   function planIcs() {
@@ -1541,20 +1565,40 @@
   $('planPill').addEventListener('click', openPlan);
   $('planClose').addEventListener('click', function () { $('planDlg').close(); });
   $('planDlg').addEventListener('click', function (ev) { if (ev.target === $('planDlg')) $('planDlg').close(); });
-  $('planDlg').addEventListener('close', function () { sharedPlan = null; savePlan(); });
+  $('planDlg').addEventListener('close', function () { sharedPlan = null; noteEdit = null; savePlan(); });
   $('planName').addEventListener('input', function () { if (!sharedPlan && plan) { plan.n = this.value.slice(0, 60); savePlan(); } });
   $('planList').addEventListener('click', function (ev) {
     var d = ev.target.closest('[data-plan-del]');
     if (d) { var id = d.dataset.planDel; plan.i = plan.i.filter(function (x) { return x[0] !== id; }); savePlan(); syncPlanBtns(id); renderPlan(); return; }
     var n = ev.target.closest('[data-plan-note]');
-    if (n) { plan.o.splice(+n.dataset.planNote, 1); savePlan(); renderPlan(); }
+    if (n) { plan.o.splice(+n.dataset.planNote, 1); noteEdit = null; savePlan(); renderPlan(); return; }
+    var ed = ev.target.closest('[data-plan-edit]');
+    if (ed && !sharedPlan) { noteEdit = plan.o[+ed.dataset.planEdit] || null; renderPlan(); return; }
+    if (ev.target.closest('[data-note-cancel]')) { noteEdit = null; renderPlan(); }
   });
+  // Guardar un plan propio editado: nombre, día y hora
+  $('planList').addEventListener('submit', function (ev) {
+    var f = ev.target.closest('[data-note-form]');
+    if (!f) return;
+    ev.preventDefault();
+    var k = plan.o.indexOf(noteEdit), x = f.querySelector('.ne-x').value.trim(), d = f.querySelector('.ne-d').value;
+    if (!x) { f.querySelector('.ne-x').focus(); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { f.querySelector('.ne-d').focus(); return; }
+    if (k >= 0) plan.o[k] = { d: d, t: f.querySelector('.ne-t').value || '', x: x.slice(0, 80) };
+    noteEdit = null;
+    savePlan(); renderPlan();
+    track('plan_note_edit');
+  });
+  $('planNoteDay').addEventListener('change', noteDayUI);
   $('planNoteForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var x = $('planNoteText').value.trim();
     if (!x) { $('planNoteText').focus(); return; }
-    plan.o.push({ d: $('planNoteDay').value || planDays()[0] || TODAY, t: $('planNoteTime').value || '', x: x.slice(0, 80) });
+    var d = $('planNoteDay').value || $('planNoteDate').value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { $('planNoteDate').hidden = false; $('planNoteDate').focus(); return; }
+    plan.o.push({ d: d, t: $('planNoteTime').value || '', x: x.slice(0, 80) });
     $('planNoteText').value = ''; $('planNoteTime').value = '';
+    $('planNoteDay').dataset.pref = d;  // el siguiente, por defecto el mismo día
     savePlan(); renderPlan();
   });
   $('planShare').addEventListener('click', sharePlan);

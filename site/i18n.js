@@ -417,12 +417,6 @@
 "Desde",
 "From"
 ],
-"Día de la nota": [
-"Oharraren eguna",
-"Dia de la nota",
-"Día da nota",
-"Note day"
-],
 "Dónde": [
 "Non",
 "On",
@@ -711,12 +705,6 @@
 "Ata o {d}",
 "Until {d}"
 ],
-"Hora de la nota": [
-"Oharraren ordua",
-"Hora de la nota",
-"Hora da nota",
-"Note time"
-],
 "Horario": [
 "Ordutegia",
 "Horari",
@@ -980,24 +968,6 @@
 "Nom del pla",
 "Nome do plan",
 "Plan name"
-],
-"Nota": [
-"Oharra",
-"Nota",
-"Nota",
-"Note"
-],
-"Nota de tu plan": [
-"Zure planeko oharra",
-"Nota del teu pla",
-"Nota do teu plan",
-"Note from your plan"
-],
-"Nota: comer, quedar en el bar…": [
-"Oharra: bazkaldu, tabernan geratu…",
-"Nota: dinar, quedar al bar…",
-"Nota: xantar, quedar no bar…",
-"Note: lunch, meet at the bar…"
 ],
 "Otras fechas:": [
 "Beste data batzuk:",
@@ -1311,12 +1281,6 @@
 "Quitar o lugar (toda España)",
 "Clear the place (all of Spain)"
 ],
-"Quitar nota": [
-"Kendu oharra",
-"Treu la nota",
-"Quitar nota",
-"Remove note"
-],
 "Qué": [
 "Zer",
 "Què",
@@ -1484,12 +1448,6 @@
 "El teu navegador no permet obtenir la ubicació",
 "O teu navegador non permite obter a localización",
 "Your browser can't get your location"
-],
-"Tu plan está vacío. Pulsa «＋ Mi plan» en cualquier plan de la lista o de su ficha y aparecerá aquí, ordenado por hora.": [
-"Zure plana hutsik dago. Sakatu «＋ Nire plana» zerrendako edo fitxako edozein planetan, eta hemen agertuko da, orduaren arabera ordenatuta.",
-"El teu pla és buit. Prem «＋ El meu pla» en qualsevol pla de la llista o de la seva fitxa i apareixerà aquí, ordenat per hora.",
-"O teu plan está baleiro. Preme «＋ O meu plan» en calquera plan da lista ou da súa ficha e aparecerá aquí, ordenado por hora.",
-"Your plan is empty. Tap «＋ My plan» on any plan in the list or on its page and it will show up here, sorted by time."
 ],
 "Tu ubicación": [
 "Zure kokapena",
@@ -1899,18 +1857,6 @@
 "{n} plans",
 "{n} plans"
 ],
-"1 nota": [
-"Ohar 1",
-"1 nota",
-"1 nota",
-"1 note"
-],
-"{n} notas": [
-"{n} ohar",
-"{n} notes",
-"{n} notas",
-"{n} notes"
-],
 "Vacío": [
 "Hutsik",
 "Buit",
@@ -2180,6 +2126,96 @@
 "Destacat",
 "Destacado",
 "Featured"
+],
+"Plan propio": [
+"Plan propioa",
+"Pla propi",
+"Plan propio",
+"Own plan"
+],
+"Plan propio: comer, quedar en el bar…": [
+"Plan propioa: bazkaldu, tabernan geratu…",
+"Pla propi: dinar, quedar al bar…",
+"Plan propio: xantar, quedar no bar…",
+"Own plan: lunch, meet at the bar…"
+],
+"Día del plan propio": [
+"Plan propioaren eguna",
+"Dia del pla propi",
+"Día do plan propio",
+"Own plan day"
+],
+"Hora del plan propio": [
+"Plan propioaren ordua",
+"Hora del pla propi",
+"Hora do plan propio",
+"Own plan time"
+],
+"Otro día": [
+"Beste egun bat",
+"Un altre dia",
+"Outro día",
+"Another day"
+],
+"Otro día…": [
+"Beste egun bat…",
+"Un altre dia…",
+"Outro día…",
+"Another day…"
+],
+"Editar plan propio": [
+"Editatu plan propioa",
+"Edita el pla propi",
+"Editar plan propio",
+"Edit own plan"
+],
+"Quitar plan propio": [
+"Kendu plan propioa",
+"Treu el pla propi",
+"Quitar plan propio",
+"Remove own plan"
+],
+"Día": [
+"Eguna",
+"Dia",
+"Día",
+"Day"
+],
+"Hora": [
+"Ordua",
+"Hora",
+"Hora",
+"Time"
+],
+"Guardar": [
+"Gorde",
+"Desa",
+"Gardar",
+"Save"
+],
+"Cancelar": [
+"Utzi",
+"Cancel·la",
+"Cancelar",
+"Cancel"
+],
+"1 plan propio": [
+"Plan propio 1",
+"1 pla propi",
+"1 plan propio",
+"1 own plan"
+],
+"{n} planes propios": [
+"{n} plan propio",
+"{n} plans propis",
+"{n} plans propios",
+"{n} own plans"
+],
+"Tu plan está vacío. Pulsa «＋ Mi plan» en cualquier plan de la lista o de su ficha, o apunta abajo un plan propio (comer, quedar…). Todo sale aquí, ordenado por hora.": [
+"Zure plana hutsik dago. Sakatu «＋ Nire plana» zerrendako edo fitxako edozein planetan, edo idatzi behean plan propio bat (bazkaldu, geratu…). Dena hemen agertuko da, orduaren arabera ordenatuta.",
+"El teu pla és buit. Prem «＋ El meu pla» en qualsevol pla de la llista o de la seva fitxa, o apunta a sota un pla propi (dinar, quedar…). Tot surt aquí, ordenat per hora.",
+"O teu plan está baleiro. Preme «＋ O meu plan» en calquera plan da lista ou da súa ficha, ou apunta abaixo un plan propio (xantar, quedar…). Todo sae aquí, ordenado por hora.",
+"Your plan is empty. Tap «＋ My plan» on any plan in the list or on its page, or jot down your own plan below (lunch, meeting up…). Everything shows up here, sorted by time."
 ]
 };
   /*END*/

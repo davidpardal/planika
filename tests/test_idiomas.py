@@ -62,6 +62,16 @@ class TestDictionary(unittest.TestCase):
 
 
 class TestPages(unittest.TestCase):
+    def test_own_plans_are_called_plan_propio(self):
+        # «Plan propio» (antes «nota»): se añade desde el plan aunque esté vacío y se edita en su sitio
+        self.assertIn('placeholder="Plan propio: comer, quedar en el bar…"', INDEX)
+        self.assertIn('id="planNoteDate"', INDEX)
+        self.assertNotIn("＋ Nota", INDEX)
+        self.assertNotIn("tr('Nota", APP)
+        self.assertIn("$('planNoteForm').hidden = shared;", APP)  # también con el plan vacío
+        for s in ("Plan propio", "Editar plan propio", "Quitar plan propio", "Otro día…", "Guardar", "Cancelar"):
+            self.assertIn(s, K)
+
     def test_generated_pages_load_i18n(self):
         self.assertIn('src="/i18n.js"', static.BEACON)
 
