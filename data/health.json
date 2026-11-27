@@ -212,7 +212,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 3695,
+    "count": 3710,
     "error": ""
    }
   ],
@@ -284,7 +284,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 1333,
+    "count": 1335,
     "error": ""
    }
   ],
@@ -1237,7 +1237,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 926,
+    "count": 927,
     "error": ""
    }
   ],
@@ -1667,12 +1667,12 @@
   "aaiicc": [
    {
     "date": "2026-11-27",
-    "count": 573,
+    "count": 575,
     "error": ""
    }
   ]
  },
- "updated_at": "2026-11-27T12:50",
+ "updated_at": "2026-11-27T13:38",
  "alerts": [
   "Agendas municipales: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-27"
  ]
