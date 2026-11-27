@@ -21,4 +21,16 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q -r requirements.txt
-      - run: python3 sondeo/tools/sondeo/prueba_fuentes.py aaiicc
+      - run: |
+          python3 fetch_events.py --sources andalucia,aaiicc,malaga --no-pages --out /tmp/out/data 2>&1 | grep -v "^\s*$" | tail -25
+          python3 - <<'PY'
+          import json, collections
+          d = json.load(open("data/events.json"))
+          ev = [e for e in d["events"] if e["end"] >= "2026-11-27"]
+          print("TOTAL", len(ev))
+          print("POR FUENTE", collections.Counter(e["source"] for e in ev).most_common())
+          and_ = [e for e in ev if e.get("ccaa") == "Andalucía"]
+          print("ANDALUCIA por provincia", collections.Counter(e["province"] for e in and_).most_common())
+          wk = [e for e in and_ if e["start"] <= "2026-12-03"]
+          print("ANDALUCIA proximos 7 dias por provincia", collections.Counter(e["province"] for e in wk).most_common())
+          PY
