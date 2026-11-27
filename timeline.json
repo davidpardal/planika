@@ -4532,6 +4532,947 @@
 "cap": "5 · ¡Y te llega al momento!",
 "tap": null,
 "side": "a"
+},
+{
+"reel": "propio",
+"img": "propio/000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/001.jpg",
+"dur": 0.45,
+"cap": "1 · Abre tu plan",
+"tap": [
+271.1,
+657.0
+]
+},
+{
+"reel": "propio",
+"img": "propio/002.jpg",
+"dur": 1.2,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/008.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/009.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/010.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/011.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/012.jpg",
+"dur": 0.08333333333333333,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/013.jpg",
+"dur": 0.45,
+"cap": "2 · Escribe tu plan propio",
+"tap": [
+195.0,
+447.5
+]
+},
+{
+"reel": "propio",
+"img": "propio/014.jpg",
+"dur": 0.2,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/015.jpg",
+"dur": 0.3,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/016.jpg",
+"dur": 0.3,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/017.jpg",
+"dur": 0.3,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/018.jpg",
+"dur": 0.5,
+"cap": "2 · Escribe tu plan propio",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/019.jpg",
+"dur": 0.45,
+"cap": "3 · Ponle hora",
+"tap": [
+226.9,
+400.5
+]
+},
+{
+"reel": "propio",
+"img": "propio/020.jpg",
+"dur": 0.2,
+"cap": "3 · Ponle hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/021.jpg",
+"dur": 0.7,
+"cap": "3 · Ponle hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/022.jpg",
+"dur": 0.45,
+"cap": "3 · Ponle hora",
+"tap": [
+96.6,
+493.0
+]
+},
+{
+"reel": "propio",
+"img": "propio/023.jpg",
+"dur": 0.3,
+"cap": "3 · Ponle hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/024.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/025.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/026.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/027.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/028.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/033.jpg",
+"dur": 0.08333333333333333,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/034.jpg",
+"dur": 1.6,
+"cap": "4 · Se coloca solo, por hora",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/035.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/036.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/037.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/038.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/039.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/040.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/041.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/044.jpg",
+"dur": 0.45,
+"cap": "5 · ¿Otro día? También",
+"tap": [
+96.0,
+451.0
+]
+},
+{
+"reel": "propio",
+"img": "propio/045.jpg",
+"dur": 0.2,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/046.jpg",
+"dur": 0.5,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/047.jpg",
+"dur": 0.4,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/048.jpg",
+"dur": 0.45,
+"cap": "5 · ¿Otro día? También",
+"tap": [
+195.0,
+546.0
+]
+},
+{
+"reel": "propio",
+"img": "propio/049.jpg",
+"dur": 0.2,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/050.jpg",
+"dur": 0.3,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/051.jpg",
+"dur": 0.3,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/052.jpg",
+"dur": 0.45,
+"cap": "5 · ¿Otro día? También",
+"tap": [
+96.6,
+591.5
+]
+},
+{
+"reel": "propio",
+"img": "propio/053.jpg",
+"dur": 0.3,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/054.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/055.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/056.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/057.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/058.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/059.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/060.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/061.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/062.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/063.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "propio",
+"img": "propio/064.jpg",
+"dur": 2.0,
+"cap": "5 · ¿Otro día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/000.jpg",
+"dur": 1.8,
+"cap": "intro",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/001.jpg",
+"dur": 0.45,
+"cap": "1 · Abre tu plan",
+"tap": [
+271.1,
+657.0
+]
+},
+{
+"reel": "editar",
+"img": "editar/002.jpg",
+"dur": 1.0,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/003.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/004.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/005.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/006.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/007.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/008.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/009.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/010.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/011.jpg",
+"dur": 0.08333333333333333,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/012.jpg",
+"dur": 0.5,
+"cap": "1 · Abre tu plan",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/013.jpg",
+"dur": 0.45,
+"cap": "2 · Toca ✎",
+"tap": [
+292.7,
+327.5
+]
+},
+{
+"reel": "editar",
+"img": "editar/014.jpg",
+"dur": 0.9,
+"cap": "2 · Toca ✎",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/015.jpg",
+"dur": 0.45,
+"cap": "3 · Cambia el nombre…",
+"tap": [
+195.0,
+382.5
+]
+},
+{
+"reel": "editar",
+"img": "editar/016.jpg",
+"dur": 0.2,
+"cap": "3 · Cambia el nombre…",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/017.jpg",
+"dur": 0.4,
+"cap": "3 · Cambia el nombre…",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/018.jpg",
+"dur": 0.3,
+"cap": "3 · Cambia el nombre…",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/019.jpg",
+"dur": 0.3,
+"cap": "3 · Cambia el nombre…",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/020.jpg",
+"dur": 0.3,
+"cap": "3 · Cambia el nombre…",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/021.jpg",
+"dur": 0.4,
+"cap": "3 · Cambia el nombre…",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/022.jpg",
+"dur": 0.45,
+"cap": "4 · …y la hora",
+"tap": [
+268.5,
+335.5
+]
+},
+{
+"reel": "editar",
+"img": "editar/023.jpg",
+"dur": 0.3,
+"cap": "4 · …y la hora",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/024.jpg",
+"dur": 0.8,
+"cap": "4 · …y la hora",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/025.jpg",
+"dur": 0.45,
+"cap": "5 · Guarda y se recoloca",
+"tap": [
+91.2,
+428.0
+]
+},
+{
+"reel": "editar",
+"img": "editar/026.jpg",
+"dur": 0.4,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/027.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/028.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/029.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/030.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/031.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/032.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/033.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/034.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/035.jpg",
+"dur": 0.08333333333333333,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/036.jpg",
+"dur": 1.5,
+"cap": "5 · Guarda y se recoloca",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/037.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/038.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/039.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/040.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/041.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/042.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/043.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/044.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/045.jpg",
+"dur": 0.45,
+"cap": "6 · ¿Cambia el día? También",
+"tap": [
+292.7,
+306.0
+]
+},
+{
+"reel": "editar",
+"img": "editar/046.jpg",
+"dur": 0.6,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/047.jpg",
+"dur": 0.45,
+"cap": "6 · ¿Cambia el día? También",
+"tap": [
+121.5,
+314.0
+]
+},
+{
+"reel": "editar",
+"img": "editar/048.jpg",
+"dur": 0.3,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/049.jpg",
+"dur": 0.8,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/050.jpg",
+"dur": 0.45,
+"cap": "6 · ¿Cambia el día? También",
+"tap": [
+91.2,
+406.5
+]
+},
+{
+"reel": "editar",
+"img": "editar/051.jpg",
+"dur": 0.4,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/052.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/053.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/054.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/055.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/056.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/057.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/058.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/059.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/060.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/061.jpg",
+"dur": 0.08333333333333333,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
+},
+{
+"reel": "editar",
+"img": "editar/062.jpg",
+"dur": 2.0,
+"cap": "6 · ¿Cambia el día? También",
+"tap": null
 }
 ]
 }
