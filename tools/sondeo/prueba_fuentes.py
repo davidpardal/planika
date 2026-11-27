@@ -40,3 +40,4 @@ for name in sys.argv[1:]:
         print("    %s %s→%s %5s | %-55s | %s · %s" % (e["category"][:6], e["start"], e["end"], e["time"], e["title"][:55], e["venue"][:30], e["city"]))
     print("   sin ciudad:", [(e["title"][:40], e["venue"][:25], e["province"]) for e in fut if not e["city"]][:25])
     print("   fuera de Andalucía:", [(e["title"][:40], e["city"], e["province"]) for e in fut if e["ccaa"] != "Andalucía"][:25])
+# 1795761218
