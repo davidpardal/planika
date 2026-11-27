@@ -572,7 +572,9 @@ def main():
     for name in only:
         shutil.rmtree(os.path.join(OUT, name), ignore_errors=True)
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        # Fecha y hora de los campos en formato español (28/11/2026, 15:30): el navegador sin interfaz las pinta
+        # según el idioma del sistema, no el de la página
+        browser = p.chromium.launch(env=dict(os.environ, LANG="es_ES.UTF-8", LC_ALL="es_ES.UTF-8", LANGUAGE="es"))
         for name in only:
             try:
                 fns[name](browser)
