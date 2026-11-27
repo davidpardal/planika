@@ -264,6 +264,17 @@ class TestArchitecture(unittest.TestCase):
             errors, _ = seo_check.check(tmp, SITE)
             self.assertEqual(errors, [])
 
+    def test_mail_service_tags_are_not_broken_links(self):
+        # boletin/email.html lleva la etiqueta de baja que rellena Brevo al enviar: no es un enlace de la web
+        with tempfile.TemporaryDirectory() as tmp:
+            build(tmp, [rich(1), rich(2)])
+            os.makedirs(os.path.join(tmp, "boletin"), exist_ok=True)
+            with open(os.path.join(tmp, "boletin", "email.html"), "w", encoding="utf-8") as fh:
+                fh.write('<html><head><meta name="robots" content="noindex,nofollow"><title>Boletín</title></head><body>'
+                         '<a href="{{ unsubscribe }}">Darse de baja</a> <a href="no-existe.html">roto</a></body></html>')
+            errors, _ = seo_check.check(tmp, SITE)
+            self.assertEqual(errors, ["enlace roto en boletin/email.html → no-existe.html"])
+
     def test_indexnow_sends_only_changed_pages(self):
         with tempfile.TemporaryDirectory() as tmp:
             build(tmp, [rich(1), rich(2)])

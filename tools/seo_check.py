@@ -122,6 +122,8 @@ def check(root, site_url="https://planikaapp.com"):
                 h = "/" + h[len(site_url):].lstrip("/")
             elif re.match(r"^[a-z][a-z0-9+.-]*:", h, re.I) or h.startswith(("#", "//")):
                 continue  # enlaces externos, mailto:, anclas
+            elif "{{" in h or "{%" in h:
+                continue  # etiqueta que rellena el servicio de envío (la baja del boletín: «{{ unsubscribe }}»)
             path = h.split("#")[0].split("?")[0]
             if path.startswith("/"):
                 tgt = path.lstrip("/")
