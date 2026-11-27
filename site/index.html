@@ -228,10 +228,11 @@
   <div class="plan-shared" id="planShared" hidden>Te han compartido este plan. <button type="button" class="btn primary" id="planSave">Guardar en Mis planes</button></div>
   <div id="planList" class="plan-list"></div>
   <form id="planNoteForm" class="plan-note" hidden>
-    <select id="planNoteDay" aria-label="Día de la nota"></select>
-    <input type="time" id="planNoteTime" aria-label="Hora de la nota">
-    <input type="text" id="planNoteText" maxlength="80" placeholder="Nota: comer, quedar en el bar…" aria-label="Nota">
-    <button type="submit" class="btn">＋ Nota</button>
+    <select id="planNoteDay" aria-label="Día del plan propio"></select>
+    <input type="date" id="planNoteDate" aria-label="Otro día" hidden>
+    <input type="time" id="planNoteTime" aria-label="Hora del plan propio">
+    <input type="text" id="planNoteText" maxlength="80" placeholder="Plan propio: comer, quedar en el bar…" aria-label="Plan propio">
+    <button type="submit" class="btn">＋ Plan propio</button>
   </form>
   <div class="plan-actions" id="planActions">
     <button type="button" class="btn primary" id="planShare">↗ Compartir (WhatsApp…)</button>
