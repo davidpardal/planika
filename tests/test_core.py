@@ -6,6 +6,7 @@ import re
 import sys
 import tempfile
 import unittest
+from datetime import timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -50,7 +51,7 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(ev["title"], "Concierto")
         self.assertEqual(ev["time"], "")
         self.assertTrue(ev["free"])
-        self.assertLess(ev["end"], "2028-01-01")
+        self.assertLessEqual(ev["end"], util.iso(util.today() + timedelta(days=400)))  # tope de fin (antes, fecha fija que caducaba)
         self.assertEqual(ev["ccaa"], "Comunidad de Madrid")
         self.assertIsNone(util.event("Test", "2", "", "2026-11-21"))
 
