@@ -1,0 +1,24 @@
+name: Prueba de fuentes nuevas con datos reales (rama sondeo, no desplegar)
+on:
+  push:
+    branches: [sondeo]
+    paths: ["tools/sondeo/prueba_fuentes.py", ".github/workflows/prueba_fuentes.yml"]
+permissions:
+  contents: read
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fuentes-andalucia-valencia
+      - uses: actions/checkout@v4
+        with:
+          ref: sondeo
+          path: sondeo
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - run: python3 sondeo/tools/sondeo/prueba_fuentes.py aaiicc
