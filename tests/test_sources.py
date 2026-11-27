@@ -468,7 +468,8 @@ class TestAgendaCulturalAndalucia(unittest.TestCase):
         return (
             '<select data-drupal-selector="edit-topic" name="topic"><option value="All">- Cualquiera -</option>'
             '<option value="1429">Espectáculos</option><option value="1430">Exposiciones</option></select>'
-            '<header><div class="headline">771 Actividades</div></header>'
+            '<select name="province"><option value="All">- Cualquiera -</option><option value="1440">Córdoba</option>'
+            '<option value="1445">Sevilla</option></select><header><div class="headline">771 Actividades</div></header>'
             + c("el-guiton-onofre-2", "el guitón onofre", [("27", "Noviembre", "2026")],
                 "Teatro Municipal Calixto Sánchez - Mairena del Alcor (Sevilla)", "A las 21:00")
             + c("mujer-en-cinta-4", "Mujer en cinta de correr sobre fondo negro", [("27", "Noviembre", "2026")],
@@ -487,6 +488,7 @@ class TestAgendaCulturalAndalucia(unittest.TestCase):
         page = self.page()
         self.assertEqual(a.total(page), 771)
         self.assertEqual(a.topics(page), [("1429", "Espectáculos"), ("1430", "Exposiciones")])
+        self.assertEqual(a.options(page, "province"), [("1440", "Córdoba"), ("1445", "Sevilla")])
         cards = {c["slug"]: c for c in a.parse_cards(page)}
         self.assertEqual(len(cards), 6)
         g = cards["el-guiton-onofre-2"]
@@ -513,8 +515,38 @@ class TestAgendaCulturalAndalucia(unittest.TestCase):
         self.assertEqual((j["category"], j["time"], j["province"]), ("musica", "20:00", "Granada"))
         v = a.to_event(cards["vitrales"], "Exposiciones")
         self.assertEqual((v["category"], v["time"]), ("expos", ""))  # el horario de apertura no es la hora de un evento
-        lo = a.to_event(cards["love-love-love-2"], "Agenda infantil y juvenil")
-        self.assertEqual((lo["category"], lo["province"], lo["time"]), ("infantil", "Cádiz", ""))
+        lo = a.to_event(cards["love-love-love-2"], "Agenda infantil y juvenil", "Cádiz")
+        self.assertEqual((lo["category"], lo["province"], lo["city"], lo["time"]), ("infantil", "Cádiz", "La Línea de la Concepción", ""))
+        # la provincia del filtro manda cuando la tarjeta no nombra el municipio
+        sin = dict(cards["nina-pastori"], city="", province="")
+        self.assertEqual(a.to_event(sin, "Espectáculos", "Sevilla")["province"], "Sevilla")
+
+    def test_fetch_combines_filters(self):
+        from unittest import mock
+        from planes import src_aaiicc as a
+        page = self.page().replace("771 Actividades", "6 Actividades")
+        calls = []
+
+        def fake(url, params=None, **kw):
+            calls.append(dict(params or {}))
+            return page
+        logs = []
+        with mock.patch.object(a, "http_text", fake), mock.patch.object(a, "PAUSE", 0):
+            evs = a.fetch(logs.append)
+        self.assertEqual(len(evs), 6)  # cada plan una sola vez aunque salga en todas las combinaciones
+        self.assertEqual(len(calls), 1 + 2 * 2)  # listado general + 2 temáticas × 2 provincias, una página cada una
+        # manda la temática prioritaria (Exposiciones antes que Espectáculos) y su provincia
+        self.assertEqual({(e["subtype"], e["province"]) for e in evs}, {("Exposiciones", "Córdoba")})
+        self.assertIn("6 eventos de 6 en el listado", logs[0])
+
+    def test_skip(self):
+        from planes import src_aaiicc as a
+        base = {"title": "Visita guiada al Monasterio", "start": "2026-11-27", "end": "2026-11-27"}
+        self.assertFalse(a.skip(base))
+        self.assertTrue(a.skip(dict(base, title="Visitas escolares en el Archivo de Indias")))
+        self.assertTrue(a.skip(dict(base, title="Taller escolar de flamenco en Sevilla")))
+        self.assertTrue(a.skip(dict(base, start="2024-08-01", end="2028-01-01")))  # oferta de varios años
+        self.assertFalse(a.skip(dict(base, start="2026-10-01", end="2027-03-31")))  # exposición de temporada
 
     def test_registered(self):
         import fetch_events

@@ -8,13 +8,15 @@ Cada tarjeta trae la fecha (o el rango «del … al …»), el título, el espac
 en texto libre («A las 21:00», «27/11/2026 - 20:30», «Sin determinar») y la imagen. No se abre la ficha de cada
 plan: lo que no está en la tarjeta (precio, descripción) se queda vacío en vez de suponerlo.
 
-Las temáticas se leen del propio formulario de filtros, así que un cambio de identificadores no rompe nada;
-si la suma de las temáticas no llega al total del listado general, se recorre también el listado general para
-los planes sin temática (y su tipo lo decide el título).
+Se recorre cada combinación de temática y provincia (tres páginas a la vez): así cada plan sale con su tipo y
+su provincia aunque la tarjeta no diga el municipio. Temáticas y provincias se leen del propio formulario de
+filtros, así que un cambio de identificadores no rompe nada. Se descartan las visitas escolares y las ofertas
+que duran más de un año (visitas fijas a monumentos, tours): no son planes con fecha.
 """
 import html
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 from .classify import classify
@@ -25,8 +27,11 @@ HOME = "https://www.juntadeandalucia.es/aaiicc/agendaculturaldeandalucia/"
 HOST = "https://www.juntadeandalucia.es"
 LIST = HOST + "/aaiicc/agendaculturaldeandalucia/actividades"
 PER_PAGE = 10
-MAX_PAGES = 150  # por temática; hoy la más grande ronda las 40
-PAUSE = 0.3  # segundos entre páginas, para no cargar el servidor
+MAX_PAGES = 60  # por temática y provincia; hoy la combinación más grande ronda las 15 páginas
+PAUSE = 0.3  # segundos entre páginas de cada hilo, para no cargar el servidor
+WORKERS = 3  # el servidor tarda ~4 s por página: tres a la vez dejan la fuente en 2-3 minutos
+MAX_SPAN = 365  # días: lo que dura más que eso (visitas fijas, tours, programas escolares) no es un plan con fecha
+_SCHOOL = re.compile(r"\bescolar(es)?\b|centros educativos|para estudiantes")
 
 # temática del filtro (en minúsculas y sin tildes) -> (tipos para classify, categoría si el título no aclara nada)
 TOPICS = {
@@ -40,6 +45,9 @@ TOPICS = {
     "libros y literatura": ([], "charlas"),
     "monumentos y espacios culturales": ([], "naturaleza"),
 }
+# si un plan sale en varias temáticas, manda la primera de esta lista (un espectáculo infantil es infantil)
+ORDER = ["agenda infantil y juvenil", "exposiciones", "flamenco", "cine y audiovisual", "libros y literatura",
+         "cursos y formacion", "fiestas y tradiciones", "espectaculos", "monumentos y espacios culturales"]
 # temáticas cuya categoría no depende del título (una exposición de carteles de cine sigue siendo una exposición)
 FIXED = {"agenda infantil y juvenil", "exposiciones", "cursos y formacion", "libros y literatura"}
 
@@ -119,13 +127,17 @@ def parse_cards(page_html):
     return out
 
 
-def topics(page_html):
-    """Opciones del filtro de temática: [(id, nombre)]."""
-    m = re.search(r'<select[^>]*name="topic"[^>]*>(.*?)</select>', page_html, re.S)
+def options(page_html, name):
+    """Opciones de un filtro del formulario (topic, province): [(id, nombre)]."""
+    m = re.search(r'<select[^>]*name="%s"[^>]*>(.*?)</select>' % name, page_html, re.S)
     if not m:
         return []
     return [(v, _text(n)) for v, n in re.findall(r'<option[^>]*value="([^"]*)"[^>]*>([^<]*)<', m.group(1))
             if v and v != "All"]
+
+
+def topics(page_html):
+    return options(page_html, "topic")
 
 
 def total(page_html):
@@ -133,33 +145,14 @@ def total(page_html):
     return int(m.group(1)) if m else 0
 
 
-def crawl(params, first=None):
-    """Recorre las páginas de un listado (con sus filtros) hasta que deja de haber tarjetas nuevas."""
-    seen, cards = set(), []
-    page_html = first
-    n_total = 0
-    for page in range(MAX_PAGES):
-        if page_html is None:
-            q = dict(params)
-            if page:
-                q["page"] = page
-            page_html = http_text(LIST, params=q, retries=3, timeout=(15, 60))
-            time.sleep(PAUSE)
-        if page == 0:
-            n_total = total(page_html)
-        new = [c for c in parse_cards(page_html) if c["slug"] not in seen]
-        page_html = None
-        if not new:
-            break
-        for c in new:
-            seen.add(c["slug"])
-            cards.append(c)
-        if n_total and len(cards) >= n_total:
-            break
-    return cards, n_total
+def skip(c):
+    """Lo que no es un plan para el público: visitas escolares y ofertas de varios años (tours, visitas fijas)."""
+    if _SCHOOL.search(norm(c["title"])):
+        return True
+    return (date.fromisoformat(c["end"]) - date.fromisoformat(c["start"])).days > MAX_SPAN
 
 
-def to_event(c, topic=""):
+def to_event(c, topic="", province=""):
     types, fallback = TOPICS.get(norm(topic), ([], None))
     if norm(topic) in FIXED and fallback:
         cat = fallback
@@ -172,36 +165,83 @@ def to_event(c, topic=""):
     return event(
         NAME, c["slug"], c["title"], c["start"], end=c["end"],
         time=parse_time(c["when"]) if short else "",
-        subtype=topic, category=cat, province=c["province"] or None, city=c["city"],
+        subtype=topic, category=cat, province=province or c["province"] or None, city=c["city"],
         venue=c["venue"], url=c["url"], image=c["image"],
     )
+
+
+def _page(params, page):
+    q = dict(params)
+    if page:
+        q["page"] = page
+    text = http_text(LIST, params=q, retries=3, timeout=(15, 60))
+    time.sleep(PAUSE)
+    return text
+
+
+def _priority(topic_name):
+    n = norm(topic_name)
+    return ORDER.index(n) if n in ORDER else len(ORDER)
 
 
 def fetch(log):
     first = http_text(LIST, retries=3, timeout=(15, 60))
     n_all = total(first)
-    found = {}
-    by_topic = {}
-    for tid, tname in topics(first):
+    tops = sorted(topics(first), key=lambda t: _priority(t[1]))
+    provs = options(first, "province")
+    if not tops or not provs:
+        raise RuntimeError("el formulario de filtros ha cambiado (temáticas: %d, provincias: %d)" % (len(tops), len(provs)))
+    combos = [(t, p) for t in tops for p in provs]
+    pages = {}  # (combo, página) -> html
+    failed = []
+
+    def get(job):
+        (t, p), n = job
         try:
-            cards, n = crawl({"topic": tid})
-        except Exception as exc:  # noqa: BLE001 - una temática caída no tira las demás
-            log("%s: temática «%s» sin respuesta (%s)" % (NAME, tname, exc.__class__.__name__))
-            continue
-        by_topic[tname] = len(cards)
-        for c in cards:
-            found.setdefault(c["slug"], (c, tname))
-    if len(found) < n_all * 0.97:  # planes sin temática (o una temática que falló): listado general
-        cards, _ = crawl({}, first=first)
-        for c in cards:
-            found.setdefault(c["slug"], (c, ""))
+            return job, _page({"topic": t[0], "province": p[0]}, n)
+        except Exception as exc:  # noqa: BLE001 - una página caída no tira las demás
+            return job, exc
+
+    # 1) primera página de cada temática × provincia: trae el total y las diez primeras tarjetas
+    with ThreadPoolExecutor(WORKERS) as ex:
+        for job, res in ex.map(get, [(c, 0) for c in combos]):
+            if isinstance(res, Exception):
+                failed.append(job)
+            else:
+                pages[job] = res
+    # 2) el resto de páginas de las combinaciones con más de diez planes
+    more = [(c, n) for (c, n0), h in list(pages.items()) for n in range(1, min(MAX_PAGES, -(-total(h) // PER_PAGE)))]
+    with ThreadPoolExecutor(WORKERS) as ex:
+        for job, res in ex.map(get, more):
+            if isinstance(res, Exception):
+                failed.append(job)
+            else:
+                pages[job] = res
+    found, by_topic, by_prov, skipped = {}, {}, {}, 0
+    for c, n in sorted(pages, key=lambda j: (combos.index(j[0]), j[1])):
+        (tid, tname), (pid, pname) = c
+        for card in parse_cards(pages[(c, n)]):
+            if card["slug"] in found:
+                continue
+            if skip(card):
+                found[card["slug"]] = None
+                skipped += 1
+                continue
+            found[card["slug"]] = (card, tname, pname)
+            by_topic[tname] = by_topic.get(tname, 0) + 1
+            by_prov[pname] = by_prov.get(pname, 0) + 1
     out = []
-    for c, tname in found.values():
-        ev = to_event(c, tname)
-        if ev:
-            out.append(ev)
+    for item in found.values():
+        if item:
+            ev = to_event(*item)
+            if ev:
+                out.append(ev)
     if not out:
         raise RuntimeError("el listado no ha devuelto ninguna tarjeta legible")
-    log("%s: %d eventos (listado: %d; por temática: %s)" % (
-        NAME, len(out), n_all, ", ".join("%s %d" % kv for kv in by_topic.items())))
+    if failed and len(failed) > len(pages) // 4:
+        raise RuntimeError("%d de %d páginas sin respuesta" % (len(failed), len(failed) + len(pages)))
+    log("%s: %d eventos de %d en el listado (%d descartados: escolares o de varios años; %d páginas leídas%s)" % (
+        NAME, len(out), n_all, skipped, len(pages), (", %d sin respuesta" % len(failed)) if failed else ""))
+    log("  -> por temática: %s" % ", ".join("%s %d" % kv for kv in by_topic.items()))
+    log("  -> por provincia: %s" % ", ".join("%s %d" % kv for kv in by_prov.items()))
     return out
