@@ -127,6 +127,8 @@ def short_when(e, t0):
     if e["end"] != e["start"]:
         if e["start"] < t0:
             return "hasta el " + _dshort(e["end"])
+        if e["start"][:7] == e["end"][:7]:  # mismo mes: «4–8 dic», no «4 dic–8 dic»
+            return "%d–%s" % (int(e["start"][8:10]), _dshort(e["end"]))
         return "%s–%s" % (_dshort(e["start"]), _dshort(e["end"]))
     return _dshort(e["start"])
 
@@ -239,9 +241,12 @@ def seo_title(e, t0, place, full=False):
     full: el nombre no se recorta nunca (planes que solo se distinguen por el final del nombre)."""
     when, day, year = title_when(e, t0), short_when(e, t0), title_year(e, t0)
     place = " ".join(str(place or "").split())
+    parts = [p.strip() for p in place.split(" / ") if p.strip()]  # «Pamplona / Iruña»: vale cualquiera de las dos
 
     def tails(name):
-        where = (" en " + place) if place and norm(place) not in norm(name) else ""
+        # La ciudad no se repite si el nombre ya la lleva como palabra (sí «Durangoko Azoka … en Durango»)
+        named = any(re.search(r"(?<!\w)%s(?!\w)" % re.escape(norm(p)), norm(name)) for p in parts)
+        where = (" en " + place) if place and not named else ""
         y = (" " + year) if year and day and year not in name else ""
         whens = [when + y, day + y, when, day] if y else [when, day]  # con y sin día de la semana y año
         return where, [where + ((" · " + w) if w else "") for w in whens]
@@ -263,10 +268,18 @@ def seo_title(e, t0, place, full=False):
         name = alts[-1]
     where, ts = tails(name)
     room = TITLE_MAX - len(ts[-1])
-    if room >= NAME_MIN:
-        short = clip(name, room)
-        return short + next(tail for tail in ts if len(short) + len(tail) <= TITLE_MAX)  # el último siempre cabe
-    return clip(name, max(NAME_MIN, TITLE_MAX - len(where))) + where
+    if room < NAME_MIN:
+        return clip(name, max(NAME_MIN, TITLE_MAX - len(where))) + where
+    short = clip(name, room)
+    out = short + next(tail for tail in ts if len(short) + len(tail) <= TITLE_MAX)  # el último siempre cabe
+    # Si así se pierde el año («encendido luces pamplona 2026»), mejor recortar un poco más el nombre y conservarlo,
+    # siempre que el nombre recortado siga diciendo lo suficiente
+    y = (" " + year) if year and day and year not in name else ""
+    if y and year not in out:
+        for tail in (where + " · " + when + y, where + " · " + day + y):
+            if TITLE_MAX - len(tail) >= NAME_MIN + 10:
+                return clip(name, TITLE_MAX - len(tail)) + tail
+    return out
 
 
 def price_num(e):

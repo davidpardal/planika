@@ -444,6 +444,26 @@ CAT_INTENT = {
 LOCAL_ASK = {"ocio": "un escape room, una bolera o un karting", "parques": "un parque de bolas o un parque infantil",
              "infantil": "un parque de bolas o un parque infantil", "aventura": "una empresa de multiaventura o turismo activo",
              "bienestar": "un spa o un balneario", "experiencias": "una bodega o un taller de experiencias"}
+# Atajos al principio de las páginas de provincia y de ciudad: lo que más se busca después de «agenda de X»
+QUICK = [("fin-de-semana", "Este fin de semana"), ("gratis", "Gratis"), ("infantil", "Con niños"), ("musica", "Conciertos"),
+         ("escena", "Teatro y danza"), ("expos", "Exposiciones"), ("navidad", "Navidad")]
+
+
+def _quick(prefix, has):
+    """«Atajos: Este fin de semana · Gratis · Con niños…» con las subpáginas que existen (has(suf) -> bool)."""
+    links = ['<a href="%s-%s.html">%s</a>' % (prefix, suf, lab) for suf, lab in QUICK if has(suf)]
+    return '<p class="hint quick">Atajos: %s</p>' % " · ".join(links) if links else ""
+
+
+def _hub_texts(name, n, mes):
+    """Título, H1 y descripción de las páginas de provincia y de ciudad: se buscan como «agenda X», «agenda cultural X»,
+    «actividades X» o «qué hacer en X hoy / este fin de semana»."""
+    return ("Agenda de %s: actividades y qué hacer (%s)" % (name, mes),
+            "Agenda de %s: qué hacer hoy y este fin de semana" % name,
+            "Agenda cultural y de ocio de %s al día: %s actividades y planes (conciertos, teatro, exposiciones, ferias, "
+            "con niños y gratis), con fecha, lugar y enlace oficial." % (name, fmt_n(n)))
+
+
 FIRST_PAGE = 60      # tarjetas en la primera página de cada hub
 ARCHIVE_PAGE = 150   # planes por página en el listado completo de cada provincia
 CITY_MIN = 40        # planes con fecha para que una ciudad (sin provincia del mismo nombre) tenga página
@@ -1050,11 +1070,11 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
                (("fin-de-semana", "Planes este fin de semana"), ("gratis", "Planes gratis")) if (code, suf) in extras]
         sib += ['<a href="%s-%s.html">%s en %s</a>' % (base, k, html.escape(CAT_INTENT[k]), html.escape(name))
                 for k, _, _ in CATEGORIES if (code, k) in combos]
-        page = _render(site_dir, fn, "../", seo_title="Qué hacer en %s: planes y eventos (%s)" % (name, mes), h1="Planes en %s" % name,
-                       desc="Agenda de planes en %s (%s): %s planes próximos entre conciertos, teatro, exposiciones, deporte, ferias y fiestas, con fechas y enlace oficial."
-                            % (name, ccaa, fmt_n(len(items))),
+        seo_t, h1, desc = _hub_texts(name, len(items), mes)
+        quick = _quick(base, lambda suf: (code, suf) in extras or (code, suf) in combos)
+        page = _render(site_dir, fn, "../", seo_title=seo_t, h1=h1, desc=desc,
                        items=items, crumbs=crumbs, params="prov=%s" % code, t0=t0, updated=upd,
-                       intro=_intro(items, "en %s" % name, t0), more=pager(1, "../"), rss="../feeds/provincia-%s.xml" % code,
+                       intro=quick + _intro(items, "en %s" % name, t0), more=pager(1, "../"), rss="../feeds/provincia-%s.xml" % code,
                        links=_p(sib) + _p(city_links("../", code)) + _p(nat("../")) + _p(type_links("../")) + _p(prov_links("../")))
         done(fn, page)
         for k, a in enumerate(arch, 2):
@@ -1124,11 +1144,11 @@ def write_pages(site_dir, events, sources=None, updated_at="", state_path=None, 
         links = ['<a href="../p/%s.html">Todos los planes en %s</a>' % (base, html.escape(pname))]
         links += ['<a href="../p/%s-%s.html">%s en %s</a>' % (base, suf, lab, html.escape(pname)) for suf, lab in
                   (("fin-de-semana", "Planes este fin de semana"), ("gratis", "Planes gratis")) if (code, suf) in extras]
-        page = _render(site_dir, fn, "../", seo_title="Qué hacer en %s: planes y eventos (%s)" % (cname, mes), h1="Planes en %s" % cname,
-                       desc="Agenda de planes en %s (%s): %s planes próximos entre conciertos, teatro, exposiciones, deporte y fiestas, con fechas y enlace oficial."
-                            % (cname, pname, fmt_n(len(items))),
+        seo_t, h1, desc = _hub_texts(cname, len(items), mes)
+        quick = _quick(cfile, lambda suf: (code, ncity, suf) in city_subs)
+        page = _render(site_dir, fn, "../", seo_title=seo_t, h1=h1, desc=desc,
                        items=items, crumbs=[("Inicio", ""), (pname, "p/%s.html" % base), (cname, fn)], params=params,
-                       t0=t0, updated=upd, intro=_intro(items, "en %s" % cname, t0, cities=False),
+                       t0=t0, updated=upd, intro=quick + _intro(items, "en %s" % cname, t0, cities=False),
                        more=("<p class=\"hint\">Se muestran %d de %s. <a href=\"../?%s\">Ver todos en la app</a>.</p>" % (FIRST_PAGE, fmt_n(len(items)), html.escape(params))) if len(items) > FIRST_PAGE else "",
                        links=_p(own) + _p(links) + _p([l for l in city_links("../") if 'c/%s.html"' % cfile not in l]))
         done(fn, page)
