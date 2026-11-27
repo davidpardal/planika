@@ -2,6 +2,30 @@
  "about": "Reels de Planika para Instagram. tools/instagram.py --reels los publica en planikaapp.com/ig/ (noindex): los más nuevos primero; los que tienen «until» dejan de salir al día siguiente.",
  "reels": [
   {
+   "file": "reel-tu-finde-en-un-solo-plan.mp4",
+   "poster": "reel-tu-finde-en-un-solo-plan.jpg",
+   "title": "Novedad: tu finde entero en un solo plan",
+   "kind": "explicacion",
+   "made": "2026-11-27",
+   "caption": "✨ Novedad en Planika: tu finde entero en UN solo plan 👇\n\nAñade conciertos, teatro o mercadillos de la agenda con «＋ Mi plan» y apunta también lo tuyo: el vermú, la comida en casa de la amona, la siesta…\n\n🕒 Todo ordenado por hora\n✏️ Cambias nombre, día y hora cuando quieras\n📅 A tu calendario, con aviso 2 h antes\n👥 Compártelo en vivo con tu cuadrilla, sin cuentas\n\nGratis en planikaapp.com\n📌 Guárdalo · @planikaapp\n\n#Planika #Novedad #PlanesFinde #Planes #Cuadrilla"
+  },
+  {
+   "file": "novedad-planes-propios.mp4",
+   "poster": "novedad-planes-propios.jpg",
+   "title": "Novedad: apunta tus planes propios",
+   "kind": "explicacion",
+   "made": "2026-11-27",
+   "caption": "📌 Novedad en Planika: apunta tus planes propios 👇\n\n1️⃣ Abre tu plan\n2️⃣ Escribe lo tuyo: comer, vermú, monte…\n3️⃣ Ponle hora y se coloca solo\n4️⃣ ¿Otro día? También\n\n👉 planikaapp.com\n\n#Planika #Novedad #Planes #QueHacerHoy"
+  },
+  {
+   "file": "novedad-edita-tus-planes-propios.mp4",
+   "poster": "novedad-edita-tus-planes-propios.jpg",
+   "title": "Novedad: cambia nombre, día y hora",
+   "kind": "explicacion",
+   "made": "2026-11-27",
+   "caption": "✏️ Novedad en Planika: cambia el nombre, el día y la hora de tus planes propios 👇\n\nToca ✎, cambia lo que quieras y al guardar se recoloca solo por hora.\n\n👉 planikaapp.com\n\n#Planika #Novedad #Planes #Cuadrilla"
+  },
+  {
    "file": "reel-este-finde-por-0-euros-27-29-nov.mp4",
    "poster": "reel-este-finde-por-0-euros-27-29-nov.jpg",
    "title": "Este finde por 0 € (27–29 nov)",
