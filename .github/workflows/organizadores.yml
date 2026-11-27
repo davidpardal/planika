@@ -34,7 +34,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if git diff --quiet -- data/organizadores.json; then
+          # git status (no git diff): la primera vez data/organizadores.json es un archivo nuevo que git diff no ve
+          if [ -z "$(git status --porcelain -- data/organizadores.json)" ]; then
             echo "Nada nuevo."
             exit 0
           fi
