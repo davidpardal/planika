@@ -226,7 +226,10 @@ class TestArchitecture(unittest.TestCase):
             self.assertLessEqual(stats["depth_max"], 3)
             prov = read(tmp, "p", "bizkaia.html")
             mes = "%s %d" % (publish._MESES[util.today().month - 1], util.today().year)
-            self.assertIn("<title>Qué hacer en Bizkaia: planes y eventos (%s) · Planika</title>" % mes, prov)
+            # se busca «agenda bizkaia», «actividades bizkaia», «qué hacer en bizkaia hoy»
+            self.assertIn("<title>Agenda de Bizkaia: actividades y qué hacer (%s) · Planika</title>" % mes, prov)
+            self.assertIn("<h1 class=\"tagline\">Agenda de Bizkaia: qué hacer hoy y este fin de semana</h1>", prov)
+            self.assertIn('Atajos: <a href="bizkaia-fin-de-semana.html">Este fin de semana</a>', prov)
             self.assertIn('href="../c/bilbao.html"', prov)
             self.assertIn('href="../p/bizkaia-pagina-2.html"', prov)
             self.assertIn("Hay 131 planes con fecha en Bizkaia", prov)  # texto con datos reales de la página
@@ -658,3 +661,18 @@ class TestDataQuality(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestEventTitlesCtr(unittest.TestCase):
+    """Títulos de ficha para las búsquedas reales de Search Console (noviembre 2026)."""
+
+    def test_city_word_year_and_compact_range(self):
+        t0 = "2026-11-24"
+        luces = util.event("A", "1", "Encendido de las luces de Navidad de Pamplona en San Saturnino", "2026-11-29",
+                           city="Pamplona / Iruña", province_code="31")
+        # «encendido luces pamplona 2026»: Pamplona ya va en el nombre y el año no se pierde
+        self.assertEqual(static.seo_title(luces, t0, "Pamplona / Iruña"), "Encendido de las luces de Navidad de Pamplona… · dom 29 nov 2026")
+        azoka = util.event("A", "2", "Programa Durangoko Azoka 2026", "2026-12-04", end="2026-12-08", city="Durango", province_code="48")
+        # «feria durango 2026»: «Durangoko» no es «Durango»
+        self.assertEqual(static.seo_title(azoka, t0, "Durango"), "Programa Durangoko Azoka 2026 en Durango · 4–8 dic")
+        self.assertEqual(static.short_when(azoka, t0), "4–8 dic")
