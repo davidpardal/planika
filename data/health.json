@@ -140,7 +140,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 4976,
+    "count": 5058,
     "error": ""
    }
   ],
@@ -212,7 +212,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 3646,
+    "count": 3661,
     "error": ""
    }
   ],
@@ -284,7 +284,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 1324,
+    "count": 1325,
     "error": ""
    }
   ],
@@ -1170,7 +1170,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 323,
+    "count": 326,
     "error": ""
    }
   ],
@@ -1237,7 +1237,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 874,
+    "count": 913,
     "error": ""
    }
   ],
@@ -1371,7 +1371,7 @@
    },
    {
     "date": "2026-11-27",
-    "count": 147,
+    "count": 148,
     "error": ""
    }
   ],
@@ -1621,8 +1621,8 @@
    },
    {
     "date": "2026-11-27",
-    "count": 66,
-    "error": ""
+    "count": 23,
+    "error": "HTTPError: 403 Client Error: Forbidden for url: https://jimmyjazzgasteiz.com/wp-json/wp/v2/posts?categories=1336&per_page=100&page="
    }
   ],
   "burdeos": [
@@ -1667,11 +1667,13 @@
   "aaiicc": [
    {
     "date": "2026-11-27",
-    "count": 571,
+    "count": 572,
     "error": ""
    }
   ]
  },
- "updated_at": "2026-11-27T07:55",
- "alerts": []
+ "updated_at": "2026-11-27T09:53",
+ "alerts": [
+  "Salas Jimmy Jazz y Kubik: hoy no ha respondido; se muestran los planes de la descarga del 2026-11-27"
+ ]
 }
