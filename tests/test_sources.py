@@ -509,6 +509,7 @@ class TestAgendaCulturalAndalucia(unittest.TestCase):
         cards = {c["slug"]: c for c in a.parse_cards(self.page())}
         g = a.to_event(cards["el-guiton-onofre-2"], "Espectáculos")
         self.assertEqual((g["category"], g["time"], g["province"], g["source"]), ("escena", "21:00", "Sevilla", a.NAME))
+        self.assertEqual(g["image"], "")  # sin imágenes hasta que la Agencia confirme que se pueden reutilizar
         m = a.to_event(cards["mujer-en-cinta-4"], "Espectáculos")
         self.assertEqual((m["time"], m["city"], m["province"]), ("20:30", "Sevilla", "Sevilla"))
         j = a.to_event(cards["concierto-julio"], "Espectáculos")

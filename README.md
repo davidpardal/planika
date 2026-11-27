@@ -91,7 +91,7 @@ El límite gratuito es de 5 000 peticiones al día y 5 por segundo; el script ha
 | Institut Valencià de Cultura (GVA) | Valencia, Castellón, Alicante | JSON |
 | Ayuntamiento de Málaga | Málaga ciudad | CSV anual |
 | Junta de Andalucía (agenda de eventos) | las 8 provincias | JSON |
-| Agenda Cultural de Andalucía (Junta, AAIICC; `planes/src_aaiicc.py`) | las 8 provincias: teatros y auditorios públicos y municipales, museos, flamenco, filmotecas, bibliotecas | HTML del listado público, por temática (sin API ni datos abiertos; no se abre la ficha de cada plan) |
+| Agenda Cultural de Andalucía (Junta, AAIICC; `planes/src_aaiicc.py`) | las 8 provincias: teatros y auditorios públicos y municipales, museos, flamenco, filmotecas, bibliotecas | HTML del listado público, por temática y provincia (sin API ni datos abiertos; no se abre la ficha de cada plan; sin imágenes hasta confirmar con la Agencia que se pueden reutilizar) |
 | Ajuntament de Barcelona | Barcelona ciudad (agenda cultural completa, con sesiones) | JSON |
 | Axenda de Cultura de Galicia (Xunta) | las 4 provincias gallegas | iCalendar |
 | Ayuntamiento de Cartagena | Cartagena (Murcia) | CSV |

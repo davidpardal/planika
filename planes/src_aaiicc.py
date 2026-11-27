@@ -6,7 +6,8 @@ museos, filmotecas, bibliotecas, flamenco, fiestas… No publica API ni datos ab
 público (/actividades): diez tarjetas por página, recorrido una vez por temática para saber el tipo de plan.
 Cada tarjeta trae la fecha (o el rango «del … al …»), el título, el espacio con municipio y provincia, la hora
 en texto libre («A las 21:00», «27/11/2026 - 20:30», «Sin determinar») y la imagen. No se abre la ficha de cada
-plan: lo que no está en la tarjeta (precio, descripción) se queda vacío en vez de suponerlo.
+plan: lo que no está en la tarjeta (precio, descripción) se queda vacío en vez de suponerlo. Cada plan enlaza a su
+ficha oficial; las imágenes no se usan (ver USE_IMAGES).
 
 Se recorre cada combinación de temática y provincia (tres páginas a la vez): así cada plan sale con su tipo y
 su provincia aunque la tarjeta no diga el municipio. Temáticas y provincias se leen del propio formulario de
@@ -30,6 +31,9 @@ LIST = HOST + "/aaiicc/agendaculturaldeandalucia/actividades"
 PER_PAGE = 10
 MAX_PAGES = 60  # por temática y provincia; hoy la combinación más grande ronda las 15 páginas
 PAUSE = 0.3  # segundos entre páginas de cada hilo, para no cargar el servidor
+# Las imágenes de las tarjetas no se publican hasta que la Agencia confirme que se pueden reutilizar: otras webs
+# de la AAIICC reservan todos los derechos de sus contenidos. Fecha, título, lugar y enlace son datos del plan.
+USE_IMAGES = False
 WORKERS = 3  # el servidor tarda ~4 s por página: tres a la vez dejan la fuente en 2-3 minutos
 # días: lo que dura más (tours de todo el año, clases, programas de curso, ciclos de temporada) no es un plan con
 # fecha; las exposiciones sí pueden durar meses, hasta un año
@@ -170,7 +174,7 @@ def to_event(c, topic="", province=""):
         NAME, c["slug"], c["title"], c["start"], end=c["end"],
         time=parse_time(c["when"]) if short else "",
         subtype=topic, category=cat, province=province or c["province"] or None, city=c["city"],
-        venue=c["venue"], url=c["url"], image=c["image"],
+        venue=c["venue"], url=c["url"], image=c["image"] if USE_IMAGES else "",
     )
 
 
