@@ -21,8 +21,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
@@ -30,7 +30,7 @@ jobs:
         run: python3 -m unittest discover -s tests -v
       # La web vive en el dominio propio: canónicas y sitemap usan siempre esa dirección
       - id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Descargar agendas
         env:
           PLANIKA_SITE_URL: https://planikaapp.com
@@ -100,10 +100,10 @@ jobs:
       - name: Comprobación SEO
         continue-on-error: true
         run: python3 tools/seo_check.py site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ vars.CLOUDFLARE_ENABLED == 'true' }}
         with:
           name: site
@@ -117,7 +117,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
   # Una vez publicada la web, avisa por IndexNow (Bing, Copilot, ChatGPT Search, Yandex…) de las páginas
   # nuevas o cambiadas hoy. Lee los sitemaps que el paso de datos ha subido a main. Nunca bloquea nada.
   indexnow:
@@ -125,10 +125,10 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Avisar a los buscadores (IndexNow)
@@ -140,7 +140,7 @@ jobs:
     if: ${{ vars.CLOUDFLARE_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: site
           path: site
